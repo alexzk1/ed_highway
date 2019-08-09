@@ -27,14 +27,17 @@ CONFIG += c++14
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
+        qjsontablemodel.cpp \
         utils/restclient.cpp \
         spanshapi.cpp \
         spanshroutewidget.cpp \
         spanshsyssuggest.cpp
 
 HEADERS += \
+        qjsontablemodel.h \
         utils/cm_ctors.h \
         utils/ctpl_stl.h \
+        utils/exec_exit.h \
         utils/json.hpp \
         mainwindow.h \
         utils/restclient.h \

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <chrono>
 #include "utils/strutils.h"
+#include "utils/exec_exit.h"
 
 
 //based on: https://github.com/chriszero/ED-Router/blob/master/libspanch/SpanchApi.cs
@@ -25,8 +26,14 @@ void SpanshApi::executeRequest(const std::string &api, const RestClient::paramet
     const auto url{stringfmt("https://spansh.co.uk/api/%s", api)};
     const auto eparams{RestClient::encodePOSTParameters(params)};
 
-    const auto executor = [url, eparams, callback, has_job](auto)
+    ++working;
+
+    const auto executor = [url, eparams, callback, has_job, this](auto)
     {
+        exec_onexit ensure([this]()
+        {
+            --this->working;
+        });
         try
         {
             const auto resp1{RestClient::post(url, eparams, timeout_1st_request)};

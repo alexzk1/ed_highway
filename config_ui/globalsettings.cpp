@@ -38,7 +38,7 @@ namespace nmsp_gs
         if (currentExists)
             flush(); //saving current, bcs atomics could be cached!!
 
-        QVariant defValue = (currentExists)?static_cast<QVariant>(*this):getDefault();
+        QVariant defValue = (currentExists) ? static_cast<QVariant>(*this) : getDefault();
         currSubgroup = id;
         load(s, defValue);
         flush();
@@ -148,6 +148,6 @@ ISaveableWidget::~ISaveableWidget()
 
 DECL_DESTRUCTOR(GlobalStorableBool)
 DECL_DESTRUCTOR(GlobalFileStorable)
-DECL_DESTRUCTOR(GlobalStorableInt);
-DECL_DESTRUCTOR(GlobalComboBoxStorable);
+DECL_DESTRUCTOR(GlobalStorableInt)
+DECL_DESTRUCTOR(GlobalComboBoxStorable)
 

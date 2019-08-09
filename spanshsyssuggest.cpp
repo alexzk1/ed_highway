@@ -27,7 +27,7 @@ SpanshSysSuggest::SpanshSysSuggest(QLineEdit *parent) : QObject(parent), editor(
 
     connect(popup, SIGNAL(itemClicked(QTreeWidgetItem*, int)), SLOT(doneCompletion()));
     timer.setSingleShot(true);
-    timer.setInterval(StaticSettingsMap::getGlobalSetts().readInt("SYS_NAME_DROP_DELAY"));
+    timer.setInterval(StaticSettingsMap::getGlobalSetts().readInt("01_SYS_NAME_DROP_DELAY"));
     connect(&timer, SIGNAL(timeout()), SLOT(autoSuggest()));
     connect(editor, SIGNAL(textEdited(QString)), &timer, SLOT(start()));
 

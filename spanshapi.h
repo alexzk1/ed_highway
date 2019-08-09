@@ -25,10 +25,14 @@ public:
     {
         executeRequest(src.api(), src.params(), src.hasJob(), std::move(callback));
     }
-
+    bool isWorking() const
+    {
+        return working > 0;
+    }
 private:
     friend void dotest();
     ctpl::thread_pool threads;
+    std::atomic<int32_t> working{0};
 };
 
 #endif // SPANCHAPI_H

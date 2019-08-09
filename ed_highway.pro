@@ -27,30 +27,34 @@ CONFIG += c++14
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-        restclient.cpp \
+        utils/restclient.cpp \
         spanshapi.cpp \
         spanshroutewidget.cpp \
         spanshsyssuggest.cpp
 
 HEADERS += \
-        ctpl_stl.h \
-        json.hpp \
+        utils/cm_ctors.h \
+        utils/ctpl_stl.h \
+        utils/json.hpp \
         mainwindow.h \
-        restclient.h \
-        runners.h \
+        utils/restclient.h \
+        utils/runners.h \
         spansh_route.h \
         spansh_sysname.h \
         spanshapi.h \
         spanshroutewidget.h \
         spanshsyssuggest.h \
-        strfmt.h \
-        strutils.h
+        utils/saveable_widget.h \
+        utils/strfmt.h \
+        utils/strutils.h \
+        utils/variant_convert.h
 
 FORMS += \
         mainwindow.ui \
         spanshroutewidget.ui
 
 include($$PWD/singleapp/singleapplication.pri)
+include($$PWD/config_ui/config_ui.pri)
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

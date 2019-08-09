@@ -1,8 +1,8 @@
 #include "spanshapi.h"
-#include "strfmt.h"
+#include "utils/strfmt.h"
 #include <iostream>
 #include <chrono>
-#include "strutils.h"
+#include "utils/strutils.h"
 
 
 //based on: https://github.com/chriszero/ED-Router/blob/master/libspanch/SpanchApi.cs

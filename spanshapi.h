@@ -1,12 +1,12 @@
 #ifndef SPANCHAPI_H
 #define SPANCHAPI_H
 
-#include "cm_ctors.h"
+#include "utils/cm_ctors.h"
 #include <functional>
 #include <string>
-#include "restclient.h"
-#include "ctpl_stl.h"
-#include "json.hpp"
+#include "utils/restclient.h"
+#include "utils/ctpl_stl.h"
+#include "utils/json.hpp"
 
 class SpanshApi
 {

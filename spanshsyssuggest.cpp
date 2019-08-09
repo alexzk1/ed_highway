@@ -4,8 +4,7 @@
 #include <QEvent>
 #include <QKeyEvent>
 #include <string>
-
-constexpr static int drop_down_delay_ms = 100;
+#include "config_ui/globalsettings.h"
 
 SpanshSysSuggest::SpanshSysSuggest(QLineEdit *parent) : QObject(parent), editor(parent)
 {
@@ -28,7 +27,7 @@ SpanshSysSuggest::SpanshSysSuggest(QLineEdit *parent) : QObject(parent), editor(
 
     connect(popup, SIGNAL(itemClicked(QTreeWidgetItem*, int)), SLOT(doneCompletion()));
     timer.setSingleShot(true);
-    timer.setInterval(drop_down_delay_ms);
+    timer.setInterval(StaticSettingsMap::getGlobalSetts().readInt("SYS_NAME_DROP_DELAY"));
     connect(&timer, SIGNAL(timeout()), SLOT(autoSuggest()));
     connect(editor, SIGNAL(textEdited(QString)), &timer, SLOT(start()));
 

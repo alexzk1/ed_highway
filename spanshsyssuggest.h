@@ -7,6 +7,7 @@
 #include <QLineEdit>
 #include <QTreeWidget>
 #include <QTimer>
+#include <QPointer>
 #include "spanshapi.h"
 
 class SpanshSysSuggest : public QObject
@@ -27,8 +28,8 @@ public slots:
     void preventSuggest();
     void autoSuggest();
 private:
-    QLineEdit *editor = nullptr;
-    QTreeWidget *popup = nullptr;
+    QPointer<QLineEdit>   editor{nullptr};
+    QPointer<QTreeWidget> popup{nullptr};
     QTimer timer;
     SpanshApi sapi;
 };

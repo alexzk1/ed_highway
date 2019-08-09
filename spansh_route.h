@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
-#include "restclient.h"
-#include "strfmt.h"
+#include "utils/restclient.h"
+#include "utils/strfmt.h"
 
 class SpanshRoute
 {

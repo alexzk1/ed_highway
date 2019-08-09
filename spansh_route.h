@@ -1,0 +1,29 @@
+#pragma once
+#include <string>
+#include "restclient.h"
+#include "strfmt.h"
+
+class SpanshRoute
+{
+private:
+    RestClient::parameters p;
+public:
+    SpanshRoute(float eff, float range, const std::string& from, const std::string& to)
+    {
+        p["efficiency"] = stringfmt("%02f", eff);
+        p["range"] = stringfmt("%02f", range);
+        p["from"] = from;
+        p["to"] = to;
+    }
+
+    const std::string& api() const
+    {
+        const static std::string r{"route"};
+        return r;
+    }
+
+    const auto& params() const
+    {
+        return p;
+    }
+};

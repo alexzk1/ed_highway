@@ -39,7 +39,7 @@ package() {
   install -Dm755 "$srcdir"/ed_highway/ed_highway "$pkgdir"/usr/bin/ed_highway
   
   install -d $pkgdir/usr/share/applications  
-  install -m644 $srcdir/ed_highway/arch_linux/ed_highway.desktop $pkgdir/usr/share/applications  
+  install -m644 $srcdir/ed_highway/arch_linux/ed_highway.desktop "$pkgdir"/usr/share/applications/
   
   install -d $pkgdir/usr/share/icons/hicolor/128x128/apps/
   install -m644 $srcdir/ed_highway/arch_linux/ed_highway.png "$pkgdir"/usr/share/icons/hicolor/128x128/apps/

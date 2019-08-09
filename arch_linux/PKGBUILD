@@ -40,5 +40,5 @@ package() {
   
   install -d $pkgdir/usr/share/applications
   install -m644 $srcdir/ed_highway/arch_linux/ed_highway.desktop $pkgdir/usr/share/applications  
-  install -m644 $srcdir/ed_highway/arch_linux/ed_highway.png "$pkgdir"/usr/share/icons/hicolor/128x128/apps/ed_highway.png
+  install -m644 $srcdir/ed_highway/arch_linux/ed_highway.png "$pkgdir"/usr/share/icons/hicolor/128x128/apps/
 }

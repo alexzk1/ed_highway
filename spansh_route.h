@@ -26,4 +26,9 @@ public:
     {
         return p;
     }
+
+    constexpr bool hasJob() const
+    {
+        return true;
+    }
 };

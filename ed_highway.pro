@@ -37,6 +37,7 @@ HEADERS += \
         restclient.h \
         runners.h \
         spansh_route.h \
+        spansh_sysname.h \
         spanshapi.h \
         strfmt.h \
         strutils.h

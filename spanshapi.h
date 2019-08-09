@@ -16,12 +16,12 @@ public:
 
     SpanshApi() = default;
     NO_COPYMOVE(SpanshApi);
-    void executeRequest(const std::string& api, const RestClient::parameters& params, callback_t callback);
+    void executeRequest(const std::string& api, const RestClient::parameters& params, bool has_job, callback_t callback);
 
     template<class AnyType>
     void executeRequest(const AnyType& src, callback_t callback)
     {
-        executeRequest(src.api(), src.params(), std::move(callback));
+        executeRequest(src.api(), src.params(), src.hasJob(), std::move(callback));
     }
 
 private:

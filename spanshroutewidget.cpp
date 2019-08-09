@@ -163,7 +163,6 @@ void SpanshRouteWidget::crossThreadHasRoute(QString error, QString json)
         QMessageBox::critical(this, qAppName(), error);
     else
     {
-        std::cout << json.toStdString() << std::endl;
         QJsonDocument jsonDocument = QJsonDocument::fromJson(json.toUtf8());
         model->setJson(jsonDocument);
         QTimer::singleShot(200, [this]()

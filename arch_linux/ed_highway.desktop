@@ -1,10 +1,10 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=Sprite Decomposer
-Comment=Decompose and create animations from a sprite sheet easily.
-Exec=/usr/bin/ed_highway
-Icon=ed_highway.png
+Name=E:D Highway
+Comment=Elite Dangerous Routes Plotter over neutron stars.
+Exec=ed_highway
+Icon=ed_highway
 StartupNotify=true
 Terminal=false
 Type=Application
-Categories=Application;Games
+Categories=Application;Game;

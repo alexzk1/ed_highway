@@ -4,6 +4,7 @@
 #include "spanshapi.h"
 #include "spansh_route.h"
 #include "spansh_sysname.h"
+#include "singleapp/singleapplication.h"
 
 void dotest()
 {
@@ -24,15 +25,28 @@ void dotest()
     test.threads.stop(true);
 }
 
-
-
 int main(int argc, char *argv[])
 {
-    //    QApplication a(argc, argv);
-    //    MainWindow w;
-    //    w.show();
+    //dotest();
 
-    //    return a.exec();
+    SingleApplication a(argc, argv, false, SingleApplication::Mode::SecondaryNotification | SingleApplication::Mode::User);
+    a.setApplicationName("ED:HighWay");
+    a.setApplicationVersion("0.1");
+    a.setApplicationDisplayName("ED:HighWay");
+    a.setOrganizationDomain("pasteover.net");
+    a.setOrganizationName("pasteover.net");
+    MainWindow w;
 
-    dotest();
+    QObject::connect(&a, &SingleApplication::instanceStarted, [&w, &a]()
+    {
+        //actual popup of window will be dependent on desktop settings, for example in kde it is something like "bring to front demanding attention"
+        if (a.activeWindow())
+            a.activeWindow()->raise();
+        else
+            w.raise();
+    });
+
+    w.show();
+
+    return a.exec();
 }

@@ -28,7 +28,9 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
         restclient.cpp \
-        spanshapi.cpp
+        spanshapi.cpp \
+        spanshroutewidget.cpp \
+        spanshsyssuggest.cpp
 
 HEADERS += \
         ctpl_stl.h \
@@ -39,11 +41,16 @@ HEADERS += \
         spansh_route.h \
         spansh_sysname.h \
         spanshapi.h \
+        spanshroutewidget.h \
+        spanshsyssuggest.h \
         strfmt.h \
         strutils.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+        spanshroutewidget.ui
+
+include($$PWD/singleapp/singleapplication.pri)
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -56,3 +63,10 @@ QMAKE_CXXFLAGS +=  -Werror=strict-aliasing -Wstrict-aliasing=2
 
 LIBS += -lcurl
 LIBS += -lz -dead_strip
+DEFINES += QAPPLICATION_CLASS=QApplication
+
+
+DISTFILES +=
+
+RESOURCES += \
+    resources.qrc

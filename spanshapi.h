@@ -14,7 +14,9 @@ public:
     //1st parameter is error if any
     using callback_t = std::function<void(std::string, nlohmann::json)>;
 
-    SpanshApi() = default;
+    SpanshApi(int threads_count = 3) : threads(threads_count) {}
+    ~SpanshApi();
+
     NO_COPYMOVE(SpanshApi);
     void executeRequest(const std::string& api, const RestClient::parameters& params, bool has_job, callback_t callback);
 
@@ -26,7 +28,7 @@ public:
 
 private:
     friend void dotest();
-    ctpl::thread_pool threads{5};
+    ctpl::thread_pool threads;
 };
 
 #endif // SPANCHAPI_H

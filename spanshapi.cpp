@@ -4,18 +4,26 @@
 #include <chrono>
 #include "strutils.h"
 
+
+//based on: https://github.com/chriszero/ED-Router/blob/master/libspanch/SpanchApi.cs
+
 constexpr static size_t timeout_1st_request = 10; //seconds
 constexpr static size_t timeout_2nd_request = 5; //seconds
 
 #define ERROR(MSG) throw std::runtime_error(MSG)
+
+SpanshApi::~SpanshApi()
+{
+    threads.stop(false);
+}
 
 void SpanshApi::executeRequest(const std::string &api, const RestClient::parameters &params, bool has_job, callback_t callback)
 {
     using namespace nlohmann;
 
     const static std::string results_url{"https://spansh.co.uk/api/results"};
-    const std::string url{stringfmt("https://spansh.co.uk/api/%s", api)};
-    const std::string eparams{RestClient::encodePOSTParameters(params)};
+    const auto url{stringfmt("https://spansh.co.uk/api/%s", api)};
+    const auto eparams{RestClient::encodePOSTParameters(params)};
 
     const auto executor = [url, eparams, callback, has_job](auto)
     {
@@ -61,7 +69,7 @@ void SpanshApi::executeRequest(const std::string &api, const RestClient::paramet
             else
                 callback("", j1root);
         }
-        catch (std::exception& e)
+        catch (const std::exception& e)
         {
             callback(e.what(), {});
         }

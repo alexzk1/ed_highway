@@ -4,6 +4,7 @@
 #include "config_ui/globalsettings.h"
 #include "spansh_route.h"
 #include "utils/json.hpp"
+#include "utils/strutils.h"
 
 #include <QSpinBox>
 #include <QLineEdit>
@@ -13,6 +14,7 @@
 #include <QJsonObject>
 #include <iostream>
 #include <QClipboard>
+
 
 const static QString settingsGroup{"SpanshRouteWidget"};
 
@@ -39,6 +41,8 @@ SpanshRouteWidget::SpanshRouteWidget(QWidget *parent) :
     //if we have all valid data stored, request route again and try make selection
     if (switchRouteBtn() && !lastSelectedSystem.isEmpty())
         on_btnRoute_clicked();
+    else
+        updateButtonsMenu();
 
     const static QJsonTableModel::Header header =
     {
@@ -50,11 +54,9 @@ SpanshRouteWidget::SpanshRouteWidget(QWidget *parent) :
     model = new QJsonTableModel( header, this );
     ui->tableView->setModel(model);
 
-    connect(
-        ui->tableView->selectionModel(),
-        SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
-        SLOT(slotSystemSelected(const QItemSelection &, const QItemSelection &))
-    );
+    connect(ui->tableView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+            SLOT(slotSystemSelected(const QItemSelection &, const QItemSelection &)));
+
 }
 
 SpanshRouteWidget::~SpanshRouteWidget()
@@ -86,18 +88,6 @@ void SpanshRouteWidget::on_pushButton_clicked()
     ui->spinBoxPrecise->setValue(StaticSettingsMap::getGlobalSetts().readInt("03_Int_PRECISE"));
 }
 
-void SpanshRouteWidget::on_pushButton_3_clicked()
-{
-    ui->fromE->setText("");
-    ui->fromE->setFocus();
-}
-
-void SpanshRouteWidget::on_pushButton_4_clicked()
-{
-    ui->toE->setText("");
-    ui->toE->setFocus();
-}
-
 void SpanshRouteWidget::saveValues() const
 {
     QSettings settings;
@@ -107,6 +97,8 @@ void SpanshRouteWidget::saveValues() const
     settings.setValue("ly", ui->spinBoxRange->value());
     settings.setValue("prec", ui->spinBoxPrecise->value());
     settings.setValue("lastSelected", lastSelectedSystem);
+    settings.setValue("revertFrom", revertFrom);
+    settings.setValue("revertTo", revertTo);
     settings.endGroup();
     settings.sync();
 }
@@ -121,13 +113,70 @@ void SpanshRouteWidget::loadValues()
     ui->spinBoxPrecise->setValue(settings.value("prec", StaticSettingsMap::getGlobalSetts().readInt("Int_PRECISE")).toInt());
 
     lastSelectedSystem = settings.value("lastSelected").toString();
+    revertFrom = settings.value("revertFrom").toStringList();
+    revertTo   = settings.value("revertTo").toStringList();
 
     settings.endGroup();
+}
+
+void SpanshRouteWidget::updateButtonsMenu()
+{
+    //1st we need to update stored names by entered names
+    const auto limit = StaticSettingsMap::getGlobalSetts().readInt("01_1Int_Revertlen");
+    const static auto update_list = [&limit](const auto & src, auto & list)
+    {
+        //user could lower limit between runs
+        while (list.size() > limit)
+            list.erase(list.begin());
+
+        list.push_back(src);
+        utility::RemoveDuplicatesKeepOrder<QString, QStringList>(list);
+
+        while (list.size() > limit)
+            list.erase(list.begin());
+    };
+    update_list(ui->fromE->text(), revertFrom);
+    update_list(ui->toE->text(),   revertTo);
+
+    //2nd do menus
+
+    const static auto add_list = [](QPointer<QLineEdit> edit, QMenu * menu, const QStringList & list)
+    {
+        for (const QString copy : list)
+        {
+            menu->addAction(copy, [copy, edit]()
+            {
+                if (edit)
+                    edit->setText(copy);
+            });
+        }
+    };
+
+    const auto addMenu = [this](auto * button, QLineEdit * edit)
+    {
+        QMenu *main = new QMenu(this);
+
+        QMenu *from = main->addMenu(tr("From"));
+        QMenu *to   = main->addMenu(tr("To"));
+        add_list(edit, from, revertFrom);
+        add_list(edit, to,   revertTo);
+        button->setMenu(main);
+        return main;
+    };
+
+    if (fromMenu)
+        fromMenu->deleteLater();
+    if (toMenu)
+        toMenu->deleteLater();
+
+    fromMenu = addMenu(ui->btnRevertFrom, ui->fromE);
+    toMenu   = addMenu(ui->btnRevertTo, ui->toE);
 }
 
 void SpanshRouteWidget::on_btnRoute_clicked()
 {
     ui->btnRoute->setEnabled(false);
+    updateButtonsMenu(); //add to last used menus only when user requested route
     saveValues();
     SpanshRoute r(ui->spinBoxPrecise->value(), ui->spinBoxRange->value(), ui->fromE->text().toStdString(), ui->toE->text().toStdString());
     router.executeRequest(r, [this](auto err, auto js)
@@ -221,3 +270,4 @@ void SpanshRouteWidget::on_tableView_clicked(const QModelIndex &index)
         saveValues();
     }
 }
+

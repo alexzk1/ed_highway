@@ -13,6 +13,9 @@ const StaticSettingsMap &StaticSettingsMap::getGlobalSetts()
     //visual order depends on string sort of the keys
     const static StaticSettingsMap list(
     {
+        DECL_SETT(GlobalStorableInt, "01_1Int_Revertlen", 10, tr("Amount to keep of from/to system's names (each)."),
+                  tr("We store last routes built from/to fields. Those defines how many to keep of each.\nYou can easy revert back later to one of it."),
+                  3, 30),
         DECL_SETT(GlobalStorableInt, "01_SYS_NAME_DROP_DELAY", 100, tr("Dropdown system name min delay (ms)."),
                   tr("This value defines minimal delay before systems' names will be pulled from website.\nSetting will take effect after restart."), 25, 1200),
         DECL_SETT(GlobalStorableInt, "02_Int_SHIP_LY", 70, tr("Default jump range (ly)"),

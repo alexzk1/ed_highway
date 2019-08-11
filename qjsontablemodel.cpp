@@ -23,30 +23,28 @@ bool QJsonTableModel::setJson( const QJsonArray& array )
 
 QVariant QJsonTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if( role != Qt::DisplayRole )
-    {
+    if ( role != Qt::DisplayRole )
         return QVariant();
-    }
 
-    switch( orientation )
+    switch ( orientation )
     {
-    case Qt::Horizontal:
-        return m_header[section]["title"];
-    case Qt::Vertical:
-        //return section + 1;
-        return QVariant();
-    default:
-        return QVariant();
+        case Qt::Horizontal:
+            return m_header[section]["title"];
+        case Qt::Vertical:
+            //return section + 1;
+            return QVariant();
+        default:
+            return QVariant();
     }
 
 }
 
-int QJsonTableModel::rowCount(const QModelIndex &parent ) const
+int QJsonTableModel::rowCount(const QModelIndex & ) const
 {
     return m_json.size();
 }
 
-int QJsonTableModel::columnCount(const QModelIndex &parent ) const
+int QJsonTableModel::columnCount(const QModelIndex & ) const
 {
     return m_header.size();
 }
@@ -60,37 +58,30 @@ QJsonObject QJsonTableModel::getJsonObject( const QModelIndex &index ) const
 
 QVariant QJsonTableModel::data( const QModelIndex &index, int role ) const
 {
-    switch( role )
+    switch ( role )
     {
-    case Qt::DisplayRole:
-    {
-        QJsonObject obj = getJsonObject( index );
-        const QString& key = m_header[index.column()]["index"];
-        if( obj.contains( key ))
+        case Qt::DisplayRole:
         {
-            QJsonValue v = obj[ key ];
+            QJsonObject obj = getJsonObject( index );
+            const QString& key = m_header[index.column()]["index"];
+            if ( obj.contains( key ))
+            {
+                QJsonValue v = obj[ key ];
 
-            if( v.isString() )
-            {
-                return v.toString();
-            }
-            else if( v.isDouble() )
-            {
-                return QString::number( v.toDouble() );
+                if ( v.isString() )
+                    return v.toString();
+                else
+                    if ( v.isDouble() )
+                        return QString::number( v.toDouble() );
+                    else
+                        return QVariant();
             }
             else
-            {
                 return QVariant();
-            }
         }
-        else
-        {
+        case Qt::ToolTipRole:
             return QVariant();
-        }
-    }
-    case Qt::ToolTipRole:
-        return QVariant();
-    default:
-        return QVariant();
+        default:
+            return QVariant();
     }
 }

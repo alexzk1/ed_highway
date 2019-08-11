@@ -50,9 +50,12 @@
    <item>
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="4" colspan="2">
-      <widget class="QPushButton" name="pushButton_3">
+      <widget class="QPushButton" name="btnRevertFrom">
+       <property name="toolTip">
+        <string>Revert FROM field to selected value.</string>
+       </property>
        <property name="text">
-        <string>Clear</string>
+        <string>Revert</string>
        </property>
       </widget>
      </item>
@@ -145,9 +148,12 @@
       </widget>
      </item>
      <item row="1" column="4" colspan="2">
-      <widget class="QPushButton" name="pushButton_4">
+      <widget class="QPushButton" name="btnRevertTo">
+       <property name="toolTip">
+        <string>Revert TO field from selected value.</string>
+       </property>
        <property name="text">
-        <string>Clear</string>
+        <string>Revert</string>
        </property>
       </widget>
      </item>
@@ -223,8 +229,8 @@
   <tabstop>spinBoxRange</tabstop>
   <tabstop>spinBoxPrecise</tabstop>
   <tabstop>btnRoute</tabstop>
-  <tabstop>pushButton_3</tabstop>
-  <tabstop>pushButton_4</tabstop>
+  <tabstop>btnRevertFrom</tabstop>
+  <tabstop>btnRevertTo</tabstop>
   <tabstop>pushButton_2</tabstop>
   <tabstop>pushButton</tabstop>
  </tabstops>

@@ -3,7 +3,9 @@
 
 #include <QWidget>
 #include <QPointer>
+#include <QStringList>
 #include <QItemSelection>
+#include <QMenu>
 #include "spanshapi.h"
 #include "qjsontablemodel.h"
 
@@ -28,10 +30,6 @@ private slots:
 
     void on_pushButton_clicked();
 
-    void on_pushButton_3_clicked();
-
-    void on_pushButton_4_clicked();
-
     void on_btnRoute_clicked();
 
 
@@ -40,12 +38,20 @@ private slots:
     void on_tableView_clicked(const QModelIndex &index);
 
 private:
+
     Ui::SpanshRouteWidget *ui;
     SpanshApi router;
     QPointer<QJsonTableModel> model;
     QString lastSelectedSystem;
+    QStringList revertFrom;
+    QStringList revertTo;
+    QPointer<QMenu> fromMenu;
+    QPointer<QMenu> toMenu;
+
     void saveValues() const;
     void loadValues();
+
+    void updateButtonsMenu();
 signals:
     void crossThreadHasRouteSignal(QString error, QString json);
 };

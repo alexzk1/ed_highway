@@ -37,6 +37,10 @@ private slots:
     void slotSystemSelected(const QItemSelection &, const QItemSelection &n);
     void on_tableView_clicked(const QModelIndex &index);
 
+    void on_btnSwap_clicked();
+
+    void on_btnUp_clicked();
+
 private:
 
     Ui::SpanshRouteWidget *ui;

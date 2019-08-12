@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>images/rocket.png</file>
         <file>images/Settings-2-icon.png</file>
+        <file>images/swap.png</file>
+        <file>images/up-arrow.png</file>
     </qresource>
 </RCC>

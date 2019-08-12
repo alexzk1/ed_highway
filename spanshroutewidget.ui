@@ -49,8 +49,81 @@
    </item>
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="4" colspan="2">
+     <item row="7" column="0" colspan="8">
+      <widget class="QPushButton" name="btnRoute">
+       <property name="text">
+        <string>Request Route</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="6" colspan="2">
+      <widget class="QPushButton" name="pushButton_2">
+       <property name="focusPolicy">
+        <enum>Qt::ClickFocus</enum>
+       </property>
+       <property name="text">
+        <string>Def</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0" colspan="2">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Range(ly):</string>
+       </property>
+       <property name="buddy">
+        <cstring>spinBoxRange</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QToolButton" name="btnSwap">
+       <property name="focusPolicy">
+        <enum>Qt::ClickFocus</enum>
+       </property>
+       <property name="toolTip">
+        <string>Swap From/To fields.</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="resources.qrc">
+         <normaloff>:/images/swap.png</normaloff>:/images/swap.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2" colspan="4">
+      <widget class="QLineEdit" name="fromE">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>3</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="6" colspan="2">
+      <widget class="QPushButton" name="btnRevertTo">
+       <property name="focusPolicy">
+        <enum>Qt::ClickFocus</enum>
+       </property>
+       <property name="toolTip">
+        <string>Revert TO field from selected value.</string>
+       </property>
+       <property name="text">
+        <string>Revert</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="6" colspan="2">
       <widget class="QPushButton" name="btnRevertFrom">
+       <property name="focusPolicy">
+        <enum>Qt::ClickFocus</enum>
+       </property>
        <property name="toolTip">
         <string>Revert FROM field to selected value.</string>
        </property>
@@ -59,7 +132,17 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="2" colspan="2">
+     <item row="2" column="2" colspan="4">
+      <widget class="QLineEdit" name="toE">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>3</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2" colspan="4">
       <widget class="QDoubleSpinBox" name="spinBoxRange">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -81,7 +164,17 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="2" colspan="2">
+     <item row="0" column="0">
+      <widget class="QLabel" name="labelFrom">
+       <property name="text">
+        <string>From:</string>
+       </property>
+       <property name="buddy">
+        <cstring>fromE</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="2" colspan="4">
       <widget class="QSpinBox" name="spinBoxPrecise">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -100,24 +193,7 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>To:</string>
-       </property>
-       <property name="buddy">
-        <cstring>toE</cstring>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="4" colspan="2">
-      <widget class="QPushButton" name="pushButton">
-       <property name="text">
-        <string>Def</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0" colspan="2">
+     <item row="5" column="0" colspan="2">
       <widget class="QLabel" name="label_4">
        <property name="text">
         <string>Precise:</string>
@@ -127,70 +203,40 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="labelFrom">
-       <property name="text">
-        <string>From:</string>
+     <item row="5" column="6" colspan="2">
+      <widget class="QPushButton" name="pushButton">
+       <property name="focusPolicy">
+        <enum>Qt::ClickFocus</enum>
        </property>
-       <property name="buddy">
-        <cstring>fromE</cstring>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2" colspan="2">
-      <widget class="QLineEdit" name="fromE">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>3</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="4" colspan="2">
-      <widget class="QPushButton" name="btnRevertTo">
-       <property name="toolTip">
-        <string>Revert TO field from selected value.</string>
-       </property>
-       <property name="text">
-        <string>Revert</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="2" colspan="2">
-      <widget class="QLineEdit" name="toE">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>3</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="4" colspan="2">
-      <widget class="QPushButton" name="pushButton_2">
        <property name="text">
         <string>Def</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="0" colspan="2">
-      <widget class="QLabel" name="label_3">
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>Range(ly):</string>
+        <string>To:</string>
        </property>
        <property name="buddy">
-        <cstring>spinBoxRange</cstring>
+        <cstring>toE</cstring>
        </property>
       </widget>
      </item>
-     <item row="4" column="0" colspan="6">
-      <widget class="QPushButton" name="btnRoute">
-       <property name="text">
-        <string>Request Route</string>
+     <item row="1" column="3">
+      <widget class="QToolButton" name="btnUp">
+       <property name="focusPolicy">
+        <enum>Qt::ClickFocus</enum>
        </property>
-       <property name="default">
-        <bool>true</bool>
+       <property name="toolTip">
+        <string>Set &quot;From&quot; = &quot;To&quot; and clear &quot;To&quot;.</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="resources.qrc">
+         <normaloff>:/images/up-arrow.png</normaloff>:/images/up-arrow.png</iconset>
        </property>
       </widget>
      </item>
@@ -234,6 +280,8 @@
   <tabstop>pushButton_2</tabstop>
   <tabstop>pushButton</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

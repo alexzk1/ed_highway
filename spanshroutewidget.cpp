@@ -271,3 +271,18 @@ void SpanshRouteWidget::on_tableView_clicked(const QModelIndex &index)
     }
 }
 
+void SpanshRouteWidget::on_btnSwap_clicked()
+{
+    QString tmp = ui->fromE->text();
+    ui->fromE->setText(ui->toE->text());
+    ui->toE->setText(tmp);
+}
+
+void SpanshRouteWidget::on_btnUp_clicked()
+{
+    if (!ui->toE->text().isEmpty())
+    {
+        ui->fromE->setText(ui->toE->text());
+        ui->toE->setText("");
+    }
+}

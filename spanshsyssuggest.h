@@ -31,7 +31,7 @@ private:
     QPointer<QLineEdit>   editor{nullptr};
     QPointer<QTreeWidget> popup{nullptr};
     QTimer timer;
-    SpanshApi sapi;
+    SpanshApi sapi{3};
 };
 
 #endif // SPANSHSYSSUGGEST_H

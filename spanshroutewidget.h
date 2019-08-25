@@ -44,7 +44,7 @@ private slots:
 private:
 
     Ui::SpanshRouteWidget *ui;
-    SpanshApi router;
+    SpanshApi router{3};
     QPointer<QJsonTableModel> model;
     QString lastSelectedSystem;
     QStringList revertFrom;

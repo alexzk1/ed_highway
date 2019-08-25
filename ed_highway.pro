@@ -25,6 +25,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++14
 
 SOURCES += \
+        edsmapiv1.cpp \
         main.cpp \
         mainwindow.cpp \
         qjsontablemodel.cpp \
@@ -34,6 +35,10 @@ SOURCES += \
         spanshsyssuggest.cpp
 
 HEADERS += \
+        edsmapiv1.h \
+        edsmv1_nearest.h \
+        edsmv1_sysinfo.h \
+        point.h \
         qjsontablemodel.h \
         utils/cm_ctors.h \
         utils/ctpl_stl.h \

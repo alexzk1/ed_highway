@@ -254,7 +254,7 @@
       <string>Selected row is copied to clipboard immediatly.</string>
      </property>
      <property name="sizeAdjustPolicy">
-      <enum>QAbstractScrollArea::AdjustIgnored</enum>
+      <enum>QAbstractScrollArea::AdjustToContents</enum>
      </property>
      <property name="alternatingRowColors">
       <bool>true</bool>

@@ -34,6 +34,8 @@ void SpanshApi::executeRequest(const std::string &api, const RestClient::paramet
         {
             --this->working;
         });
+        (void)ensure;
+
         try
         {
             const auto resp1{RestClient::post(url, eparams, timeout_1st_request)};

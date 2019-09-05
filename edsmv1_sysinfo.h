@@ -34,4 +34,33 @@ public:
     }
 };
 
+
+class EDSMV1SysBodies
+{
+    RestClient::parameters p;
+public:
+    EDSMV1SysBodies() = delete;
+
+    EDSMV1SysBodies(const std::string& name)
+    {
+        p["systemName"] = name;
+    }
+
+    constexpr bool isGet() const
+    {
+        return true;
+    }
+
+    const auto& params() const
+    {
+        return p;
+    }
+
+    const std::string& api() const
+    {
+        const static std::string v{"https://www.edsm.net/api-system-v1/bodies"};
+        return v;
+    }
+};
+
 #endif // EDSMV1_SYSINFO_H

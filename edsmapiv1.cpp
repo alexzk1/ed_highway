@@ -1,5 +1,6 @@
 #include "edsmapiv1.h"
 #include "utils/exec_exit.h"
+#include "utils/strutils.h"
 #include "point.h"
 #include <iostream>
 
@@ -22,7 +23,7 @@ void EdsmApiV1::executeRequest(const std::string &api, const RestClient::paramet
 {
     using namespace nlohmann;
 
-    const auto url{stringfmt("https://www.edsm.net/api-v1/%s", api)};
+    const auto url = (utility::strcontains(api, "https://")) ? api : stringfmt("https://www.edsm.net/api-v1/%s", api);
     const auto eparams{RestClient::encodePOSTParameters(params)};
     if (!is_get)
     {

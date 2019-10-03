@@ -105,6 +105,13 @@ void SpanshRouteWidget::saveValues() const
 
 void SpanshRouteWidget::loadValues()
 {
+    const auto static cleanupStringList = [](QStringList & list)
+    {
+        list.erase(std::remove_if(list.begin(), list.end(), [](const auto & str)
+        {
+            return str.trimmed().isEmpty();
+        }), list.end());
+    };
     QSettings settings;
     settings.beginGroup(settingsGroup);
     ui->fromE->setText(settings.value("from", "").toString());
@@ -115,6 +122,9 @@ void SpanshRouteWidget::loadValues()
     lastSelectedSystem = settings.value("lastSelected").toString();
     revertFrom = settings.value("revertFrom").toStringList();
     revertTo   = settings.value("revertTo").toStringList();
+
+    cleanupStringList(revertFrom);
+    cleanupStringList(revertTo);
 
     settings.endGroup();
 }
@@ -129,8 +139,12 @@ void SpanshRouteWidget::updateButtonsMenu()
         while (list.size() > limit)
             list.erase(list.begin());
 
-        list.push_back(src);
-        utility::RemoveDuplicatesKeepOrder<QString, QStringList>(list);
+        const auto trimmed = src.trimmed();
+        if (!trimmed.isEmpty())
+        {
+            list.push_back(trimmed);
+            utility::RemoveDuplicatesKeepOrderReverse<QString, QStringList>(list);
+        }
 
         while (list.size() > limit)
             list.erase(list.begin());
@@ -142,8 +156,9 @@ void SpanshRouteWidget::updateButtonsMenu()
 
     const static auto add_list = [](QPointer<QLineEdit> edit, QMenu * menu, const QStringList & list)
     {
-        for (const QString copy : list)
+        for (auto it = list.rbegin(); it != list.rend(); ++it)
         {
+            const QString copy{*it};
             menu->addAction(copy, [copy, edit]()
             {
                 if (edit)

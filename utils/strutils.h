@@ -261,5 +261,28 @@ namespace utility
 
         return vec.size();
     }
+
+    template<typename T, typename L = std::vector<T>, typename Acc = std::map<T, size_t>>
+    size_t RemoveDuplicatesKeepOrderReverse(L& vec, Acc* counter = nullptr)
+    {
+        std::set<T> seen;
+
+        auto newEnd = std::remove_if(vec.rbegin(), vec.rend(), [&seen, counter](const T & value)
+        {
+            //do not assume any initialization, just count (so can be chained)
+            if (counter)
+                (*counter)[value] += 1;
+
+            if (seen.count(value))
+                return true;
+
+            seen.insert(value);
+            return false;
+        });
+
+        vec.erase(vec.rend().base(), newEnd.base());
+
+        return vec.size();
+    }
 }
 #endif // STDSTRINGFMT_H

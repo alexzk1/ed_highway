@@ -9,6 +9,8 @@
 #include "edsmapiv1.h"
 #include "edsmv1_nearest.h"
 #include "edsmv1_sysinfo.h"
+#include <QDebug>
+#include "eliteocr.h"
 
 void dotest()
 {
@@ -33,30 +35,43 @@ void dotest()
     //    test.executeRequest(sys, testr);
     //    test.threads.stop(true);
 
+
+    EliteOCR ocr;
+    QImage img;
+    if (img.load("/home/alex/screenshots/EliteDangerousCLIENT_1581844531372_47099.png"))
+        std::cout << "OCR:\n" << ocr.recognize(img).toStdString();
+    else
+        std::cout << "failed to load sample image\n";
+    //std::cout << "Screenshot:\n" << ocr.recognizeScreen().toStdString() << std::endl;
+
 }
 
 int main(int argc, char *argv[])
 {
-    //    dotest();
-    //    return 0;
+
     SingleApplication a(argc, argv, false, SingleApplication::Mode::SecondaryNotification | SingleApplication::Mode::User);
     a.setApplicationName("ED:HighWay");
     a.setApplicationVersion("0.1");
     a.setApplicationDisplayName("ED:HighWay");
     a.setOrganizationDomain("pasteover.net");
     a.setOrganizationName("pasteover.net");
-    MainWindow w;
 
-    QObject::connect(&a, &SingleApplication::instanceStarted, [&w, &a]()
-    {
-        //actual popup of window will be dependent on desktop settings, for example in kde it is something like "bring to front demanding attention"
-        if (a.activeWindow())
-            a.activeWindow()->raise();
-        else
-            w.raise();
-    });
+    dotest();
+    return 0;
 
-    w.show();
 
-    return a.exec();
+    //    MainWindow w;
+
+    //    QObject::connect(&a, &SingleApplication::instanceStarted, [&w, &a]()
+    //    {
+    //        //actual popup of window will be dependent on desktop settings, for example in kde it is something like "bring to front demanding attention"
+    //        if (a.activeWindow())
+    //            a.activeWindow()->raise();
+    //        else
+    //            w.raise();
+    //    });
+
+    //    w.show();
+
+    //    return a.exec();
 }

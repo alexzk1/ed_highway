@@ -11,6 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = ed_highway
 TEMPLATE = app
 
+CONFIG(debug, debug|release): DEFINES += SRC_PATH='\\"$$PWD\\"'
+
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -43,6 +45,7 @@ HEADERS += \
         utils/cm_ctors.h \
         utils/ctpl_stl.h \
         utils/exec_exit.h \
+        utils/guard_on.h \
         utils/json.hpp \
         mainwindow.h \
         utils/restclient.h \
@@ -53,8 +56,10 @@ HEADERS += \
         spanshroutewidget.h \
         spanshsyssuggest.h \
         utils/saveable_widget.h \
+        utils/shared_wrapper.h \
         utils/strfmt.h \
         utils/strutils.h \
+        utils/type_checks.h \
         utils/variant_convert.h
 
 FORMS += \
@@ -63,6 +68,10 @@ FORMS += \
 
 include($$PWD/singleapp/singleapplication.pri)
 include($$PWD/config_ui/config_ui.pri)
+
+
+#ocr functionality, comment out to disable it
+include($$PWD/ocr/ocr.pri)
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

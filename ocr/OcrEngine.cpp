@@ -87,12 +87,12 @@ const QStringList& OcrEngine::getFoldersToFindLangs()
 {
     const static QStringList folders =
     {
-#ifdef SRC_PATH
-        QString(SRC_PATH),
-#endif
         QStandardPaths::standardLocations(QStandardPaths::HomeLocation).at(0) + "/" + qAppName(),
         QStandardPaths::standardLocations(QStandardPaths::HomeLocation).at(0) + "/tesseract",
         QCoreApplication::applicationDirPath(),
+#ifdef SRC_PATH
+        QString(SRC_PATH),
+#endif
     };
 
     return folders;

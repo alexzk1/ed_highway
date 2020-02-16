@@ -16,13 +16,23 @@ const StaticSettingsMap &StaticSettingsMap::getGlobalSetts()
         DECL_SETT(GlobalStorableInt, "01_1Int_Revertlen", 10, tr("Amount to keep of from/to system's names (each)."),
                   tr("We store last routes built from/to fields. Those defines how many to keep of each.\nYou can easy revert back later to one of it."),
                   3, 30),
+
         DECL_SETT(GlobalStorableInt, "01_SYS_NAME_DROP_DELAY", 100, tr("Dropdown system name min delay (ms)."),
                   tr("This value defines minimal delay before systems' names will be pulled from website.\nSetting will take effect after restart."), 25, 1200),
+
         DECL_SETT(GlobalStorableInt, "02_Int_SHIP_LY", 70, tr("Default jump range (ly)"),
                   tr("This value defines rounded ship's jump range (ly) to be used as default for new plot."), 5, 200),
+
         DECL_SETT(GlobalStorableInt, "03_Int_PRECISE", 70, tr("Route plotter's precision (%%)."),
                   tr("Increase this to reduce how far off the direct route the system will plot to get to a neutron star (An efficiency of 100 will not deviate from the direct route in order to plot from A to B and will most likely break down the journey into 20000 LY blocks)."),
                   5, 200),
+
+        DECL_SETT(GlobalFileStorable, "70_LogsFolder", QDir::homePath(), tr("Elite's Logs Folder"),
+                  tr("Set a folder where *.log files are stored by E.D."),
+                  tr("Select logs' folder")),
+
+        DECL_SETT(GlobalStorableBool, "71_TrackEnable", false, tr("Enable logs' tracking."),
+                  tr("If enabled starts tracking of the log files for other abilities except routes.\nRestart is required.")),
     });
     return list;
 }

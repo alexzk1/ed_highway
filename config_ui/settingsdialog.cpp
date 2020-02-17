@@ -35,11 +35,18 @@ SettingsDialog::~SettingsDialog()
 void SettingsDialog::changeEvent(QEvent *e)
 {
     QDialog::changeEvent(e);
-    switch (e->type()) {
+    switch (e->type())
+    {
         case QEvent::LanguageChange:
             ui->retranslateUi(this);
             break;
         default:
             break;
     }
+}
+
+void SettingsDialog::hideEvent(QHideEvent *event)
+{
+    emit dialogHidden();
+    QDialog::hideEvent(event);
 }

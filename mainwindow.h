@@ -1,8 +1,14 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QPointer>
 #include <QMainWindow>
+#include "QHotkey"
 #include "config_ui/settingsdialog.h"
+
+#ifdef OCR_ADDED
+    #include "eliteocr.h"
+#endif
 
 namespace Ui
 {
@@ -24,6 +30,14 @@ protected:
 private:
     Ui::MainWindow *ui;
     QPointer<SettingsDialog> settDialog;
+#ifdef OCR_ADDED
+    QPointer<QHotkey> ocrKey;
+    EliteOCR ocrElite;
+#endif
+private slots:
+    void settingsHidden();
+    void settingsBeforeShow();
+    void doScreenOCR();
 };
 
 #endif // MAINWINDOW_H

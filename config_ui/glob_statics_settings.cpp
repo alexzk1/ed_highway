@@ -27,6 +27,11 @@ const StaticSettingsMap &StaticSettingsMap::getGlobalSetts()
                   tr("Increase this to reduce how far off the direct route the system will plot to get to a neutron star (An efficiency of 100 will not deviate from the direct route in order to plot from A to B and will most likely break down the journey into 20000 LY blocks)."),
                   5, 200),
 
+#ifdef OCR_ADDED
+        DECL_SETT(GlobalHotkeyStorable, "51_MapOcrHotkey", "CTRL+ALT+M", tr("OCR Galaxy Map and put star's name to clipboard."),
+                  tr("Hotkey to OCR Elite Map and extract star's name.")),
+#endif
+
         DECL_SETT(GlobalFileStorable, "70_LogsFolder", QDir::homePath(), tr("Elite's Logs Folder"),
                   tr("Set a folder where *.log files are stored by E.D."),
                   tr("Select logs' folder")),

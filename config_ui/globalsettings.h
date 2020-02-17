@@ -30,6 +30,7 @@
 #include <QCoreApplication>
 #include "dndwidget.h"
 #include "utils/variant_convert.h"
+#include "qhotkeypicker.h"
 
 namespace nmsp_gs
 {
@@ -366,6 +367,14 @@ public:
         return r;
     }
 
+    template<bool isatomic = false>
+    QString readString(const QString& name) const
+    {
+        QString r;
+        readValue<decltype (r), isatomic>(name, r);
+        return r;
+    }
+
 signals:
     void settingHaveBeenChanged(const QString& name) const;
 };
@@ -392,7 +401,7 @@ STORABLE_ATOMIC_CLASS(GlobalStorableBool, bool)
 private:
     QPointer<QCheckBox> cb{nullptr};
 
-    virtual QWidget* createWidget2() override
+    QWidget* createWidget2() override
     {
         cb = new QCheckBox(nullptr);
         cb->setChecked(getValue());
@@ -407,7 +416,7 @@ private:
         return createLabeledField(cb);
     }
 public:
-    virtual void needUpdateWidget() override
+    void needUpdateWidget() override
     {
         if (cb)
         {
@@ -434,7 +443,7 @@ private:
     const ValueType max;
     const ValueType step;
     bool  hintOnce;
-    virtual QWidget* createWidget2() override
+    QWidget* createWidget2() override
     {
         field = new QSpinBox();
         field->setRange(static_cast<int>(min / step), static_cast<int>(max / step)); // that is a problem - QSpinBox accepts ints only ... so others like int64 will fail
@@ -460,7 +469,7 @@ private:
     }
 
 public:
-    virtual void needUpdateWidget() override
+    void needUpdateWidget() override
     {
         if (field)
         {
@@ -479,13 +488,52 @@ public:
     DEF_BTN_IMPL
 };
 
+
+STORABLE_CLASS(GlobalHotkeyStorable, QString)
+{
+private:
+    QPointer<QHotkeyPicker> btn{nullptr};
+protected:
+    QWidget* createWidget2() override
+    {
+        btn = new QHotkeyPicker();
+        btn->setHot(getValue());
+        return createLabeledField(btn, 20, 75, 5);
+    }
+public:
+    void exec() override
+    {
+        if (btn)
+            btn->click();
+    }
+
+    void needUpdateWidget() override
+    {
+        if (btn)
+            btn->setHot(getValue());
+    }
+
+    GlobalHotkeyStorable() = delete;
+
+    GlobalHotkeyStorable(const QString & key, const ValueType & def, const QString & text, const QString & hint):
+        UserHintHolderForSettings(text, hint),
+        SaveableWidgetTempl(key, def)
+    {
+    }
+
+
+    DECL_DESTRUCTOR(GlobalHotkeyStorable);
+    DEF_BTN_IMPL
+};
+
+
 STORABLE_CLASS(GlobalFileStorable, QString)
 {
 private:
     QPointer<QLineEdit> txt{nullptr};
     const QString execText;
-
-    virtual QWidget* createWidget2() override
+protected:
+    QWidget* createWidget2() override
     {
         txt = new QLineEdit();
         txt->setEnabled(false);
@@ -503,13 +551,13 @@ private:
         return createLabeledField(f, 80, 20);
     }
 public:
-    virtual void needUpdateWidget() override
+    void needUpdateWidget() override
     {
         if (txt)
             txt->setText(getValue());
     }
 
-    virtual void exec() override
+    void exec() override
     {
         QString dir = QFileDialog::getExistingDirectory(nullptr, execText, static_cast<QString>(state),
                       QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
@@ -582,7 +630,7 @@ protected:
         return createLabeledField(cb);
     }
 
-    virtual void needUpdateWidget() override
+    void needUpdateWidget() override
     {
         if (cb)
         {

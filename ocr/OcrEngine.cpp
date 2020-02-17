@@ -85,10 +85,12 @@ QStringList OcrEngine::getInstalledLangs()
 //those listed folders must have subfolder "tessdata" with files like "en.traineddata"
 const QStringList& OcrEngine::getFoldersToFindLangs()
 {
+    const static auto home = QStandardPaths::standardLocations(QStandardPaths::HomeLocation).at(0);
     const static QStringList folders =
     {
-        QStandardPaths::standardLocations(QStandardPaths::HomeLocation).at(0) + "/" + qAppName(),
-        QStandardPaths::standardLocations(QStandardPaths::HomeLocation).at(0) + "/tesseract",
+        home + "/" + qAppName(),
+        home + "/tesseract",
+        home + "/.local/share/",
         QCoreApplication::applicationDirPath(),
 #ifdef SRC_PATH
         QString(SRC_PATH),

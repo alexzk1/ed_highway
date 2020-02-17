@@ -18,10 +18,11 @@ class SettingsDialog : public QDialog, protected virtual utility::SaveableWidget
 public:
     explicit SettingsDialog(QWidget *parent = 0);
     ~SettingsDialog();
-
+signals:
+    void dialogHidden();
 protected:
-    void changeEvent(QEvent *e);
-
+    void changeEvent(QEvent *e) override;
+    void hideEvent(QHideEvent *event) override;
 private:
     Ui::SettingsDialog *ui;
 };

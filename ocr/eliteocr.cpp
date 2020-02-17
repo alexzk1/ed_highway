@@ -3,7 +3,15 @@
 #include <QPixmap>
 #include <QApplication>
 #include <QRegularExpression>
+#include <QDesktopWidget>
 #include "utils/strutils.h"
+
+#ifdef Q_OS_LINUX
+    #include <QX11Info>
+    #include <X11/Xlib.h>
+    #include <X11/Xatom.h>
+    #include <X11/extensions/Xfixes.h>
+#endif
 
 EliteOCR::EliteOCR()
 {
@@ -21,6 +29,28 @@ QStringList EliteOCR::recognize(const QImage &img)
     return split_filter(ocrEngine.performOcr(pix2, false));
 }
 
+//static WId activeWindowId()
+//{
+//#ifdef Q_OS_LINUX
+//    WId root = WId(QX11Info::appRootWindow());
+//    Atom atom = XInternAtom(QX11Info::display(), "_NET_ACTIVE_WINDOW", false);
+//    unsigned long type, resultLen, rest;
+//    int format;
+//    WId result = 0;
+//    unsigned char* data = nullptr;
+//    if (XGetWindowProperty(QX11Info::display(), root, atom, 0, 1, false,
+//                           XA_WINDOW, &type, &format, &resultLen, &rest, &data) == Success)
+//    {
+//        result = *reinterpret_cast<long*>(data);
+//        XFree(data);
+//    }
+//    return result;
+//#else
+//#error not implemented here, revise
+//#endif
+//}
+
+
 QStringList EliteOCR::recognizeScreen()
 {
     QScreen *screen = QGuiApplication::primaryScreen();
@@ -28,26 +58,26 @@ QStringList EliteOCR::recognizeScreen()
     if (!screen)
         return QStringList();
 
-    QPixmap capturePixmap = screen->grabWindow(0);
+    QPixmap capturePixmap = screen->grabWindow(QApplication::desktop()->winId());
 
     return recognize(capturePixmap.toImage());
 }
 
 QString EliteOCR::tryDetectStarFromMapPopup(const QStringList &src)
 {
-    {
-        const auto b = src.begin();
-        const auto e = src.end();
-        auto it = std::find_if(b, e, [](const auto & s)
-        {
-            return s.startsWith("DISTANCE: ") ;
-        });
-        if (it != e && it != b)
-        {
-            std::advance(it, -1);
-            return *it;
-        }
-    }
+    //    {
+    //        const auto b = src.begin();
+    //        const auto e = src.end();
+    //        auto it = std::find_if(b, e, [](const auto & s)
+    //        {
+    //            return s.startsWith("DISTANCE: ") ;
+    //        });
+    //        if (it != e && it != b)
+    //        {
+    //            std::advance(it, -1);
+    //            return *it;
+    //        }
+    //    }
     //trying regex for auto-generated sys names as last resort, examples:
     //PHROI PRI NX-A D1-785
     //Pyrie Thae XO-Z D13-12
@@ -56,16 +86,30 @@ QString EliteOCR::tryDetectStarFromMapPopup(const QStringList &src)
 
     const static QRegularExpression last_check("^[A-H]\\d+-\\d+$");
     const static QRegularExpression before_last_check("^\\w\\w-\\w$");
+    const static QRegularExpression planet("^\\d+\\w$");
+
+    const static auto test_if_star_pattern = [](auto begin, auto end)
+    {
+        //at least 3 parts
+        if (std::distance(begin, end) < 3)
+            return false;
+        //checking if last 2 match to regexp
+        const bool a = last_check.match(*begin, 0, QRegularExpression::PartialPreferCompleteMatch).hasMatch();
+        const bool b = before_last_check.match(*(begin + 1), 0, QRegularExpression::PartialPreferCompleteMatch).hasMatch();
+        return a && b;
+    };
+
     auto it = std::find_if(src.rbegin(), src.rend(), [](const auto & s)
     {
         QStringList parts = s.split(" ", QString::SkipEmptyParts);
-        //at least 3 parts
         if (parts.size() < 3)
             return false;
-        //checking if last 2 match to regexp
-        const bool a = last_check.match(*parts.rbegin(), 0, QRegularExpression::PartialPreferCompleteMatch).hasMatch();
-        const bool b = before_last_check.match(*(parts.rbegin() + 1), 0, QRegularExpression::PartialPreferCompleteMatch).hasMatch();
-        return a && b;
+        const bool a = test_if_star_pattern(parts.rbegin(), parts.rend());
+
+        //maybe it is planet's name?
+        const bool b = !a && (planet.match(*parts.rbegin(), 0, QRegularExpression::PartialPreferCompleteMatch).hasMatch() && test_if_star_pattern(parts.rbegin() + 1, parts.rend()));
+        return a || b;
+        //return a;
     });
 
     if (it != src.rend())

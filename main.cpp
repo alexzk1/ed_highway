@@ -39,11 +39,12 @@ void dotest()
     //    EliteOCR ocr;
     //    QImage img;
     //    if (img.load("/home/alex/screenshots/EliteDangerousCLIENT_1581844531372_47099.png"))
-    //std::cout << "OCR:\n" << ocr.recognize(img).join("\n").toStdString();
-    //      std::cout << "OCR: " << EliteOCR::tryDetectStarFromMapPopup(ocr.recognize(img)).toStdString() << std::endl;
+    //        //std::cout << "OCR:\n" << ocr.recognize(img).join("\n").toStdString();
+    //        std::cout << "OCR: " << EliteOCR::tryDetectStarFromMapPopup(ocr.recognize(img)).toStdString() << std::endl;
     //    else
     //        std::cout << "failed to load sample image\n";
-    //std::cout << "Screenshot:\n" << ocr.recognizeScreen().toStdString() << std::endl;
+    //    std::cout << "Screenshot:\n" << ocr.recognizeScreen().join("\n").toStdString() << std::endl;
+    //std::cout << "Screenshot:\n" << EliteOCR::tryDetectStarFromMapPopup(ocr.recognizeScreen()).toStdString() << std::endl;
 
 }
 

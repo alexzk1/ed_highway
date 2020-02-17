@@ -150,4 +150,4 @@ DECL_DESTRUCTOR(GlobalStorableBool)
 DECL_DESTRUCTOR(GlobalFileStorable)
 DECL_DESTRUCTOR(GlobalStorableInt)
 DECL_DESTRUCTOR(GlobalComboBoxStorable)
-
+DECL_DESTRUCTOR(GlobalHotkeyStorable)

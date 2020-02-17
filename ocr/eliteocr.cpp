@@ -30,8 +30,8 @@ QStringList EliteOCR::recognize(const QImage &img)
     //auto pix2 = preProcess.extractBubbleText(pix, 0, 0);
     if (!pix2)
         return QStringList();
-    static int dump_id{0};
 #ifdef SRC_PATH
+    static int dump_id {0};
     OCRHelpers::dumpPix(stringfmt ("./pix2_%d", ++dump_id), pix2);
 #endif
     return split_filter(ocrEngine.performOcr(pix2, false));

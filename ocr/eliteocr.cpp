@@ -65,19 +65,19 @@ QStringList EliteOCR::recognizeScreen()
 
 QString EliteOCR::tryDetectStarFromMapPopup(const QStringList &src)
 {
-    //    {
-    //        const auto b = src.begin();
-    //        const auto e = src.end();
-    //        auto it = std::find_if(b, e, [](const auto & s)
-    //        {
-    //            return s.startsWith("DISTANCE: ") ;
-    //        });
-    //        if (it != e && it != b)
-    //        {
-    //            std::advance(it, -1);
-    //            return *it;
-    //        }
-    //    }
+    {
+        const auto b = src.begin();
+        const auto e = src.end();
+        auto it = std::find_if(b, e, [](const auto & s)
+        {
+            return s.startsWith("DISTANCE: ") ;
+        });
+        if (it != e && it != b)
+        {
+            std::advance(it, -1);
+            return *it;
+        }
+    }
     //trying regex for auto-generated sys names as last resort, examples:
     //PHROI PRI NX-A D1-785
     //Pyrie Thae XO-Z D13-12

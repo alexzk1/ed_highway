@@ -5,6 +5,7 @@
 #include <QRegularExpression>
 #include <QDesktopWidget>
 #include "utils/strutils.h"
+#include "utils/strfmt.h"
 
 #ifdef Q_OS_LINUX
     #include <QX11Info>
@@ -17,38 +18,24 @@ EliteOCR::EliteOCR()
 {
     preProcess.setVerticalOrientation(false);
     preProcess.setRemoveFurigana(false);
-    preProcess.setScaleFactor(2.5f); //this factor works for galaxy map on 1920 x 1080 screen
+    preProcess.setScaleFactor(2.7f); //this factor works for galaxy map on 1920 x 1080 screen
 }
 
 QStringList EliteOCR::recognize(const QImage &img)
 {
     auto pix  = preProcess.convertImageToPix(img);
-    //OCRHelpers::dumpPix("./pix.png", pix);
+    if (!pix)
+        return QStringList();
     auto pix2 = preProcess.processImage(pix, false, false);
-    //OCRHelpers::dumpPix("./pix2.png", pix2);
+    //auto pix2 = preProcess.extractBubbleText(pix, 0, 0);
+    if (!pix2)
+        return QStringList();
+    static int dump_id{0};
+#ifdef SRC_PATH
+    OCRHelpers::dumpPix(stringfmt ("./pix2_%d", ++dump_id), pix2);
+#endif
     return split_filter(ocrEngine.performOcr(pix2, false));
 }
-
-//static WId activeWindowId()
-//{
-//#ifdef Q_OS_LINUX
-//    WId root = WId(QX11Info::appRootWindow());
-//    Atom atom = XInternAtom(QX11Info::display(), "_NET_ACTIVE_WINDOW", false);
-//    unsigned long type, resultLen, rest;
-//    int format;
-//    WId result = 0;
-//    unsigned char* data = nullptr;
-//    if (XGetWindowProperty(QX11Info::display(), root, atom, 0, 1, false,
-//                           XA_WINDOW, &type, &format, &resultLen, &rest, &data) == Success)
-//    {
-//        result = *reinterpret_cast<long*>(data);
-//        XFree(data);
-//    }
-//    return result;
-//#else
-//#error not implemented here, revise
-//#endif
-//}
 
 
 QStringList EliteOCR::recognizeScreen()
@@ -65,12 +52,14 @@ QStringList EliteOCR::recognizeScreen()
 
 QString EliteOCR::tryDetectStarFromMapPopup(const QStringList &src)
 {
+    //    for (const auto & s : src)
+    //        std::cout << s.toStdString() << std::endl;
     {
         const auto b = src.begin();
         const auto e = src.end();
         auto it = std::find_if(b, e, [](const auto & s)
         {
-            return s.startsWith("DISTANCE: ") ;
+            return s.startsWith("DISTANCE: ") || s.startsWith("ARRIVAL POINT:");
         });
         if (it != e && it != b)
         {
@@ -78,15 +67,15 @@ QString EliteOCR::tryDetectStarFromMapPopup(const QStringList &src)
             return *it;
         }
     }
+
     //trying regex for auto-generated sys names as last resort, examples:
     //PHROI PRI NX-A D1-785
     //Pyrie Thae XO-Z D13-12
     //"Suvaa LM-W F1-0"
     //but going backward, as at top will be currently selected sys most likely
-
     const static QRegularExpression last_check("^[A-H]\\d+-\\d+$");
     const static QRegularExpression before_last_check("^\\w\\w-\\w$");
-    const static QRegularExpression planet("^\\d+\\w$");
+    const static QRegularExpression planet("^\\d+\\s*\\w*$");
 
     const static auto test_if_star_pattern = [](auto begin, auto end)
     {
@@ -104,10 +93,12 @@ QString EliteOCR::tryDetectStarFromMapPopup(const QStringList &src)
         QStringList parts = s.split(" ", QString::SkipEmptyParts);
         if (parts.size() < 3)
             return false;
+        //maybe it is planet's name?
+        const bool b = (planet.match(*parts.rbegin(), 0, QRegularExpression::PartialPreferCompleteMatch).hasMatch() && test_if_star_pattern(parts.rbegin() + 1, parts.rend()));
         const bool a = test_if_star_pattern(parts.rbegin(), parts.rend());
 
-        //maybe it is planet's name?
-        const bool b = !a && (planet.match(*parts.rbegin(), 0, QRegularExpression::PartialPreferCompleteMatch).hasMatch() && test_if_star_pattern(parts.rbegin() + 1, parts.rend()));
+
+
         return a || b;
         //return a;
     });

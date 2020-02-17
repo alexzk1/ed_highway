@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "config_ui/globalsettings.h"
 #include <QClipboard>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -85,5 +86,8 @@ void MainWindow::doScreenOCR()
 {
     const auto list = ocrElite.recognizeScreen();
     const auto s = EliteOCR::tryDetectStarFromMapPopup(list);
-    qApp->clipboard()->setText(s);
+    if (s.isEmpty())
+        QMessageBox::critical(this, "OCR Error", "Cannot read system name.");
+    else
+        qApp->clipboard()->setText(s);
 }

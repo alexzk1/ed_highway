@@ -30,6 +30,7 @@ pkgver() {
 }
 build() {
   cd $_gitname
+  git submodule init
   qmake
   make
 }

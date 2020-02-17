@@ -71,7 +71,8 @@ QString EliteOCR::tryDetectStarFromMapPopup(const QStringList &src)
     if (it != src.rend())
         return *it;
 
-    return "";
+    const static QString nothing;
+    return nothing;
 }
 
 QStringList EliteOCR::split_filter(const QString &src) const

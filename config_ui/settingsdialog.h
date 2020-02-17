@@ -4,9 +4,10 @@
 #define SETTINGSDIALOG_H
 
 #include <QDialog>
-#include "utils/saveable_widget.h"
+#include "saveable_widget.h"
 
-namespace Ui {
+namespace Ui
+{
     class SettingsDialog;
 }
 

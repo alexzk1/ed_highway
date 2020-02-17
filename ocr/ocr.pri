@@ -18,6 +18,7 @@ SOURCES += \
     $$PWD/PreProcess.cpp \
     $$PWD/eliteocr.cpp
 
+#tesseract and leptonica must be installed in system
 LIBS *= -ltesseract
 LIBS *= -llept
 

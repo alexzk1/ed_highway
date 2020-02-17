@@ -26,16 +26,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 CONFIG += c++14
 
+
 SOURCES += \
         edsmapiv1.cpp \
         main.cpp \
         mainwindow.cpp \
         qjsontablemodel.cpp \
-        utils/restclient.cpp \
-        spanshapi.cpp \
-        spanshroutewidget.cpp \
-        spanshsyssuggest.cpp
-
+        utils/restclient.cpp
 HEADERS += \
         edsmapiv1.h \
         edsmv1_nearest.h \
@@ -50,12 +47,6 @@ HEADERS += \
         mainwindow.h \
         utils/restclient.h \
         utils/runners.h \
-        spansh_route.h \
-        spansh_sysname.h \
-        spanshapi.h \
-        spanshroutewidget.h \
-        spanshsyssuggest.h \
-        utils/saveable_widget.h \
         utils/shared_wrapper.h \
         utils/strfmt.h \
         utils/strutils.h \
@@ -63,15 +54,17 @@ HEADERS += \
         utils/variant_convert.h
 
 FORMS += \
-        mainwindow.ui \
-        spanshroutewidget.ui
-
+        mainwindow.ui
+include($$PWD/widgets/widgets.pri)
 include($$PWD/singleapp/singleapplication.pri)
 include($$PWD/config_ui/config_ui.pri)
 
 
 #ocr functionality, comment out to disable it
 include($$PWD/ocr/ocr.pri)
+
+#support for global hotkeys even when program is not active
+include($$PWD/QHotkey/qhotkey.pri)
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

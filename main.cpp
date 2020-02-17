@@ -36,13 +36,13 @@ void dotest()
     //    test.threads.stop(true);
 
 
-    EliteOCR ocr;
-    QImage img;
-    if (img.load("/home/alex/screenshots/EliteDangerousCLIENT_1581844531372_47099.png"))
-        //std::cout << "OCR:\n" << ocr.recognize(img).join("\n").toStdString();
-        std::cout << "OCR: " << EliteOCR::tryDetectStarFromMapPopup(ocr.recognize(img)).toStdString() << std::endl;
-    else
-        std::cout << "failed to load sample image\n";
+    //    EliteOCR ocr;
+    //    QImage img;
+    //    if (img.load("/home/alex/screenshots/EliteDangerousCLIENT_1581844531372_47099.png"))
+    //std::cout << "OCR:\n" << ocr.recognize(img).join("\n").toStdString();
+    //      std::cout << "OCR: " << EliteOCR::tryDetectStarFromMapPopup(ocr.recognize(img)).toStdString() << std::endl;
+    //    else
+    //        std::cout << "failed to load sample image\n";
     //std::cout << "Screenshot:\n" << ocr.recognizeScreen().toStdString() << std::endl;
 
 }
@@ -57,22 +57,22 @@ int main(int argc, char *argv[])
     a.setOrganizationDomain("pasteover.net");
     a.setOrganizationName("pasteover.net");
 
-    dotest();
-    return 0;
+    //    dotest();
+    //    return 0;
 
 
-    //    MainWindow w;
+    MainWindow w;
 
-    //    QObject::connect(&a, &SingleApplication::instanceStarted, [&w, &a]()
-    //    {
-    //        //actual popup of window will be dependent on desktop settings, for example in kde it is something like "bring to front demanding attention"
-    //        if (a.activeWindow())
-    //            a.activeWindow()->raise();
-    //        else
-    //            w.raise();
-    //    });
+    QObject::connect(&a, &SingleApplication::instanceStarted, [&w, &a]()
+    {
+        //actual popup of window will be dependent on desktop settings, for example in kde it is something like "bring to front demanding attention"
+        if (a.activeWindow())
+            a.activeWindow()->raise();
+        else
+            w.raise();
+    });
 
-    //    w.show();
+    w.show();
 
-    //    return a.exec();
+    return a.exec();
 }

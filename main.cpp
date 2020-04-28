@@ -11,6 +11,7 @@
 #include "edsmv1_sysinfo.h"
 #include <QDebug>
 #include "eliteocr.h"
+#include "stringsfilecache.h"
 
 void dotest()
 {
@@ -21,7 +22,7 @@ void dotest()
     EdsmApiV1 test{3};
     //const static Point A{-2078.71875, -452.125, -1107.375 };
     //EDSMV1NearerstSystem r(A, 10, false);
-    EDSMV1NearerstSystem r("Borann", 40, false);
+    EDSMV1NearerstSystem r("Borann", 20, false);
     EDSMV1SysInfo sys("Maia");
 
     const auto static testr = [](auto err, auto js)
@@ -29,12 +30,18 @@ void dotest()
         if (!err.empty())
             std::cerr << err << std::endl;
         else
+        {
             std::cout << js.dump(4) << std::endl;
+            StringsFileCache::get().addData("test", QString::fromStdString(js.dump()));
+        }
     };
 
     test.executeRequest(r, testr);
     //test.executeRequest(sys, testr);
     test.threads.stop(true);
+
+    std::cout << "Read data: \n" << StringsFileCache::get().getData("test").toStdString() << std::endl;
+
     return;
 #ifdef SRC_PATH
     const static QString tests[] =
@@ -80,6 +87,8 @@ int main(int argc, char *argv[])
     a.setApplicationDisplayName("ED:HighWay");
     a.setOrganizationDomain("pasteover.net");
     a.setOrganizationName("pasteover.net");
+
+    StringsFileCache::get(); //init cache
 
     dotest();
     return 0;

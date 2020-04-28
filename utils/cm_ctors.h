@@ -16,6 +16,4 @@
 
 //only stack allocation allowed
 #define STACK_ONLY static void *operator new     (size_t) = delete; \
-                   static void *operator new[]   (size_t) = delete; \
-                   static void  operator delete  (void*)  = delete; \
-                   static void  operator delete[](void*)  = delete
+                   static void *operator new[]   (size_t) = delete

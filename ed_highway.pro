@@ -33,6 +33,7 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
         qjsontablemodel.cpp \
+        stringsfilecache.cpp \
         utils/restclient.cpp
 HEADERS += \
         edsmapiv1.h \
@@ -41,6 +42,7 @@ HEADERS += \
         lzokay.hpp \
         point.h \
         qjsontablemodel.h \
+        stringsfilecache.h \
         utils/cm_ctors.h \
         utils/ctpl_stl.h \
         utils/exec_exit.h \
@@ -53,7 +55,8 @@ HEADERS += \
         utils/strfmt.h \
         utils/strutils.h \
         utils/type_checks.h \
-        utils/variant_convert.h
+        utils/variant_convert.h \
+        writable_path.h
 
 FORMS += \
         mainwindow.ui

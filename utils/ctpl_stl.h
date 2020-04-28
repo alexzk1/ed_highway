@@ -17,8 +17,7 @@
 *********************************************************/
 
 
-#ifndef __ctpl_stl_thread_pool_H__
-#define __ctpl_stl_thread_pool_H__
+#pragma once
 
 #include <functional>
 #include <boost/thread.hpp>
@@ -337,4 +336,3 @@ inline std::thread::id mainThread()
 
 using ThreadsPoolPtr = std::shared_ptr<ctpl::thread_pool>;
 
-#endif // __ctpl_stl_thread_pool_H__

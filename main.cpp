@@ -18,22 +18,24 @@ void dotest()
     //    SpanshRoute r{70, 70, "Sol", "Colonia"};
     //    SpanshSysName sys{"eu"};
 
-    //    EdsmApiV1 test{3};
-    //    const static Point A{-2078.71875, -452.125, -1107.375 };
-    //    EDSMV1NearerstSystem r(A, 10, false);
-    //    EDSMV1SysInfo sys("Maia");
+    EdsmApiV1 test{3};
+    //const static Point A{-2078.71875, -452.125, -1107.375 };
+    //EDSMV1NearerstSystem r(A, 10, false);
+    EDSMV1NearerstSystem r("Borann", 40, false);
+    EDSMV1SysInfo sys("Maia");
 
-    //    const auto static testr = [](auto err, auto js)
-    //    {
-    //        if (!err.empty())
-    //            std::cerr << err << std::endl;
-    //        else
-    //            std::cout << js.dump(4) << std::endl;
-    //    };
+    const auto static testr = [](auto err, auto js)
+    {
+        if (!err.empty())
+            std::cerr << err << std::endl;
+        else
+            std::cout << js.dump(4) << std::endl;
+    };
 
-    //    test.executeRequest(r, testr);
-    //    test.executeRequest(sys, testr);
-    //    test.threads.stop(true);
+    test.executeRequest(r, testr);
+    //test.executeRequest(sys, testr);
+    test.threads.stop(true);
+    return;
 #ifdef SRC_PATH
     const static QString tests[] =
     {
@@ -79,22 +81,22 @@ int main(int argc, char *argv[])
     a.setOrganizationDomain("pasteover.net");
     a.setOrganizationName("pasteover.net");
 
-    //    dotest();
-    //    return 0;
+    dotest();
+    return 0;
 
 
-    MainWindow w;
+    //    MainWindow w;
 
-    QObject::connect(&a, &SingleApplication::instanceStarted, [&w, &a]()
-    {
-        //actual popup of window will be dependent on desktop settings, for example in kde it is something like "bring to front demanding attention"
-        if (a.activeWindow())
-            a.activeWindow()->raise();
-        else
-            w.raise();
-    });
+    //    QObject::connect(&a, &SingleApplication::instanceStarted, [&w, &a]()
+    //    {
+    //        //actual popup of window will be dependent on desktop settings, for example in kde it is something like "bring to front demanding attention"
+    //        if (a.activeWindow())
+    //            a.activeWindow()->raise();
+    //        else
+    //            w.raise();
+    //    });
 
-    w.show();
+    //    w.show();
 
-    return a.exec();
+    //    return a.exec();
 }

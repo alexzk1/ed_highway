@@ -29,6 +29,7 @@ CONFIG += c++14
 
 SOURCES += \
         edsmapiv1.cpp \
+        lzokay.cpp \
         main.cpp \
         mainwindow.cpp \
         qjsontablemodel.cpp \
@@ -37,6 +38,7 @@ HEADERS += \
         edsmapiv1.h \
         edsmv1_nearest.h \
         edsmv1_sysinfo.h \
+        lzokay.hpp \
         point.h \
         qjsontablemodel.h \
         utils/cm_ctors.h \

@@ -1,8 +1,9 @@
-#ifndef EDSMAPIV1_H
-#define EDSMAPIV1_H
-#include "utils/cm_ctors.h"
+#pragma once
+
 #include <functional>
 #include <string>
+
+#include "utils/cm_ctors.h"
 #include "utils/restclient.h"
 #include "utils/ctpl_stl.h"
 #include "utils/json.hpp"
@@ -37,4 +38,3 @@ private:
     std::atomic<int32_t> working{0};
 };
 
-#endif // EDSMAPIV1_H

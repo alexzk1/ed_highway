@@ -6,8 +6,7 @@
  * @date 2010-10-11
  */
 
-#ifndef INCLUDE_RESTCLIENT_H_
-#define INCLUDE_RESTCLIENT_H_
+#pragma once
 
 #include <curl/curl.h>
 #include <string>
@@ -151,4 +150,3 @@ private:
 
 };
 
-#endif  // INCLUDE_RESTCLIENT_H_

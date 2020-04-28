@@ -1,5 +1,4 @@
-#ifndef POINT_H
-#define POINT_H
+#pragma once
 #include "utils/restclient.h"
 #include "utils/strfmt.h"
 
@@ -103,4 +102,4 @@ inline std::ostream & operator << (std::ostream &out, const Point &c)
     out << "[" << c.x << "; " << c.y << "; " << c.z << "]";
     return out;
 }
-#endif // POINT_H
+

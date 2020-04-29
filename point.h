@@ -1,6 +1,7 @@
 #pragma once
 #include "utils/restclient.h"
 #include "utils/strfmt.h"
+#include "utils/json.hpp"
 
 struct Point
 {
@@ -14,6 +15,21 @@ struct Point
         return {end.x - x, end.y - y, end.z - z};
     }
 
+#define S1(V) (V-to.V) * (V-to.V)
+    float distance(const Point& to) const
+    {
+        (void)to; //IDE does not see use in macro so strikes it
+
+        return std::sqrt(S1(x) + S1(y) + S1(z));
+    }
+
+    //i think we can use this for path optimizing, as it doesn't care real numbers
+    float no_sqrt_dist(const Point& to) const
+    {
+        (void)to; //IDE does not see use in macro so strikes it
+        return S1(x) + S1(y) + S1(z);
+    }
+#undef S1
     float len() const //magnitude
     {
         return std::sqrt(x * x + y * y + z * z);
@@ -77,6 +93,25 @@ struct Point
             {"y", fmt(y)},
             {"z", fmt(z)},
         };
+    }
+
+    static Point fromJson(const nlohmann::json& object)
+    {
+        const static auto iteratorOrException = [](const nlohmann::json & object, const std::string & name)
+        {
+            const auto it = object.find(name);
+            if (it == object.end())
+                throw std::runtime_error(stringfmt("JSON object does not have field '%s'", name));
+            return it;
+        };
+
+        const auto cr = iteratorOrException(object, "coords");
+        const auto get = [&cr](const std::string & f)
+        {
+            const auto it = iteratorOrException(*cr, f);
+            return it->get<float>();
+        };
+        return Point{get("x"), get("y"), get("z")};
     }
 };
 

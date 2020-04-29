@@ -29,21 +29,27 @@ CONFIG += c++14
 
 SOURCES += \
         edsmapiv1.cpp \
+        edsmwrapper.cpp \
         lzokay.cpp \
         main.cpp \
         mainwindow.cpp \
         qjsontablemodel.cpp \
+        salesman/LittleAlgorithm.cpp \
         stringsfilecache.cpp \
         utils/restclient.cpp
 HEADERS += \
+        dump_help.h \
         edsmapiv1.h \
         edsmv1_nearest.h \
         edsmv1_sysinfo.h \
+        edsmwrapper.h \
         lzokay.hpp \
         point.h \
         qjsontablemodel.h \
+        salesman/LittleAlgorithm.h \
         stringsfilecache.h \
         utils/cm_ctors.h \
+        utils/conditional_wait.h \
         utils/ctpl_stl.h \
         utils/exec_exit.h \
         utils/guard_on.h \

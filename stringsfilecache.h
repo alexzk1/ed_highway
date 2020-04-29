@@ -45,7 +45,7 @@ public:
     void cleanAll();
 
 private:
-    using written_value_type = QPair<qint64, binary_blob>;
+    using written_value_type = QPair<quint64, binary_blob>;
 
     std::mutex lock;
     lzokay::Dict<> dict;

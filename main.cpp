@@ -12,37 +12,12 @@
 #include <QDebug>
 #include "eliteocr.h"
 #include "stringsfilecache.h"
+#include "edsmwrapper.h"
+#include "dump_help.h"
+#include "salesman/LittleAlgorithm.h"
 
-void dotest()
+void test_ocr()
 {
-    //    SpanshApi test{3};
-    //    SpanshRoute r{70, 70, "Sol", "Colonia"};
-    //    SpanshSysName sys{"eu"};
-
-    EdsmApiV1 test{3};
-    //const static Point A{-2078.71875, -452.125, -1107.375 };
-    //EDSMV1NearerstSystem r(A, 10, false);
-    EDSMV1NearerstSystem r("Borann", 20, false);
-    EDSMV1SysInfo sys("Maia");
-
-    const auto static testr = [](auto err, auto js)
-    {
-        if (!err.empty())
-            std::cerr << err << std::endl;
-        else
-        {
-            std::cout << js.dump(4) << std::endl;
-            StringsFileCache::get().addData("test", QString::fromStdString(js.dump()));
-        }
-    };
-
-    test.executeRequest(r, testr);
-    //test.executeRequest(sys, testr);
-    test.threads.stop(true);
-
-    std::cout << "Read data: \n" << StringsFileCache::get().getData("test").toStdString() << std::endl;
-
-    return;
 #ifdef SRC_PATH
     const static QString tests[] =
     {
@@ -75,37 +50,81 @@ void dotest()
             std::cout << "OCR: " << EliteOCR::tryDetectStarFromMapPopup(ocr.recognize(img)).toStdString() << std::endl;
 
     }
+    exit(0);
 #endif
 }
 
+void dotest()
+{
+#ifdef SRC_PATH
+    //    SpanshApi test {3};
+    //    SpanshRoute r{70, 70, "Sol", "Colonia"};
+    //    SpanshSysName sys{"eu"};
+
+    EdsmApiV1 test{3};
+
+    EDSMV1NearerstSystem r("Borann", 20, false);
+    EDSMV1SysInfo sys("Maia");
+
+    const auto static testr = [](auto err, auto js)
+    {
+        if (!err.empty())
+            std::cerr << err << std::endl;
+        else
+        {
+            std::cout << js.dump(4) << std::endl;
+            StringsFileCache::get().addData("test", QString::fromStdString(js.dump()));
+        }
+    };
+
+    test.executeRequest(r, testr);
+    test.executeRequest(sys, testr);
+    test.threads.stop(true);
+    exit(0);
+#endif
+}
+
+void test_wrapper()
+{
+#ifdef SRC_PATH
+    auto list = EDSMWrapper::requestManySysInfoInRadius("Borann", 30, [](auto a, auto b)
+    {
+        if (a % 10 == 0)
+            std::cout << a << " out of " << b << std::endl;
+    });
+    dump_helper::dumpContainer(list);
+    exit(0);
+#endif
+}
+
+
 int main(int argc, char *argv[])
 {
-
     SingleApplication a(argc, argv, false, SingleApplication::Mode::SecondaryNotification | SingleApplication::Mode::User);
     a.setApplicationName("ED:HighWay");
-    a.setApplicationVersion("0.1");
+    a.setApplicationVersion("0.14");
     a.setApplicationDisplayName("ED:HighWay");
     a.setOrganizationDomain("pasteover.net");
     a.setOrganizationName("pasteover.net");
 
     StringsFileCache::get(); //init cache
 
-    dotest();
-    return 0;
+    //test_wrapper();
+    LittleAlgorithm::selfTest3();
+    exit(0);
 
+    MainWindow w;
 
-    //    MainWindow w;
+    QObject::connect(&a, &SingleApplication::instanceStarted, [&w, &a]()
+    {
+        //actual popup of window will be dependent on desktop settings, for example in kde it is something like "bring to front demanding attention"
+        if (a.activeWindow())
+            a.activeWindow()->raise();
+        else
+            w.raise();
+    });
 
-    //    QObject::connect(&a, &SingleApplication::instanceStarted, [&w, &a]()
-    //    {
-    //        //actual popup of window will be dependent on desktop settings, for example in kde it is something like "bring to front demanding attention"
-    //        if (a.activeWindow())
-    //            a.activeWindow()->raise();
-    //        else
-    //            w.raise();
-    //    });
+    w.show();
 
-    //    w.show();
-
-    //    return a.exec();
+    return a.exec();
 }

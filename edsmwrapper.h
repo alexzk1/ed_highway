@@ -1,0 +1,53 @@
+#pragma once
+#include <QString>
+#include <QStringList>
+#include <atomic>
+#include "edsmapiv1.h"
+
+//this class solves some exact tasks, using caching, so do not stress edsm too much
+
+class EDSMWrapper
+{
+public:
+    using callback_t = EdsmApiV1::callback_t;
+    using progress_update = std::function<void(size_t, size_t)>; // 1st current value, 2nd total
+    EDSMWrapper() = delete;
+
+
+    static QString getNameFromJson(const nlohmann::json& js);
+
+    //does not block caller thread, callback executed in other thread scope (not the caller) if network request made
+    //or immediatly in caller thread if cache used
+    static void selectSystemsInRadius(const QString& center_name, int radius, callback_t callback);
+
+    //blocks caller thread until have return value, may return empty list
+    static QStringList selectSystemsInRadiusNamesOnly(const QString& center_name, int radius);
+
+
+    //blocks caller thread until all done
+    static std::vector<nlohmann::json> requestManySysInfo(const QStringList& names, const progress_update& progress = [](auto, auto) {});
+    static std::vector<nlohmann::json> requestManySysInfoInRadius(const QString& center_name, int radius, const progress_update& progress = [](auto, auto) {});
+
+
+    //does not block caller thread, callback executed in other thread scope (not the caller) if network request made
+    //or immediatly in caller thread if cache used
+    static void requestSysInfo(const QString& sys_name, callback_t callback);
+
+    //blocks caller thread
+    static nlohmann::json requestSysInfo(const QString& sys_name);
+
+    template<class Res>
+    static Res valueFromJson(const nlohmann::json& object, const std::string& fieldName)
+    {
+        const auto it = object.find(fieldName);
+        if (it == object.end())
+            throw std::runtime_error(stringfmt("JSON object does not have field '%s'", fieldName));
+        return it->get<Res>();
+    }
+
+    static EdsmApiV1& api()
+    {
+        static EdsmApiV1 edsm((int)std::max(1u, std::thread::hardware_concurrency() / 2u));
+        return edsm;
+    }
+};

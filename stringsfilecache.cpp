@@ -124,24 +124,21 @@ bool StringsFileCache::addData(const QString &key, const QString &value, uint32_
     }
     else
     {
-        const auto compressed = written_value_type{QDateTime::currentDateTime().toMSecsSinceEpoch() + (uint64_t)valid_for_seconds * 1000u, compress(value)};
+        const uint64_t valid_till = QDateTime::currentDateTime().toMSecsSinceEpoch() + (uint64_t)valid_for_seconds * 1000u;
+        const auto compressed = written_value_type{valid_till, compress(value)};
 
         const QString filename = QStringLiteral("value_%1").arg(buildNumericFnPart());
         QString finalName = filename;
 
-        const auto fn = getFileNameOrEmpty(key);
-        if (!fn.isEmpty())
-            finalName = fn; //overwrite if already exists same key
-        else
-        {
-            //most unlikelly this will happen ... but user might change system clock or so and we dont want to overwrite file
-            for (int counter = 0; QFile::exists(getCacheDir() + "/" + finalName) && counter < 5000; ++counter)
-                finalName = QStringLiteral("%1_%2").arg(filename).arg(counter);
-        }
+        //most unlikelly this will happen ... but user might change system clock or so and we dont want to overwrite file
+        for (int counter = 0; QFile::exists(getCacheDir() + "/" + finalName) && counter < 5000; ++counter)
+            finalName = QStringLiteral("%1_%2").arg(filename).arg(counter);
+
 
         QFile file(getCacheDir() + "/" + finalName);
         if (file.open(QIODevice::WriteOnly))
         {
+            dropKey(key);
             writeToFile(file, compressed);
             key2filename[key] = finalName;
             result = true;

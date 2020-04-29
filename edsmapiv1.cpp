@@ -8,18 +8,10 @@
 
 EdsmApiV1::~EdsmApiV1()
 {
-    threads.stop(false);
+    threads.stop(true);
 }
 
-static auto iteratorOrException(const nlohmann::json &object, const std::string& name)
-{
-    const auto it = object.find(name);
-    if (it == object.end())
-        ERROR(stringfmt("JSON object does not have field '%s'", name));
-    return it;
-}
-
-void EdsmApiV1::executeRequest(const std::string &api, const RestClient::parameters &params, bool is_get, EdsmApiV1::callback_t callback)
+void EdsmApiV1::executeRequest(const std::string &api, const RestClient::parameters &params, bool is_get, EdsmApiV1::callback_t callback, int timeout_seconds)
 {
     using namespace nlohmann;
 
@@ -33,8 +25,10 @@ void EdsmApiV1::executeRequest(const std::string &api, const RestClient::paramet
 
     ++working;
 
-    const auto executor = [url, eparams, callback, is_get, this](auto)
+    const auto executor = [url, eparams, callback, is_get, this, timeout_seconds](auto id)
     {
+        (void)id;
+        // std::cout << "Running task on thread " << id <<  "Tasks in q: " << tasksCount() << std::endl;
         exec_onexit ensure([this]()
         {
             --this->working;
@@ -45,15 +39,13 @@ void EdsmApiV1::executeRequest(const std::string &api, const RestClient::paramet
             if (is_get)
             {
                 const auto res_url{stringfmt("%s?%s", url, eparams)};
-                //std::cout << res_url << std::endl;
                 for (int i = 0; i < 50; ++i)
                 {
-                    const auto resp2{RestClient::get(res_url, 20)};
+                    const auto resp2{RestClient::get(res_url, timeout_seconds)};
                     if (resp2.body.empty())
                         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                     else
                     {
-                        // std::cout << resp2.body << std::endl;
                         const auto j2{json::parse(resp2.body)};
                         callback("", j2.at(0)); //for some reason json parser adds extra array
                         return;
@@ -72,17 +64,4 @@ void EdsmApiV1::executeRequest(const std::string &api, const RestClient::paramet
     {
         return true;
     });
-}
-
-
-
-Point EdsmApiV1::pointFromJson(const nlohmann::json &object)
-{
-    const auto cr = iteratorOrException(object, "coords");
-    const auto get = [&cr](const std::string & f)
-    {
-        const auto it = iteratorOrException(*cr, f);
-        return it->get<float>();
-    };
-    return Point{get("x"), get("y"), get("z")};
 }

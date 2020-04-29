@@ -62,7 +62,7 @@ namespace ctpl
                 std::unique_lock<std::mutex> lock(this->mutex);
                 if (this->q.empty())
                     return false;
-                v = this->q.front();
+                v = std::move(this->q.front());
                 this->q.pop();
                 return true;
             }
@@ -77,14 +77,20 @@ namespace ctpl
             //                return v;
             //            }
 
-            bool empty()
+            bool empty() const
             {
                 std::unique_lock<std::mutex> lock(this->mutex);
                 return this->q.empty();
             }
+
+            size_t size() const
+            {
+                std::unique_lock<std::mutex> lock(this->mutex);
+                return q.size();
+            }
         private:
             std::queue<T> q;
-            std::mutex mutex;
+            mutable std::mutex mutex;
         };
     }
 
@@ -116,6 +122,11 @@ namespace ctpl
         int size() const
         {
             return static_cast<int>(this->threads.size());
+        }
+
+        size_t tasksCount() const
+        {
+            return q.size();
         }
 
         // number of idle threads

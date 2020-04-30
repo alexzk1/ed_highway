@@ -44,17 +44,21 @@ HEADERS += \
         edsmv1_sysinfo.h \
         edsmwrapper.h \
         lzokay.hpp \
+        namedstarsystem.h \
         point.h \
         qjsontablemodel.h \
         salesman/LittleAlgorithm.h \
         stringsfilecache.h \
         utils/cm_ctors.h \
         utils/conditional_wait.h \
+        utils/containers_helpers.h \
         utils/ctpl_stl.h \
         utils/exec_exit.h \
         utils/guard_on.h \
         utils/json.hpp \
         mainwindow.h \
+        utils/marray.h \
+        utils/mydecay.h \
         utils/restclient.h \
         utils/runners.h \
         utils/shared_wrapper.h \

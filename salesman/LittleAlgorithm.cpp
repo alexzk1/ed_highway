@@ -30,7 +30,8 @@ LittleAlgorithm::LittleAlgorithm(const QStringList &source_names)
 
     const auto static toWeightT = [](const float v)->weight_type
     {
-        return v * 100;
+        //return static_cast<weight_type>(std::ceil(v / 30.f * 100.f));
+        return static_cast<weight_type>(v * 100.f);
     };
 
 
@@ -350,13 +351,20 @@ std::vector<LittleAlgorithm::bisector> LittleAlgorithm::matrixProcedure(const st
     return result;
 }
 
-NamedStarSystem NamedStarSystem::fromJsonInfo(const nlohmann::json &src)
+LittleAlgorithm::matrix_type LittleAlgorithm::bisector::makeSmallerMatrix(LittleAlgorithm::matrix_type matrix) const
 {
-    NamedStarSystem r;
-    r.p = Point::fromJson(src);
-    r.name = QString::fromStdString(EDSMWrapper::valueFromJson<std::string>(src, "name"));
-    return r;
+    matrix.erase(i);
+
+    for (auto& m : matrix)
+        m.second.erase(j);
+
+    //i, j is used (removed), so can't do j/i as well
+
+    inf_if(matrix, j, i);
+    return matrix;
 }
+
+
 
 void LittleAlgorithm::selfTest()
 {
@@ -409,18 +417,4 @@ void LittleAlgorithm::selfTest3()
     }, "Shinrarta Dezhra", &len);
     dump_helper::dumpContainer(l);
     std::cout << "Route len: " << len << " ly." << std::endl;
-}
-
-
-LittleAlgorithm::matrix_type LittleAlgorithm::bisector::makeSmallerMatrix(LittleAlgorithm::matrix_type matrix) const
-{
-    matrix.erase(i);
-
-    for (auto& m : matrix)
-        m.second.erase(j);
-
-    //i, j is used (removed), so can't do j/i as well
-
-    inf_if(matrix, j, i);
-    return matrix;
 }

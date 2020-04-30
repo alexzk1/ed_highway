@@ -38,6 +38,7 @@ private slots:
     void settingsHidden();
     void settingsBeforeShow();
     void doScreenOCR();
+    void on_actionClear_Cache_triggered();
 };
 
 #endif // MAINWINDOW_H

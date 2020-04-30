@@ -4,5 +4,6 @@
         <file>images/Settings-2-icon.png</file>
         <file>images/swap.png</file>
         <file>images/up-arrow.png</file>
+        <file>images/Actions history clear.png</file>
     </qresource>
 </RCC>

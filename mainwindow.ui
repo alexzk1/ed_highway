@@ -24,12 +24,26 @@
       <property name="tabPosition">
        <enum>QTabWidget::West</enum>
       </property>
+      <property name="currentIndex">
+       <number>1</number>
+      </property>
       <property name="tabBarAutoHide">
        <bool>false</bool>
       </property>
       <widget class="SpanshRouteWidget" name="tab">
        <attribute name="title">
-        <string>High Way</string>
+        <string>&amp;1. High Way</string>
+       </attribute>
+       <attribute name="toolTip">
+        <string>Plan NS' boosted route through the Galaxy.</string>
+       </attribute>
+      </widget>
+      <widget class="RoundTripWidget" name="tab_2">
+       <attribute name="title">
+        <string>&amp;2. Round Trip</string>
+       </attribute>
+       <attribute name="toolTip">
+        <string>Visit each desired system once route.</string>
        </attribute>
       </widget>
      </widget>
@@ -51,6 +65,7 @@
      <string>&amp;File</string>
     </property>
     <addaction name="actionShow_Settings"/>
+    <addaction name="actionClear_Cache"/>
    </widget>
    <addaction name="menuSettings"/>
   </widget>
@@ -65,6 +80,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionShow_Settings"/>
+   <addaction name="actionClear_Cache"/>
   </widget>
   <action name="actionShow_Settings">
    <property name="icon">
@@ -75,6 +91,18 @@
     <string>Show &amp;Settings</string>
    </property>
   </action>
+  <action name="actionClear_Cache">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/Actions history clear.png</normaloff>:/images/Actions history clear.png</iconset>
+   </property>
+   <property name="text">
+    <string>Clear Cache</string>
+   </property>
+   <property name="toolTip">
+    <string>Clear cache of EDSM' access.</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -82,6 +110,12 @@
    <class>SpanshRouteWidget</class>
    <extends>QWidget</extends>
    <header location="global">spanshroutewidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>RoundTripWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">roundtripwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

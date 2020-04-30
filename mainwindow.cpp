@@ -3,6 +3,8 @@
 #include "config_ui/globalsettings.h"
 #include <QClipboard>
 #include <QMessageBox>
+#include "edsmwrapper.h"
+#include "stringsfilecache.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -90,4 +92,9 @@ void MainWindow::doScreenOCR()
         QMessageBox::critical(this, "OCR Error", "Cannot read system name.");
     else
         qApp->clipboard()->setText(s);
+}
+
+void MainWindow::on_actionClear_Cache_triggered()
+{
+    StringsFileCache::instance().cleanAll();
 }

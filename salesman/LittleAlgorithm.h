@@ -1,45 +1,8 @@
 #pragma once
 #include <vector>
-#include <QString>
 #include <QStringList>
-#include "utils/json.hpp"
-#include "point.h"
-#include "utils/cm_ctors.h"
 #include "utils/strfmt.h"
-
-struct NamedStarSystem
-{
-public:
-    Point p;
-    QString name;
-
-public:
-    NamedStarSystem() = default;
-    DEFAULT_COPYMOVE(NamedStarSystem);
-    static NamedStarSystem fromJsonInfo(const nlohmann::json& src);
-
-    operator const QString& () const noexcept
-    {
-        return name;
-    }
-
-    operator Point& () noexcept
-    {
-        return p;
-    }
-
-    operator const Point& () const noexcept
-    {
-        return p;
-    }
-
-    bool operator ==(const QString& v) const noexcept
-    {
-        return v == name;
-    }
-};
-TEST_MOVE_NOEX(NamedStarSystem);
-
+#include "namedstarsystem.h"
 
 class LittleAlgorithm
 {

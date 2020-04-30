@@ -110,8 +110,8 @@ int main(int argc, char *argv[])
     StringsFileCache::get(); //init cache
 
     //test_wrapper();
-    LittleAlgorithm::selfTest3();
-    exit(0);
+    //LittleAlgorithm::selfTest3();
+    //exit(0);
 
     MainWindow w;
 

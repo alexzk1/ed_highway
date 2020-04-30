@@ -3,7 +3,7 @@
 
 #include <mutex>
 #include <QAbstractTableModel>
-
+#include "utils/runners.h"
 
 class EDSMSystemsModel : public QAbstractTableModel
 {
@@ -20,6 +20,9 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+
+    QStringList getSystems() const;
+
 public slots:
 
     //add 1 sys
@@ -30,9 +33,21 @@ public slots:
 
     //replace anything it have by "bulk" list
     void setSystems(QStringList bulk);
+
+    void clearSystems();
+
+    void startRouteBuild(QString initialSystem);
+private slots:
+    void buildCrossResolve(QStringList route);
+signals:
+    void routeReady();
+
+    void DO_NO_CONNECT_THIS_1(QStringList);
 private:
+    float routeLen{0.f};
     QStringList systemNames;
     mutable std::recursive_mutex lock;
+    utility::runner_t routeBuilder{nullptr};
 };
 
 #endif // EDSMSYSTEMSMODEL_H

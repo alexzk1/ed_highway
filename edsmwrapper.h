@@ -36,6 +36,10 @@ public:
     //blocks caller thread
     static nlohmann::json requestSysInfo(const QString& sys_name);
 
+    //blocks caller thread
+    static QString tooltipWithSysInfo(const QString& sys_name);
+
+
     template<class Res>
     static Res valueFromJson(const nlohmann::json& object, const std::string& fieldName)
     {

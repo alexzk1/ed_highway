@@ -1,5 +1,6 @@
 #include "qjsontablemodel.h"
 #include <QJsonObject>
+#include "edsmwrapper.h"
 
 QJsonTableModel::QJsonTableModel( const QJsonTableModel::Header& header, QObject * parent )
     : QAbstractTableModel( parent )
@@ -58,11 +59,11 @@ QJsonObject QJsonTableModel::getJsonObject( const QModelIndex &index ) const
 
 QVariant QJsonTableModel::data( const QModelIndex &index, int role ) const
 {
+    QJsonObject obj = getJsonObject( index );
     switch ( role )
     {
         case Qt::DisplayRole:
         {
-            QJsonObject obj = getJsonObject( index );
             const QString& key = m_header[index.column()]["index"];
             if ( obj.contains( key ))
             {
@@ -80,8 +81,17 @@ QVariant QJsonTableModel::data( const QModelIndex &index, int role ) const
                 return QVariant();
         }
         case Qt::ToolTipRole:
-            return QVariant();
+        {
+            const QString& key = m_header[index.column()]["index"];
+            if ( obj.contains( key ))
+            {
+                QJsonValue v = obj[ key ];
+                if ( v.isString() )
+                    return QStringLiteral("<p>Selected row is copied + is a 1st system during ordering.</p><hr>%1").arg(EDSMWrapper::tooltipWithSysInfo(v.toString()));
+            }
+        }
         default:
-            return QVariant();
+            break;
     }
+    return QVariant();
 }

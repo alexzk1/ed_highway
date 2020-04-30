@@ -157,3 +157,77 @@ nlohmann::json EDSMWrapper::requestSysInfo(const QString &sys_name)
     pass.waitConfirm();
     return res;
 }
+
+
+/*
+ *
+
+{
+  "coords": {
+    "x": 149.96875,
+    "y": -9.625,
+    "z": 9.0625
+  },
+  "coordsLocked": true,
+  "information": {
+    "allegiance": "Federation",
+    "economy": "Colony",
+    "faction": "New Chonsu Alliance",
+    "factionState": "Boom",
+    "government": "Confederacy",
+    "population": 35666,
+    "reserve": "Common",
+    "secondEconomy": "Extraction",
+    "security": "Low"
+  },
+  "name": "Brigh",
+  "primaryStar": {
+    "isScoopable": true,
+    "name": "Brigh",
+    "type": "F (White) Star"
+  },
+  "requirePermit": false
+}
+
+ *
+ * */
+QString EDSMWrapper::tooltipWithSysInfo(const QString &sys_name)
+{
+    nlohmann::json json = requestSysInfo(sys_name);
+
+    const auto value_or_none = [&json](const std::string & root, const std::string & name) ->QString
+    {
+        const static QString none = "-";
+        try
+        {
+            auto r = valueFromJson<nlohmann::json>(json, root);
+            if (name != "population")
+            {
+                auto s = valueFromJson<std::string>(r, name);
+                return QString::fromStdString(s);
+            }
+            else
+            {
+                auto s = valueFromJson<uint64_t>(r, name);
+                return QStringLiteral("%1").arg(s);
+            }
+        }
+        catch (...)
+        {
+        }
+        return none;
+    };
+
+    return QStringLiteral("<p>Name: %10<br>Star Class: %9</p><hr><<p>Economy: %7<br>Second Economy: %8<hr><br>Allegiance: %1<br>Government: %2<br>Faction: %3<br>State: %4<br>Population: %5<br>Security: %6<br></p>")
+           .arg(value_or_none("information", "allegiance"))
+           .arg(value_or_none("information", "government"))
+           .arg(value_or_none("information", "faction"))
+           .arg(value_or_none("information", "factionState"))
+           .arg(value_or_none("information", "population"))
+           .arg(value_or_none("information", "security"))
+           .arg(value_or_none("information", "economy"))
+           .arg(value_or_none("information", "secondEconomy"))
+           .arg(value_or_none("primaryStar", "type"))
+           .arg(sys_name)
+           ;
+}

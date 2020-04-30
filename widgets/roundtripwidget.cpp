@@ -1,6 +1,9 @@
 #include "roundtripwidget.h"
 #include "ui_roundtripwidget.h"
 #include "spanshsyssuggest.h"
+#include "edsmwrapper.h"
+#include <QSettings>
+#include <QVariant>
 
 const static QString settingsGroup{"RoundTripWidget"};
 
@@ -21,14 +24,15 @@ RoundTripWidget::RoundTripWidget(QWidget *parent) :
     connect(ui->edSysManul, &QLineEdit::textChanged, this, switchAddAction);
     connect(ui->edSysManul, &QLineEdit::returnPressed, ui->actionAdd, &QAction::trigger);
 
-    loadValues();
-
     model = new EDSMSystemsModel(this);
     ui->tableView->setModel(model);
     ui->tableView->horizontalHeader()->setStretchLastSection(true);
 
+
+    loadValues();
     connect(ui->tableView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
             SLOT(slotSystemSelected(const QItemSelection &, const QItemSelection &)));
+
 
 }
 
@@ -54,6 +58,8 @@ void RoundTripWidget::changeEvent(QEvent *e)
 void RoundTripWidget::on_actionAdd_triggered()
 {
     model->addSystem(ui->edSysManul->text());
+    //triggering network request to edsm if any, so later this data will be cached already
+    EDSMWrapper::requestSysInfo(ui->edSysManul->text(), [](auto, auto) {});
     ui->edSysManul->clear();
 }
 
@@ -82,23 +88,22 @@ void RoundTripWidget::on_tableView_clicked(const QModelIndex &index)
 
 void RoundTripWidget::saveValues() const
 {
-    //    QSettings settings;
-    //    settings.beginGroup(settingsGroup);
-    //    settings.setValue("from", ui->fromE->text());
-    //    settings.setValue("to", ui->toE->text());
-    //    settings.setValue("ly", ui->spinBoxRange->value());
-    //    settings.setValue("prec", ui->spinBoxPrecise->value());
-    //    settings.setValue("lastSelected", lastSelectedSystem);
-    //    settings.setValue("revertFrom", revertFrom);
-    //    settings.setValue("revertTo", revertTo);
-    //    settings.endGroup();
-    //    settings.sync();
+    QSettings settings;
+    settings.beginGroup(settingsGroup);
+    settings.setValue("system_list", model->getSystems());
+    settings.endGroup();
+    settings.sync();
 }
 
 void RoundTripWidget::loadValues()
 {
-    //    QSettings settings;
-    //    settings.beginGroup(settingsGroup);
-    //    ui->fromE->setText(settings.value("from", "").toString());
-    //    settings.endGroup();
+    QSettings settings;
+    settings.beginGroup(settingsGroup);
+    model->setSystems(settings.value("system_list", {}).toStringList());
+    settings.endGroup();
+}
+
+void RoundTripWidget::on_btnClear_clicked()
+{
+    model->clearSystems();
 }

@@ -27,6 +27,8 @@ private slots:
     void slotSystemSelected(const QItemSelection &, const QItemSelection &n);
     void on_tableView_clicked(const QModelIndex &index);
 
+    void on_btnClear_clicked();
+
 private:
     Ui::RoundTripWidget *ui;
     QPointer<EDSMSystemsModel> model;

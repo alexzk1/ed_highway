@@ -5,6 +5,7 @@
 #include <functional>
 #include <atomic>
 #include "ctpl_stl.h"
+#include <iostream>
 
 namespace utility
 {

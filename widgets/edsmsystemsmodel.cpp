@@ -2,10 +2,12 @@
 #include "stringsfilecache.h"
 #include "utils/containers_helpers.h"
 #include "utils/guard_on.h"
+#include "salesman/LittleAlgorithm.h"
 
 EDSMSystemsModel::EDSMSystemsModel(QObject *parent)
     : QAbstractTableModel(parent)
 {
+    connect(this, &EDSMSystemsModel::DO_NO_CONNECT_THIS_1, this, &EDSMSystemsModel::buildCrossResolve, Qt::QueuedConnection);
 }
 
 QVariant EDSMSystemsModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -57,9 +59,21 @@ QVariant EDSMSystemsModel::data(const QModelIndex &index, int role) const
             if (row > -1 && row < systemNames.size())
                 return systemNames.at(row);
         }
+
+        if (Qt::ToolTipRole == role)
+        {
+            LOCK_GUARD_ON(lock);
+            return QStringLiteral("<p>Selected row is copied + is a 1st system during ordering.</p><hr>%1").arg(EDSMWrapper::tooltipWithSysInfo(systemNames.at(row)));
+        }
     }
 
     return QVariant();
+}
+
+QStringList EDSMSystemsModel::getSystems() const
+{
+    LOCK_GUARD_ON(lock);
+    return systemNames;
 }
 
 void EDSMSystemsModel::addSystem(const QString &sys)
@@ -82,6 +96,42 @@ void EDSMSystemsModel::setSystems(QStringList bulk)
 {
     LOCK_GUARD_ON(lock);
     beginResetModel();
+    systemNames.clear();
     systemNames = std::move(bulk);
     endResetModel();
+}
+
+void EDSMSystemsModel::clearSystems()
+{
+    LOCK_GUARD_ON(lock);
+    beginResetModel();
+    systemNames.clear();
+    endResetModel();
+}
+
+void EDSMSystemsModel::startRouteBuild(QString initialSystem)
+{
+    routeBuilder = utility::startNewRunner([this, initialSystem](auto)
+    {
+        QStringList snapshoot;
+        {
+            LOCK_GUARD_ON(lock);
+            snapshoot = systemNames;
+        }
+        float len;
+        auto route = LittleAlgorithm::route(snapshoot, initialSystem, &len);
+        {
+            LOCK_GUARD_ON(lock);
+            routeLen = len;
+        }
+        emit DO_NO_CONNECT_THIS_1(std::move(route));
+    });
+}
+
+void EDSMSystemsModel::buildCrossResolve(QStringList route)
+{
+    //exectues in main thread
+    routeBuilder.reset();
+    setSystems(route);
+    emit routeReady();
 }

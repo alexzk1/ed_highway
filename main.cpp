@@ -93,6 +93,9 @@ void test_wrapper()
             std::cout << a << " out of " << b << std::endl;
     });
     dump_helper::dumpContainer(list);
+
+    std::cout << EDSMWrapper::tooltipWithSysInfo("Brigh").toStdString() << std::endl;
+
     exit(0);
 #endif
 }

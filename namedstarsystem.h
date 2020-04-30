@@ -12,15 +12,23 @@ struct NamedStarSystem
 public:
     Point p;
     QString name;
-
+    bool blank{true};
 public:
     NamedStarSystem() = default;
     DEFAULT_COPYMOVE(NamedStarSystem);
     static NamedStarSystem fromJsonInfo(const nlohmann::json& src)
     {
         NamedStarSystem r;
-        r.p = Point::fromJson(src);
-        r.name = QString::fromStdString(EDSMWrapper::valueFromJson<std::string>(src, "name"));
+        try
+        {
+            r.p = Point::fromJson(src);
+            r.name = QString::fromStdString(EDSMWrapper::valueFromJson<std::string>(src, "name"));
+            r.blank = false;
+        }
+        catch (...)
+        {
+        }
+
         return r;
     }
 

@@ -53,6 +53,7 @@ void RoundTripWidget::changeEvent(QEvent *e)
 
 void RoundTripWidget::on_actionAdd_triggered()
 {
+    model->addSystem(ui->edSysManul->text());
     ui->edSysManul->clear();
 }
 

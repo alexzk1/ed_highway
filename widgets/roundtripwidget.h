@@ -29,7 +29,7 @@ private slots:
 
 private:
     Ui::RoundTripWidget *ui;
-    QPointer<QAbstractTableModel> model;
+    QPointer<EDSMSystemsModel> model;
 
     void saveValues() const;
     void loadValues();

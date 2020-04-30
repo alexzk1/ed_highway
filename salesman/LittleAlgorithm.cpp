@@ -4,7 +4,7 @@
 #include <functional>
 #include <map>
 #include "utils/strutils.h"
-
+#include "utils/containers_helpers.h"
 #ifdef SRC_PATH
     // #define DUMP_DURING_WORKING
 #endif
@@ -31,7 +31,24 @@ LittleAlgorithm::LittleAlgorithm(QStringList source_names)
         {
             return NamedStarSystem::fromJsonInfo(js);
         });
+
+        types_ns::remove_if(source, [](const auto & v)
+        {
+            return v.blank;
+        });
+
         originalLength = pathLength(source);
+
+        if (source.size() < 3)
+        {
+            if (source.size() == 1)
+                result.emplace_back(0, 0, 0);
+
+            if (source.size() == 2)
+                result.emplace_back(0, 1, 0);
+
+            return;
+        }
     }
 
     //will be normalizing floats to uint64 with 2 decimal parts (float*100)

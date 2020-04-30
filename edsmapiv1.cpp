@@ -65,3 +65,8 @@ void EdsmApiV1::executeRequest(const std::string &api, const RestClient::paramet
         return true;
     });
 }
+
+void EdsmApiV1::clearAllPendings()
+{
+    threads.clear_queue();
+}

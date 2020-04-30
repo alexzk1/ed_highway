@@ -7,6 +7,8 @@
 #include <QItemSelection>
 #include <QMenu>
 #include <QList>
+#include "utils/runners.h"
+#include <QProgressDialog>
 
 namespace Ui
 {
@@ -33,12 +35,18 @@ private slots:
     void updateSelection();
     void on_actionRemoveSelected_triggered();
     void doUndo();
+    void on_btnBulkAdd_clicked();
+
+    void on_btnBulkQuery_clicked();
+
 private:
     Ui::RoundTripWidget *ui;
     QPointer<EDSMSystemsModel> model;
     QString lastSelected;
     QPointer<QMenu> rclickMenu;
     QList<QStringList> undoList;
+    utility::runner_t queryThread{nullptr};
+    QPointer<QProgressDialog> progress{nullptr};
 
     void saveValues() const;
     void loadValues();

@@ -3,11 +3,11 @@
 #include "utils/containers_helpers.h"
 #include "utils/guard_on.h"
 #include "salesman/LittleAlgorithm.h"
+#include "execonmainthread.h"
 
 EDSMSystemsModel::EDSMSystemsModel(QObject *parent)
     : QAbstractTableModel(parent)
 {
-    connect(this, &EDSMSystemsModel::DO_NO_CONNECT_THIS_1, this, &EDSMSystemsModel::buildCrossResolve, Qt::QueuedConnection);
 }
 
 QVariant EDSMSystemsModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -155,14 +155,12 @@ void EDSMSystemsModel::startRouteBuild(QString initialSystem)
             LOCK_GUARD_ON(lock);
             routeLen = len;
         }
-        emit DO_NO_CONNECT_THIS_1(std::move(route));
-    });
-}
 
-void EDSMSystemsModel::buildCrossResolve(QStringList route)
-{
-    //exectues in main thread
-    routeBuilder.reset();
-    setSystems(route);
-    emit routeReady();
+        ExecOnMainThread::get().exec([route, this]()
+        {
+            routeBuilder.reset();
+            setSystems(std::move(route));
+            emit routeReady();
+        });
+    });
 }

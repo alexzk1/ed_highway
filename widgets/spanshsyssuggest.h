@@ -19,8 +19,6 @@ public:
 
     bool eventFilter(QObject *obj, QEvent *ev) override;
 signals:
-    //do not connect anything to this signal, I use it to resolve cross-thread call
-    void apiCompletedRequest(const QVector<QString> &choices);
 private slots:
     void showCompletion(const QVector<QString> &choices);
 public slots:

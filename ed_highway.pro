@@ -30,6 +30,7 @@ CONFIG += c++14
 SOURCES += \
         edsmapiv1.cpp \
         edsmwrapper.cpp \
+        execonmainthread.cpp \
         lzokay.cpp \
         main.cpp \
         mainwindow.cpp \
@@ -43,6 +44,7 @@ HEADERS += \
         edsmv1_nearest.h \
         edsmv1_sysinfo.h \
         edsmwrapper.h \
+        execonmainthread.h \
         lzokay.hpp \
         namedstarsystem.h \
         point.h \

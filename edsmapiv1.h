@@ -37,6 +37,7 @@ public:
         return threads.tasksCount();
     }
 
+    void clearAllPendings();
 private:
     friend void dotest();
     ctpl::thread_pool threads;

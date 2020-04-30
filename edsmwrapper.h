@@ -10,7 +10,7 @@ class EDSMWrapper
 {
 public:
     using callback_t = EdsmApiV1::callback_t;
-    using progress_update = std::function<void(size_t, size_t)>; // 1st current value, 2nd total
+    using progress_update = std::function<bool(size_t, size_t)>; // 1st current value, 2nd total
     EDSMWrapper() = delete;
 
 
@@ -25,8 +25,14 @@ public:
 
 
     //blocks caller thread until all done
-    static std::vector<nlohmann::json> requestManySysInfo(const QStringList& names, const progress_update& progress = [](auto, auto) {});
-    static std::vector<nlohmann::json> requestManySysInfoInRadius(const QString& center_name, int radius, const progress_update& progress = [](auto, auto) {});
+    static std::vector<nlohmann::json> requestManySysInfo(const QStringList& names, const progress_update& progress = [](auto, auto)
+    {
+        return false;
+    });
+    static std::vector<nlohmann::json> requestManySysInfoInRadius(const QString& center_name, int radius, const progress_update& progress = [](auto, auto)
+    {
+        return false;
+    });
 
 
     //does not block caller thread, callback executed in other thread scope (not the caller) if network request made

@@ -42,11 +42,9 @@ public slots:
 
     void startRouteBuild(QString initialSystem);
 private slots:
-    void buildCrossResolve(QStringList route);
 signals:
     void routeReady();
     void systemsChanged();
-    void DO_NO_CONNECT_THIS_1(QStringList);
 private:
     float routeLen{0.f};
     QStringList systemNames;

@@ -15,6 +15,7 @@
 #include "edsmwrapper.h"
 #include "dump_help.h"
 #include "salesman/LittleAlgorithm.h"
+#include "execonmainthread.h"
 
 void test_ocr()
 {
@@ -91,6 +92,7 @@ void test_wrapper()
     {
         if (a % 10 == 0)
             std::cout << a << " out of " << b << std::endl;
+        return false;
     });
     dump_helper::dumpContainer(list);
 
@@ -111,7 +113,7 @@ int main(int argc, char *argv[])
     a.setOrganizationName("pasteover.net");
 
     StringsFileCache::get(); //init cache
-
+    ExecOnMainThread::get();//creating object from inside gui thread for the 1st time
     //test_wrapper();
     //LittleAlgorithm::selfTest3();
     //exit(0);

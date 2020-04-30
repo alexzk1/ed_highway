@@ -90,42 +90,50 @@ QStringList EDSMWrapper::selectSystemsInRadiusNamesOnly(const QString &center_na
 
 std::vector<nlohmann::json> EDSMWrapper::requestManySysInfo(const QStringList &names, const EDSMWrapper::progress_update &progress)
 {
-    std::vector<nlohmann::json> res;
-    std::vector<confirmed_pass> passes;
+    std::shared_ptr<std::vector<nlohmann::json>> res(new std::vector<nlohmann::json>());
+    std::shared_ptr<std::vector<confirmed_pass>> passes(new std::vector<confirmed_pass>());
     const size_t sz = names.size();
     if (sz)
     {
-        res.resize(sz);
-        passes.resize(sz);
+        res->resize(sz);
+        passes->resize(sz);
 
         progress(0, sz);
+        std::shared_ptr<std::atomic<bool>> canceled(new std::atomic<bool>(false));
+
         for (size_t i = 0; i < sz; ++i)
         {
-            auto& r = res[i];
-            auto& p = passes[i];
-
-            const auto task = [i, sz, &r, &p, & progress](auto err, auto js)
+            const auto task = [i, sz, res, passes, &progress, canceled](auto err, auto js)
             {
-                try
+                if (!(*canceled))
                 {
-                    if (err.empty())
-                        r = std::move(js);
-                    progress(i, sz);
+                    try
+                    {
+                        if (err.empty())
+                            (*res)[i] = std::move(js);
+                        if (progress(i, sz))
+                        {
+                            *canceled = true;
+                            api().clearAllPendings();
+                            for (auto& v : *passes)
+                                v.confirm();
+                        }
+                    }
+                    catch (...)
+                    {
+                    }
+                    (*passes)[i].confirm();
                 }
-                catch (...)
-                {
-                }
-                p.confirm();
             };
             requestSysInfo(names.at(i), task);
         }
 
-        for (auto& p : passes)
+        for (auto& p : *passes)
             p.waitConfirm();
 
         progress(sz, sz);
     }
-    return res;
+    return std::move(*res);
 }
 
 std::vector<nlohmann::json> EDSMWrapper::requestManySysInfoInRadius(const QString &center_name, int radius, const progress_update &progress)

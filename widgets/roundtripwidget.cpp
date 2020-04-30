@@ -6,6 +6,11 @@
 #include <QVariant>
 #include <QClipboard>
 #include "config_ui/globalsettings.h"
+#include <QRegExp>
+#include <QProgressDialog>
+#include "utils/exec_exit.h"
+#include <QThread>
+#include "execonmainthread.h"
 
 const static QString settingsGroup{"RoundTripWidget"};
 
@@ -16,6 +21,7 @@ RoundTripWidget::RoundTripWidget(QWidget *parent) :
     ui->setupUi(this);
     ui->btnAdd->setAction(ui->actionAdd);
     new SpanshSysSuggest(ui->edSysManul);
+    new SpanshSysSuggest(ui->edCenter);
 
     rclickMenu = new QMenu(this);
     rclickMenu->addAction(ui->actionRemoveSelected);
@@ -191,5 +197,89 @@ void RoundTripWidget::on_actionRemoveSelected_triggered()
     {
         pushUndo();
         model->removeSystem(lastSelected);
+    }
+}
+
+void RoundTripWidget::on_btnBulkAdd_clicked()
+{
+    auto src = ui->bulkAdd->toPlainText();
+    src.replace("\"", " ");
+    src.replace(",", " ");
+    src.replace(";", " ");
+
+    if (!src.isEmpty())
+    {
+        const static QRegExp ns("\\n");
+        auto ls = src.split(ns, QString::SplitBehavior::SkipEmptyParts);
+        for (auto& s : ls)
+            s = s.trimmed();
+        if (ls.size())
+        {
+            pushUndo();
+            model->addSystems(ls);
+            ui->bulkAdd->clear();
+        }
+    }
+}
+
+void RoundTripWidget::on_btnBulkQuery_clicked()
+{
+    auto center = ui->edCenter->text();
+    if (!center.isEmpty())
+    {
+        const int ly = ui->spinLY->value();
+        switchUI(false);
+        if (!progress)
+        {
+            progress = new QProgressDialog (tr("Getting data from EDSM..."), tr("Cancel"), 0, 100, (QWidget*)this->parent());
+            progress->setWindowModality(Qt::WindowModal);
+            connect(progress, &QProgressDialog::canceled, this, [this]()
+            {
+                queryThread.reset();
+            });
+            progress->setAutoClose(true);
+            progress->setAutoReset(true);
+        }
+        progress->setValue(0);
+        progress->show();
+
+        queryThread = utility::startNewRunner([&](auto wasCanceled)
+        {
+            const auto info = EDSMWrapper::requestManySysInfoInRadius(center, ly, [this, wasCanceled](size_t a, size_t b)->bool
+            {
+                ExecOnMainThread::get().exec([this, a, b, wasCanceled]()
+                {
+                    if (progress)
+                    {
+                        if (progress->maximum() != (int)b)
+                            progress->setMaximum(b);
+                        progress->setValue(a);
+                        if (progress->wasCanceled())
+                            *wasCanceled = true;
+                    }
+                });
+                return *wasCanceled;
+            });
+
+            ExecOnMainThread::get().exec([this, info]()
+            {
+                switchUI(true);
+                if (progress)
+                    progress->deleteLater();
+
+                QStringList lst;
+                for (const auto& j : info)
+                {
+                    try
+                    {
+                        lst.push_back(QString::fromStdString(EDSMWrapper::valueFromJson<std::string>(j, "name")));
+                    }
+                    catch (...)
+                    {
+                    }
+                }
+                model->setSystems(lst);
+            });
+        });
     }
 }

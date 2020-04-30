@@ -5,6 +5,7 @@
 #include <QKeyEvent>
 #include <string>
 #include "config_ui/globalsettings.h"
+#include "execonmainthread.h"
 
 SpanshSysSuggest::SpanshSysSuggest(QLineEdit *parent) : QObject(parent), editor(parent)
 {
@@ -31,8 +32,6 @@ SpanshSysSuggest::SpanshSysSuggest(QLineEdit *parent) : QObject(parent), editor(
     connect(&timer, SIGNAL(timeout()), SLOT(autoSuggest()));
     connect(editor, SIGNAL(textEdited(QString)), &timer, SLOT(start()));
 
-    //resolves cross-thread calls (Qt::QueuedConnection)
-    connect(this, &SpanshSysSuggest::apiCompletedRequest, this, &SpanshSysSuggest::showCompletion, Qt::QueuedConnection);
 }
 
 SpanshSysSuggest::~SpanshSysSuggest()
@@ -40,7 +39,7 @@ SpanshSysSuggest::~SpanshSysSuggest()
     delete popup;
 }
 
-bool SpanshSysSuggest::eventFilter(QObject *obj, QEvent *ev)
+bool SpanshSysSuggest::eventFilter(QObject * obj, QEvent * ev)
 {
     if (obj != popup)
         return false;
@@ -150,7 +149,10 @@ void SpanshSysSuggest::autoSuggest()
             for (auto it = js.begin(); it != js.end(); ++it)
                 choices.push_back(QString::fromStdString(it->get<std::string>()));
         }
-        emit apiCompletedRequest(choices);
+        ExecOnMainThread::get().exec([this, choices]()
+        {
+            showCompletion(choices);
+        });
     };
     sapi.executeRequest(sn, result);
 }

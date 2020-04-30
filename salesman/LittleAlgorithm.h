@@ -16,7 +16,7 @@ public:
     float originalLength{0.f};
     float lastRouteLen{0.f};
 
-    explicit LittleAlgorithm(const QStringList& source_names); //star systems names list
+    explicit LittleAlgorithm(QStringList source_names); //star systems names list
     QStringList getRoute(const QString& startAt);
     static QStringList route(QStringList source_names, const QString& start, float *length = nullptr);
 

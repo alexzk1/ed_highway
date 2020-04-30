@@ -192,7 +192,7 @@ QString StringsFileCache::getData(const QString &key)
                                                               decompressed.get(), v.second.first, decompressed_size);
                         if (error >= lzokay::EResult::Success)
                         {
-                            auto t = QString::fromUtf8((char*)decompressed.get(), decompressed_size);
+                            const auto t = QString::fromUtf8((char*)decompressed.get(), decompressed_size);
                             addToRam(key, t);
                             return t;
                         }

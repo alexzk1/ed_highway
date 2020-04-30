@@ -55,35 +55,3 @@ QVariant EDSMSystemsModel::data(const QModelIndex &index, int role) const
     // FIXME: Implement me!
     return QVariant();
 }
-
-bool EDSMSystemsModel::insertRows(int row, int count, const QModelIndex &parent)
-{
-    beginInsertRows(parent, row, row + count - 1);
-    // FIXME: Implement me!
-    endInsertRows();
-    return false;
-}
-
-bool EDSMSystemsModel::insertColumns(int column, int count, const QModelIndex &parent)
-{
-    beginInsertColumns(parent, column, column + count - 1);
-    // FIXME: Implement me!
-    endInsertColumns();
-    return false;
-}
-
-bool EDSMSystemsModel::removeRows(int row, int count, const QModelIndex &parent)
-{
-    beginRemoveRows(parent, row, row + count - 1);
-    // FIXME: Implement me!
-    endRemoveRows();
-    return false;
-}
-
-bool EDSMSystemsModel::removeColumns(int column, int count, const QModelIndex &parent)
-{
-    beginRemoveColumns(parent, column, column + count - 1);
-    // FIXME: Implement me!
-    endRemoveColumns();
-    return false;
-}

@@ -20,14 +20,6 @@ public:
 
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
-    // Add data:
-    bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
-    bool insertColumns(int column, int count, const QModelIndex &parent = QModelIndex()) override;
-
-    // Remove data:
-    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
-    bool removeColumns(int column, int count, const QModelIndex &parent = QModelIndex()) override;
-
 private:
 };
 

@@ -54,16 +54,12 @@ QVariant EDSMSystemsModel::data(const QModelIndex &index, int role) const
     if (index.isValid())
     {
         if (Qt::DisplayRole == role)
-        {
-            LOCK_GUARD_ON(lock);
-            if (row > -1 && row < systemNames.size())
-                return systemNames.at(row);
-        }
+            return getSystemNameAt(index);
 
         if (Qt::ToolTipRole == role)
         {
             LOCK_GUARD_ON(lock);
-            return QStringLiteral("<p>Selected row is copied + is a 1st system during ordering.</p><hr>%1").arg(EDSMWrapper::tooltipWithSysInfo(systemNames.at(row)));
+            return QStringLiteral("<p>Selected row is copied + is a 1st system during ordering.</p><hr%1").arg(EDSMWrapper::tooltipWithSysInfo(systemNames.at(row)));
         }
     }
 
@@ -76,12 +72,34 @@ QStringList EDSMSystemsModel::getSystems() const
     return systemNames;
 }
 
+QString EDSMSystemsModel::getSystemNameAt(const QModelIndex &index) const
+{
+    QString r;
+    LOCK_GUARD_ON(lock);
+    if (index.row() > -1 && index.row() < systemNames.size())
+        r = systemNames.at(index.row());
+    return r;
+}
+
 void EDSMSystemsModel::addSystem(const QString &sys)
 {
     LOCK_GUARD_ON(lock);
     beginResetModel();
     systemNames.push_back(sys);
     endResetModel();
+    emit systemsChanged();
+}
+
+void EDSMSystemsModel::removeSystem(const QString &sys)
+{
+    LOCK_GUARD_ON(lock);
+    beginResetModel();
+    types_ns::remove_if(systemNames, [&sys](const auto & v)
+    {
+        return v == sys;
+    });
+    endResetModel();
+    emit systemsChanged();
 }
 
 void EDSMSystemsModel::addSystems(const QStringList &many_sys)
@@ -90,6 +108,7 @@ void EDSMSystemsModel::addSystems(const QStringList &many_sys)
     beginResetModel();
     systemNames.append(many_sys);
     endResetModel();
+    emit systemsChanged();
 }
 
 void EDSMSystemsModel::setSystems(QStringList bulk)
@@ -99,6 +118,7 @@ void EDSMSystemsModel::setSystems(QStringList bulk)
     systemNames.clear();
     systemNames = std::move(bulk);
     endResetModel();
+    emit systemsChanged();
 }
 
 void EDSMSystemsModel::clearSystems()
@@ -107,10 +127,21 @@ void EDSMSystemsModel::clearSystems()
     beginResetModel();
     systemNames.clear();
     endResetModel();
+    emit systemsChanged();
 }
 
 void EDSMSystemsModel::startRouteBuild(QString initialSystem)
 {
+    {
+        LOCK_GUARD_ON(lock);
+        if (systemNames.empty())
+        {
+            emit routeReady();
+            return;
+        }
+        if (initialSystem.isEmpty())
+            initialSystem = systemNames.at(0);
+    }
     routeBuilder = utility::startNewRunner([this, initialSystem](auto)
     {
         QStringList snapshoot;

@@ -68,8 +68,11 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="toolTip">
+        <string>Visit each star once with minimal length of route.</string>
+       </property>
        <property name="text">
-        <string>Order for Optimal Route</string>
+        <string>Optimize Route</string>
        </property>
       </widget>
      </item>
@@ -113,6 +116,15 @@
     <string>Add word to list.</string>
    </property>
   </action>
+  <action name="actionRemoveSelected">
+   <property name="icon">
+    <iconset resource="../resources.qrc">
+     <normaloff>:/images/Circle remove.png</normaloff>:/images/Circle remove.png</iconset>
+   </property>
+   <property name="text">
+    <string>RemoveSelected</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -121,6 +133,8 @@
    <header location="global">actionbutton.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

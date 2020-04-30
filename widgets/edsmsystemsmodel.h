@@ -23,10 +23,14 @@ public:
 
     QStringList getSystems() const;
 
+    QString getSystemNameAt(const QModelIndex &index) const;
+
 public slots:
 
     //add 1 sys
     void addSystem(const QString& sys);
+
+    void removeSystem(const QString& sys);
 
     //add many sys
     void addSystems(const QStringList& many_sys);
@@ -41,7 +45,7 @@ private slots:
     void buildCrossResolve(QStringList route);
 signals:
     void routeReady();
-
+    void systemsChanged();
     void DO_NO_CONNECT_THIS_1(QStringList);
 private:
     float routeLen{0.f};

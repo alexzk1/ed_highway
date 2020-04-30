@@ -5,6 +5,7 @@
 #include <QPointer>
 #include "edsmsystemsmodel.h"
 #include <QItemSelection>
+#include <QMenu>
 
 namespace Ui
 {
@@ -26,15 +27,23 @@ private slots:
     void on_actionAdd_triggered();
     void slotSystemSelected(const QItemSelection &, const QItemSelection &n);
     void on_tableView_clicked(const QModelIndex &index);
-
     void on_btnClear_clicked();
+    void on_btnCalc_clicked();
+    void updateSelection();
+    void on_actionRemoveSelected_triggered();
 
 private:
     Ui::RoundTripWidget *ui;
     QPointer<EDSMSystemsModel> model;
+    QString lastSelected;
+    QPointer<QMenu> rclickMenu;
+
 
     void saveValues() const;
     void loadValues();
+
+
+    void switchUI(bool enabled);
 };
 
 #endif // ROUNDTRIPWIDGET_H

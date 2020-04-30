@@ -87,7 +87,7 @@ QVariant QJsonTableModel::data( const QModelIndex &index, int role ) const
             {
                 QJsonValue v = obj[ key ];
                 if ( v.isString() )
-                    return QStringLiteral("<p>Selected row is copied + is a 1st system during ordering.</p><hr>%1").arg(EDSMWrapper::tooltipWithSysInfo(v.toString()));
+                    return QStringLiteral("<p>Selected row is copied.</p><hr>%1").arg(EDSMWrapper::tooltipWithSysInfo(v.toString()));
             }
         }
         default:

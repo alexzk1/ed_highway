@@ -2,6 +2,8 @@
 #define EDSMSYSTEMSMODEL_H
 
 #include <mutex>
+#include <vector>
+
 #include <QAbstractTableModel>
 #include "utils/runners.h"
 
@@ -48,8 +50,11 @@ signals:
 private:
     float routeLen{0.f};
     QStringList systemNames;
+    std::vector<float> distances;
     mutable std::recursive_mutex lock;
     utility::runner_t routeBuilder{nullptr};
+
+    void fillDistances();
 };
 
 #endif // EDSMSYSTEMSMODEL_H

@@ -16,6 +16,7 @@ QVariant EDSMSystemsModel::headerData(int section, Qt::Orientation orientation, 
     const static QString headers[] =
     {
         tr("System Name"),
+        tr("Distances"),
     };
 
     const size_t index = static_cast<size_t>(section);
@@ -43,19 +44,23 @@ int EDSMSystemsModel::columnCount(const QModelIndex &parent) const
     if (parent.isValid())
         return 0;
 
-    return 1;
+    return 2;
 }
 
 QVariant EDSMSystemsModel::data(const QModelIndex &index, int role) const
 {
     const int row = index.row();
-    //const int col = index.column();
+    const int col = index.column();
 
     if (index.isValid())
     {
         if (Qt::DisplayRole == role)
-            return getSystemNameAt(index);
-
+        {
+            if (col == 0)
+                return getSystemNameAt(index);
+            if (col == 1)
+                return distances.at(row);
+        }
         if (Qt::ToolTipRole == role)
         {
             LOCK_GUARD_ON(lock);
@@ -86,6 +91,7 @@ void EDSMSystemsModel::addSystem(const QString &sys)
     LOCK_GUARD_ON(lock);
     beginResetModel();
     systemNames.push_back(sys);
+    fillDistances();
     endResetModel();
     emit systemsChanged();
 }
@@ -98,6 +104,7 @@ void EDSMSystemsModel::removeSystem(const QString &sys)
     {
         return v == sys;
     });
+    fillDistances();
     endResetModel();
     emit systemsChanged();
 }
@@ -107,6 +114,7 @@ void EDSMSystemsModel::addSystems(const QStringList &many_sys)
     LOCK_GUARD_ON(lock);
     beginResetModel();
     systemNames.append(many_sys);
+    fillDistances();
     endResetModel();
     emit systemsChanged();
 }
@@ -117,6 +125,7 @@ void EDSMSystemsModel::setSystems(QStringList bulk)
     beginResetModel();
     systemNames.clear();
     systemNames = std::move(bulk);
+    fillDistances();
     endResetModel();
     emit systemsChanged();
 }
@@ -126,6 +135,7 @@ void EDSMSystemsModel::clearSystems()
     LOCK_GUARD_ON(lock);
     beginResetModel();
     systemNames.clear();
+    fillDistances();
     endResetModel();
     emit systemsChanged();
 }
@@ -163,4 +173,38 @@ void EDSMSystemsModel::startRouteBuild(QString initialSystem)
             emit routeReady();
         });
     });
+}
+
+void EDSMSystemsModel::fillDistances()
+{
+    const auto static point = [](const QString & name)
+    {
+        Point p;
+        try
+        {
+            const auto json = EDSMWrapper::requestSysInfo(name);
+            p = Point::fromJson(json);
+        }
+        catch (...)
+        {
+
+        }
+        return p;
+    };
+    distances.clear();
+    const auto sz = systemNames.size();
+    distances.reserve(sz);
+    distances.push_back(0);
+    if (sz > 1)
+    {
+        float sum = 0.f;
+        Point prev = point(systemNames.first());
+        for (int i = 1; i < sz; ++i)
+        {
+            auto p = point(systemNames.at(i));
+            sum += prev.distance(p);
+            prev = std::move(p);
+            distances.push_back(sum);
+        }
+    }
 }

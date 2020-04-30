@@ -38,7 +38,7 @@ RoundTripWidget::RoundTripWidget(QWidget *parent) :
     model = new EDSMSystemsModel(this);
     ui->tableView->setModel(model);
     ui->tableView->horizontalHeader()->setStretchLastSection(true);
-
+    ui->tableView->verticalHeader()->setVisible(true);
 
     loadValues();
     connect(ui->tableView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),

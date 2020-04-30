@@ -59,6 +59,25 @@ RoundTripWidget::RoundTripWidget(QWidget *parent) :
 
     connect(model, &EDSMSystemsModel::systemsChanged, this, &RoundTripWidget::updateSelection);
     connect(ui->btnUndo, &QPushButton::clicked, this, &RoundTripWidget::doUndo);
+
+    const static QStringList economies =
+    {
+        "Agriculture",
+        "Colony",
+        "Extraction",
+        "High Tech",
+        "Industrial",
+        "Military",
+        "Refinery",
+        "Service",
+        "Terraforming",
+        "Tourism",
+        "Prison",
+        "Repair",
+        "Rescue",
+        "Damaged",
+    };
+    ui->list1_or_2->addItems(economies);
 }
 
 RoundTripWidget::~RoundTripWidget()
@@ -228,6 +247,7 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
     if (!center.isEmpty())
     {
         const int ly = ui->spinLY->value();
+
         switchUI(false);
         if (!progress)
         {
@@ -243,9 +263,9 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
         progress->setValue(0);
         progress->show();
 
-        queryThread = utility::startNewRunner([&](auto wasCanceled)
+        queryThread = utility::startNewRunner([ = ](auto wasCanceled)
         {
-            const auto info = EDSMWrapper::requestManySysInfoInRadius(center, ly, [this, wasCanceled](size_t a, size_t b)->bool
+            const auto info = EDSMWrapper::requestManySysInfoInRadius(center, ly, [ = ](size_t a, size_t b)->bool
             {
                 ExecOnMainThread::get().exec([this, a, b, wasCanceled]()
                 {
@@ -261,24 +281,59 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
                 return *wasCanceled;
             });
 
-            ExecOnMainThread::get().exec([this, info]()
+            ExecOnMainThread::get().exec([ = ]()
             {
+                QStringList lst;
+                QString eco12 = ui->list1_or_2->currentText();
+                const bool eco_filter12 = ui->cb1_or2->isChecked() && !eco12.isEmpty();
+
+                for (const auto& json : info)
+                {
+                    const auto value_or_none = [&json](const std::string & root, const std::string & name) ->QString
+                    {
+                        const static QString none ;
+                        try
+                        {
+                            if (root.empty())
+                                return QString::fromStdString(EDSMWrapper::valueFromJson<std::string>(json, name));
+
+                            auto r = EDSMWrapper::valueFromJson<nlohmann::json>(json, root);
+                            if (name != "population")
+                            {
+                                auto s = EDSMWrapper::valueFromJson<std::string>(r, name);
+                                return QString::fromStdString(s);
+                            }
+                            else
+                            {
+                                auto s = EDSMWrapper::valueFromJson<uint64_t>(r, name);
+                                return QStringLiteral("%1").arg(s);
+                            }
+                        }
+                        catch (...)
+                        {
+                        }
+                        return none;
+                    };
+
+                    bool can_push = true;
+                    if (eco_filter12)
+                    {
+                        const auto e1 = value_or_none("information", "economy");
+                        const auto e2 = value_or_none("information", "secondEconomy");
+                        can_push = eco12.compare(e1, Qt::CaseInsensitive) == 0 || eco12.compare(e2, Qt::CaseInsensitive) == 0;
+                    }
+                    if (can_push)
+                    {
+                        auto n = value_or_none("", "name");
+                        if (!n.isEmpty())
+                            lst.push_back(n);
+                    }
+                }
+                model->addSystems(lst);
+
                 switchUI(true);
                 if (progress)
                     progress->deleteLater();
-
-                QStringList lst;
-                for (const auto& j : info)
-                {
-                    try
-                    {
-                        lst.push_back(QString::fromStdString(EDSMWrapper::valueFromJson<std::string>(j, "name")));
-                    }
-                    catch (...)
-                    {
-                    }
-                }
-                model->setSystems(lst);
             });
         });
     }

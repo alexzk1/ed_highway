@@ -14,18 +14,16 @@
 LittleAlgorithm::LittleAlgorithm(QStringList source_names)
 {
     utility::RemoveDuplicatesKeepOrder<QString, QStringList>(source_names);
-    if (source_names.size() == 1)
+    if (source_names.size() < 3)
     {
-        result.emplace_back(0, 0, 0);
+        if (source_names.size() == 1)
+            result.emplace_back(0, 0, 0);
+
+        if (source_names.size() == 2)
+            result.emplace_back(0, 1, 0);
+
         return;
     }
-
-    if (source_names.size() == 2)
-    {
-        result.emplace_back(0, 1, 0);
-        return;
-    }
-
     {
         const auto src_js = EDSMWrapper::requestManySysInfo(source_names);
         source.reserve(src_js.size());

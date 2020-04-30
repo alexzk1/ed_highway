@@ -7,6 +7,7 @@
 #include <mutex>
 #include <stdint.h>
 #include <QPair>
+#include <QCache>
 
 //this is string;string pairs which is saved to files on disk
 //values are compressed, each value is in separated file with expire time
@@ -49,10 +50,13 @@ private:
 
     std::mutex lock;
     lzokay::Dict<> dict;
-    QMap<QString, QString> key2filename{};
+    QMap<QString, QString> key2filename{};//stores ky/filename
+
+    QCache<QString, QString> ram_cache; //unlike above stores key/value-from-file
 
     binary_blob compress(const QString& value);
     const QString& getFileNameOrEmpty(const QString& key);
     void dumpListFile() const;
     void dropKey(const QString& key);
+    void addToRam(const QString& key, const QString& value);
 };

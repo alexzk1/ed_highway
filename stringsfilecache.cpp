@@ -63,6 +63,7 @@ static QString getListFileName()
 }
 
 StringsFileCache::StringsFileCache()
+    : ram_cache(500)
 {
     bool need_delete_cache = true;
     {
@@ -86,12 +87,19 @@ void StringsFileCache::dumpListFile() const
 
 void StringsFileCache::dropKey(const QString &key)
 {
+    ram_cache.remove(key);
+
     const auto& fn = getFileNameOrEmpty(key);
     if (!fn.isEmpty())
     {
         QFile::remove(getCacheDir() + "/" + fn);
         key2filename.remove(key);
     }
+}
+
+void StringsFileCache::addToRam(const QString &key, const QString &value)
+{
+    ram_cache.insert(key, new QString(value));
 }
 
 StringsFileCache::~StringsFileCache()
@@ -134,13 +142,14 @@ bool StringsFileCache::addData(const QString &key, const QString &value, uint32_
         for (int counter = 0; QFile::exists(getCacheDir() + "/" + finalName) && counter < 5000; ++counter)
             finalName = QStringLiteral("%1_%2").arg(filename).arg(counter);
 
-
+        addToRam(key, value);
         QFile file(getCacheDir() + "/" + finalName);
         if (file.open(QIODevice::WriteOnly))
         {
             dropKey(key);
             writeToFile(file, compressed);
             key2filename[key] = finalName;
+
             result = true;
         }
     }
@@ -161,6 +170,11 @@ QString StringsFileCache::getData(const QString &key)
     if (!key.isEmpty())
     {
         LOCK_GUARD_ON(lock);
+
+        const auto rp = ram_cache[key];
+        if (rp)
+            return *rp;
+
         const auto& fn = getFileNameOrEmpty(key);
         if (!fn.isEmpty())
         {
@@ -177,7 +191,11 @@ QString StringsFileCache::getData(const QString &key)
                         const auto error = lzokay::decompress(v.second.second.data(), v.second.second.length(),
                                                               decompressed.get(), v.second.first, decompressed_size);
                         if (error >= lzokay::EResult::Success)
-                            return QString::fromUtf8((char*)decompressed.get(), decompressed_size);
+                        {
+                            auto t = QString::fromUtf8((char*)decompressed.get(), decompressed_size);
+                            addToRam(key, t);
+                            return t;
+                        }
                     }
                 }
             }
@@ -191,6 +209,8 @@ void StringsFileCache::cleanAll()
 {
     LOCK_GUARD_ON(lock);
     key2filename.clear();
+    ram_cache.clear();
+
     QDir d(getCacheDir());
     d.removeRecursively();
     d.mkpath(getCacheDir());

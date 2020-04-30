@@ -5,6 +5,7 @@
 #include <QSettings>
 #include <QVariant>
 #include <QClipboard>
+#include "config_ui/globalsettings.h"
 
 const static QString settingsGroup{"RoundTripWidget"};
 
@@ -51,6 +52,7 @@ RoundTripWidget::RoundTripWidget(QWidget *parent) :
     });
 
     connect(model, &EDSMSystemsModel::systemsChanged, this, &RoundTripWidget::updateSelection);
+    connect(ui->btnUndo, &QPushButton::clicked, this, &RoundTripWidget::doUndo);
 }
 
 RoundTripWidget::~RoundTripWidget()
@@ -74,10 +76,12 @@ void RoundTripWidget::changeEvent(QEvent *e)
 
 void RoundTripWidget::on_actionAdd_triggered()
 {
+    pushUndo();
     model->addSystem(ui->edSysManul->text());
     //triggering network request to edsm if any, so later this data will be cached already
     EDSMWrapper::requestSysInfo(ui->edSysManul->text(), [](auto, auto) {});
     ui->edSysManul->clear();
+    ui->edSysManul->setFocus();
 }
 
 void RoundTripWidget::slotSystemSelected(const QItemSelection &, const QItemSelection &n)
@@ -151,8 +155,25 @@ void RoundTripWidget::switchUI(bool enabled)
     setEnabled(enabled);
 }
 
+void RoundTripWidget::pushUndo()
+{
+    undoList.push_back(model->getSystems());
+    if (undoList.size() > StaticSettingsMap::getGlobalSetts().readInt("03_Int_UNDO"))
+        undoList.pop_front();
+}
+
+void RoundTripWidget::doUndo()
+{
+    if (!undoList.empty())
+    {
+        model->setSystems(undoList.back());
+        undoList.pop_back();
+    }
+}
+
 void RoundTripWidget::on_btnClear_clicked()
 {
+    pushUndo();
     model->clearSystems();
     lastSelected = "";
 }
@@ -160,11 +181,15 @@ void RoundTripWidget::on_btnClear_clicked()
 void RoundTripWidget::on_btnCalc_clicked()
 {
     switchUI(false);
+    pushUndo();
     model->startRouteBuild(lastSelected);
 }
 
 void RoundTripWidget::on_actionRemoveSelected_triggered()
 {
     if (!lastSelected.isEmpty())
+    {
+        pushUndo();
         model->removeSystem(lastSelected);
+    }
 }

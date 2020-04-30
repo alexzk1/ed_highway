@@ -21,11 +21,14 @@ const StaticSettingsMap &StaticSettingsMap::getGlobalSetts()
                   tr("This value defines minimal delay before systems' names will be pulled from website.\nSetting will take effect after restart."), 25, 1200),
 
         DECL_SETT(GlobalStorableInt, "02_Int_SHIP_LY", 70, tr("Default jump range (ly)"),
-                  tr("This value defines rounded ship's jump range (ly) to be used as default for new plot."), 5, 200),
+                  tr("This value defines rounded ship's jump range (ly) to be used as default for new plot."), 5, 500),
 
         DECL_SETT(GlobalStorableInt, "03_Int_PRECISE", 70, tr("Route plotter's precision (%%)."),
                   tr("Increase this to reduce how far off the direct route the system will plot to get to a neutron star (An efficiency of 100 will not deviate from the direct route in order to plot from A to B and will most likely break down the journey into 20000 LY blocks)."),
-                  5, 200),
+                  5, 100),
+        DECL_SETT(GlobalStorableInt, "03_Int_UNDO", 20, tr("Undo limit for route optimizer."),
+                  tr("Sets how many stages can be undone in route optimizer tab. Consumes RAM."),
+                  5, 100),
 
 #ifdef OCR_ADDED
         DECL_SETT(GlobalHotkeyStorable, "51_MapOcrHotkey", "CTRL+ALT+M", tr("OCR Galaxy Map and put star's name to clipboard."),

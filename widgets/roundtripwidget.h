@@ -6,6 +6,7 @@
 #include "edsmsystemsmodel.h"
 #include <QItemSelection>
 #include <QMenu>
+#include <QList>
 
 namespace Ui
 {
@@ -31,19 +32,22 @@ private slots:
     void on_btnCalc_clicked();
     void updateSelection();
     void on_actionRemoveSelected_triggered();
-
+    void doUndo();
 private:
     Ui::RoundTripWidget *ui;
     QPointer<EDSMSystemsModel> model;
     QString lastSelected;
     QPointer<QMenu> rclickMenu;
-
+    QList<QStringList> undoList;
 
     void saveValues() const;
     void loadValues();
 
 
     void switchUI(bool enabled);
+
+    void pushUndo();
+
 };
 
 #endif // ROUNDTRIPWIDGET_H

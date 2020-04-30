@@ -6,5 +6,8 @@
         <file>images/up-arrow.png</file>
         <file>images/Actions history clear.png</file>
         <file>images/Circle remove.png</file>
+        <file>images/button round start.png</file>
+        <file>images/Undo.png</file>
+        <file>images/Start here.png</file>
     </qresource>
 </RCC>

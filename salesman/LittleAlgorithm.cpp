@@ -65,19 +65,38 @@ QStringList LittleAlgorithm::getRoute(const QString &startAt)
     auto sit = std::find(source.begin(), source.end(), startAt);
     if (sit != source.end())
     {
-        const size_t startindex = std::distance(source.begin(), sit);
-
-        for (size_t index = startindex;; )
+        if (source.size() < 3)
         {
-            res.push_back(source.at(index));
-            auto fit = std::find_if(result.begin(), result.end(), [&index](const auto & e)
+            res.push_back(*sit);
+            if (source.size() == 2)
             {
-                return e.i == index;
-            });
-            length += source.at(index).p.distance(source.at(fit->j).p);
-            index = fit->j;
-            if (index == startindex)
-                break;
+                if (sit == source.begin())
+                    res.push_back(source.back());
+                else
+                    res.push_back(*source.begin());
+                length = source.begin()->p.distance(source.back().p);
+            }
+        }
+        else
+        {
+            const size_t startindex = std::distance(source.begin(), sit);
+
+            for (size_t index = startindex;; )
+            {
+                res.push_back(source.at(index));
+                const auto fit = std::find_if(result.begin(), result.end(), [&index](const auto & e)
+                {
+                    return e.i == index;
+                });
+
+                if (fit == result.end())
+                    break;
+
+                length += source.at(index).p.distance(source.at(fit->j).p);
+                index = fit->j;
+                if (index == startindex)
+                    break;
+            }
         }
 
     }

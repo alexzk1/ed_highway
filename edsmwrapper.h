@@ -2,7 +2,9 @@
 #include <QString>
 #include <QStringList>
 #include <atomic>
+#include <memory>
 #include "edsmapiv1.h"
+#include "utils/conditional_wait.h"
 
 //this class solves some exact tasks, using caching, so do not stress edsm too much
 
@@ -23,6 +25,54 @@ public:
     //blocks caller thread until have return value, may return empty list
     static QStringList selectSystemsInRadiusNamesOnly(const QString& center_name, int radius);
 
+    template <class RequestCallable>
+    static std::vector<nlohmann::json> requestMany(const QStringList& names, const RequestCallable& request, const progress_update& progress)
+    {
+        std::shared_ptr<std::vector<nlohmann::json>> res(new std::vector<nlohmann::json>());
+        std::shared_ptr<std::vector<confirmed_pass>> passes(new std::vector<confirmed_pass>());
+        const size_t sz = names.size();
+        if (sz)
+        {
+            res->resize(sz);
+            passes->resize(sz);
+
+            progress(0, sz);
+            std::shared_ptr<std::atomic<bool>> canceled(new std::atomic<bool>(false));
+
+            for (size_t i = 0; i < sz; ++i)
+            {
+                const auto task = [i, sz, res, passes, &progress, canceled](auto err, auto js)
+                {
+                    if (!(*canceled))
+                    {
+                        try
+                        {
+                            if (err.empty())
+                                (*res)[i] = std::move(js);
+                            if (progress(i, sz))
+                            {
+                                *canceled = true;
+                                api().clearAllPendings();
+                                for (auto& v : *passes)
+                                    v.confirm();
+                            }
+                        }
+                        catch (...)
+                        {
+                        }
+                        (*passes)[i].confirm();
+                    }
+                };
+                request(names.at(i), task);
+            }
+
+            for (auto& p : *passes)
+                p.waitConfirm();
+
+            progress(sz, sz);
+        }
+        return std::move(*res);
+    }
 
     //blocks caller thread until all done
     static std::vector<nlohmann::json> requestManySysInfo(const QStringList& names, const progress_update& progress = [](auto, auto)
@@ -44,6 +94,20 @@ public:
 
     //blocks caller thread
     static QString tooltipWithSysInfo(const QString& sys_name);
+
+    //does not block caller thread, callback executed in other thread scope (not the caller) if network request made
+    //or immediatly in caller thread if cache used
+    static void requestBodiesInfo(const QString& sys_name, callback_t callback);
+
+    //blocks caller thread
+    static nlohmann::json requestBodiesInfo(const QString& sys_name);
+
+
+    //blocks caller thread until all done
+    static std::vector<nlohmann::json> requestManyBodiesInfo(const QStringList& names, const progress_update& progress = [](auto, auto)
+    {
+        return false;
+    });
 
 
     template<class Res>

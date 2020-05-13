@@ -102,6 +102,15 @@ void test_wrapper()
 #endif
 }
 
+void test_body_info()
+{
+#ifdef SRC_PATH
+    auto r = EDSMWrapper::requestBodiesInfo("Borann");
+    std::cout << dump_helper::toStdStr(r) << std::endl;
+    exit(0);
+#endif
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -114,6 +123,7 @@ int main(int argc, char *argv[])
 
     StringsFileCache::get(); //init cache
     ExecOnMainThread::get();//creating object from inside gui thread for the 1st time
+    test_body_info();
     //test_wrapper();
     //LittleAlgorithm::selfTest3();
     //exit(0);

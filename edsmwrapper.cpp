@@ -1,6 +1,5 @@
 #include "edsmwrapper.h"
 #include "stringsfilecache.h"
-#include "utils/conditional_wait.h"
 #include "edsmv1_nearest.h"
 #include "edsmv1_sysinfo.h"
 #include <iostream>
@@ -90,50 +89,10 @@ QStringList EDSMWrapper::selectSystemsInRadiusNamesOnly(const QString &center_na
 
 std::vector<nlohmann::json> EDSMWrapper::requestManySysInfo(const QStringList &names, const EDSMWrapper::progress_update &progress)
 {
-    std::shared_ptr<std::vector<nlohmann::json>> res(new std::vector<nlohmann::json>());
-    std::shared_ptr<std::vector<confirmed_pass>> passes(new std::vector<confirmed_pass>());
-    const size_t sz = names.size();
-    if (sz)
+    return std::move(requestMany(names, [](auto a, auto b)
     {
-        res->resize(sz);
-        passes->resize(sz);
-
-        progress(0, sz);
-        std::shared_ptr<std::atomic<bool>> canceled(new std::atomic<bool>(false));
-
-        for (size_t i = 0; i < sz; ++i)
-        {
-            const auto task = [i, sz, res, passes, &progress, canceled](auto err, auto js)
-            {
-                if (!(*canceled))
-                {
-                    try
-                    {
-                        if (err.empty())
-                            (*res)[i] = std::move(js);
-                        if (progress(i, sz))
-                        {
-                            *canceled = true;
-                            api().clearAllPendings();
-                            for (auto& v : *passes)
-                                v.confirm();
-                        }
-                    }
-                    catch (...)
-                    {
-                    }
-                    (*passes)[i].confirm();
-                }
-            };
-            requestSysInfo(names.at(i), task);
-        }
-
-        for (auto& p : *passes)
-            p.waitConfirm();
-
-        progress(sz, sz);
-    }
-    return std::move(*res);
+        requestSysInfo(a, b);
+    }, progress));
 }
 
 std::vector<nlohmann::json> EDSMWrapper::requestManySysInfoInRadius(const QString &center_name, int radius, const progress_update &progress)
@@ -238,4 +197,36 @@ QString EDSMWrapper::tooltipWithSysInfo(const QString &sys_name)
            .arg(value_or_none("primaryStar", "type"))
            .arg(sys_name)
            ;
+}
+
+void EDSMWrapper::requestBodiesInfo(const QString &sys_name, EDSMWrapper::callback_t callback)
+{
+    const auto key = QStringLiteral("BODYINFO_%1").arg(sys_name);
+    if (!tryParseFromCache(key, callback))
+    {
+        EDSMV1SysBodies r(sys_name.toStdString());
+        execRequest(key, r, 20, std::move(callback), 3);
+    }
+}
+
+nlohmann::json EDSMWrapper::requestBodiesInfo(const QString &sys_name)
+{
+    nlohmann::json res;
+    confirmed_pass pass;
+    requestBodiesInfo(sys_name, [&res, &pass](auto err, auto js)
+    {
+        if (err.empty())
+            res = std::move(js);
+        pass.confirm();
+    });
+    pass.waitConfirm();
+    return res;
+}
+
+std::vector<nlohmann::json> EDSMWrapper::requestManyBodiesInfo(const QStringList &names, const EDSMWrapper::progress_update &progress)
+{
+    return std::move(requestMany(names, [](auto a, auto b)
+    {
+        requestBodiesInfo(a, b);
+    }, progress));
 }

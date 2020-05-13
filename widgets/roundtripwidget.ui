@@ -103,6 +103,13 @@
          </property>
         </widget>
        </item>
+       <item row="3" column="1">
+        <widget class="QPushButton" name="btnCopy">
+         <property name="text">
+          <string>Copy List</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item>
@@ -181,7 +188,7 @@
            <item row="0" column="1">
             <widget class="QLineEdit" name="edCenter"/>
            </item>
-           <item row="5" column="0" colspan="2">
+           <item row="7" column="0" colspan="2">
             <widget class="QPushButton" name="btnBulkQuery">
              <property name="text">
               <string>Query EDSM and Add To List</string>
@@ -239,6 +246,53 @@
            </item>
            <item row="4" column="1">
             <widget class="QComboBox" name="list1_or_2"/>
+           </item>
+           <item row="5" column="0" colspan="2">
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>Bodies</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0" colspan="2">
+            <widget class="QGroupBox" name="groupBox_3">
+             <property name="title">
+              <string>Rings</string>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <widget class="QCheckBox" name="cbrIcy">
+                <property name="text">
+                 <string>Icy</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="cbrRocky">
+                <property name="text">
+                 <string>Rocky</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="cbrMetal">
+                <property name="text">
+                 <string>Metallic</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="cbrRichMetall">
+                <property name="text">
+                 <string>Metall Rich</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
            </item>
           </layout>
          </widget>

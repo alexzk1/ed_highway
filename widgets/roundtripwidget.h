@@ -39,6 +39,8 @@ private slots:
 
     void on_btnBulkQuery_clicked();
 
+    void on_btnCopy_clicked();
+
 private:
     Ui::RoundTripWidget *ui;
     QPointer<EDSMSystemsModel> model;

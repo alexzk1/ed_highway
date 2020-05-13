@@ -4,6 +4,8 @@
 #include "utils/guard_on.h"
 #include "salesman/LittleAlgorithm.h"
 #include "execonmainthread.h"
+#include <QClipboard>
+#include <QGuiApplication>
 
 EDSMSystemsModel::EDSMSystemsModel(QObject *parent)
     : QAbstractTableModel(parent)
@@ -173,6 +175,13 @@ void EDSMSystemsModel::startRouteBuild(QString initialSystem)
             emit routeReady();
         });
     });
+}
+
+void EDSMSystemsModel::copyCurrentList() const
+{
+    QClipboard *clipboard = QGuiApplication::clipboard();
+    if (clipboard)
+        clipboard->setText(systemNames.join("\n"));
 }
 
 void EDSMSystemsModel::fillDistances()

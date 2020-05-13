@@ -243,7 +243,7 @@ void RoundTripWidget::on_btnBulkAdd_clicked()
 
 void RoundTripWidget::on_btnBulkQuery_clicked()
 {
-    auto center = ui->edCenter->text();
+    const auto center = ui->edCenter->text();
     if (!center.isEmpty())
     {
         const int ly = ui->spinLY->value();
@@ -263,6 +263,14 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
         progress->setValue(0);
         progress->show();
 
+        const bool r_icy        = ui->cbrIcy->isChecked();
+        const bool r_rocky      = ui->cbrRocky->isChecked();
+        const bool r_metall     = ui->cbrMetal->isChecked();
+        const bool r_richmetall = ui->cbrRichMetall->isChecked();
+
+        //this variable allows to add more body-related filters later easier
+        const bool need_bodies_info = r_icy || r_rocky || r_metall || r_richmetall;
+
         queryThread = utility::startNewRunner([ = ](auto wasCanceled)
         {
             const auto info = EDSMWrapper::requestManySysInfoInRadius(center, ly, [ = ](size_t a, size_t b)->bool
@@ -281,6 +289,39 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
                 return *wasCanceled;
             });
 
+            //doing a map, where key is a system name
+            std::map<QString, nlohmann::json> binfo;
+            if (need_bodies_info)
+            {
+                auto tmp = EDSMWrapper::requestManyBodiesInfoInRadius(center, ly, [ = ](size_t a, size_t b)->bool
+                {
+                    ExecOnMainThread::get().exec([this, a, b, wasCanceled]()
+                    {
+                        if (progress)
+                        {
+                            if (progress->maximum() != (int)b)
+                                progress->setMaximum(b);
+                            progress->setValue(a);
+                            if (progress->wasCanceled())
+                                *wasCanceled = true;
+                        }
+                    });
+                    return *wasCanceled;
+                });
+                for (auto& v : tmp)
+                {
+                    try
+                    {
+                        auto n = EDSMWrapper::valueFromJson<std::string>(v, "name");
+                        binfo[QString::fromStdString(n)] = std::move(v);
+                    }
+                    catch (...)
+                    {
+                    }
+                }
+            }
+
+
             ExecOnMainThread::get().exec([ = ]()
             {
                 QStringList lst;
@@ -289,6 +330,7 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
 
                 for (const auto& json : info)
                 {
+                    //lamda to extract value from json
                     const auto value_or_none = [&json](const std::string & root, const std::string & name) ->QString
                     {
                         const static QString none ;
@@ -315,20 +357,77 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
                         return none;
                     };
 
-                    bool can_push = true;
-                    if (eco_filter12)
+                    //filtering sys-info
+                    const auto sys_name = value_or_none("", "name");
+                    if (!sys_name.isEmpty())
                     {
-                        const auto e1 = value_or_none("information", "economy");
-                        const auto e2 = value_or_none("information", "secondEconomy");
-                        can_push = eco12.compare(e1, Qt::CaseInsensitive) == 0 || eco12.compare(e2, Qt::CaseInsensitive) == 0;
-                    }
-                    if (can_push)
-                    {
-                        auto n = value_or_none("", "name");
-                        if (!n.isEmpty())
-                            lst.push_back(n);
+                        bool can_push_1 = true;
+                        bool can_push_2 = !need_bodies_info;
+
+                        if (eco_filter12)
+                        {
+                            const auto e1 = value_or_none("information", "economy");
+                            const auto e2 = value_or_none("information", "secondEconomy");
+                            can_push_1 = eco12.compare(e1, Qt::CaseInsensitive) == 0 || eco12.compare(e2, Qt::CaseInsensitive) == 0;
+                        }
+
+                        //filtering by bodies
+                        if (need_bodies_info)
+                        {
+                            can_push_2 = false;
+                            const auto it = binfo.find(sys_name);
+                            if (it != binfo.end())
+                                try
+                                {
+                                    const auto& bjs = it->second; //bodies full json
+                                    const auto bodies = EDSMWrapper::valueFromJson<nlohmann::json>(bjs, "bodies");
+                                    for (const auto& b : bodies)
+                                    {
+                                        //testing rings, ignore warning about always true, need_bodies_info may contain more conditions later
+                                        if (r_icy || r_rocky || r_metall || r_richmetall)
+                                        {
+                                            try
+                                            {
+                                                const auto rings = EDSMWrapper::valueFromJson<nlohmann::json>(b, "rings");
+                                                for (const auto& r : rings)
+                                                {
+                                                    const auto rtype = EDSMWrapper::valueFromJson<std::string>(r, "type");
+                                                    can_push_2 = can_push_2
+                                                                 || (r_icy   && rtype == "Icy")
+                                                                 || (r_rocky && rtype == "Rocky")
+                                                                 || (r_richmetall && rtype == "Metal Rich")
+                                                                 || (r_metall && rtype == "Metallic");
+                                                    if (can_push_2)
+                                                        break;
+                                                }
+                                            }
+                                            catch (...)
+                                            {
+                                            }
+                                        }
+                                    }
+                                }
+                                catch (...)
+                                {
+                                }
+                        }
+
+                        if (can_push_1 && can_push_2)
+                            lst.push_back(sys_name);
                     }
                 }
+
+                //making sure "center" is 1st in list if it is present there
+                for (auto & v : lst)
+                {
+                    if (v == center)
+                    {
+                        if (v != lst.first())
+                            std::swap(v, lst.first());
+                        break;
+                    }
+                }
+
                 model->addSystems(lst);
 
                 switchUI(true);
@@ -337,4 +436,9 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
             });
         });
     }
+}
+
+void RoundTripWidget::on_btnCopy_clicked()
+{
+    model->copyCurrentList();
 }

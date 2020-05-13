@@ -43,6 +43,8 @@ public slots:
     void clearSystems();
 
     void startRouteBuild(QString initialSystem);
+
+    void copyCurrentList() const;
 private slots:
 signals:
     void routeReady();

@@ -123,8 +123,8 @@ int main(int argc, char *argv[])
 
     StringsFileCache::get(); //init cache
     ExecOnMainThread::get();//creating object from inside gui thread for the 1st time
-    test_body_info();
-    //test_wrapper();
+    //test_body_info();
+    test_wrapper();
     //LittleAlgorithm::selfTest3();
     //exit(0);
 

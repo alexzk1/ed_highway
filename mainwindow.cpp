@@ -53,18 +53,22 @@ void MainWindow::changeEvent(QEvent *e)
 void MainWindow::recurseWrite(QSettings &settings, QObject *object)
 {
     Q_UNUSED(object);
-    settings.setValue("mainwinstate", this->saveState());
-    settings.setValue("maximized", this->isMaximized());
+    settings.setValue("mainwinstate", saveState());
+    settings.setValue("maximized",  isMaximized());
+    settings.setValue("tab_index", ui->tabWidget->currentIndex());
 }
 
 void MainWindow::recurseRead(QSettings &settings, QObject *object)
 {
     Q_UNUSED(object);
-    this->restoreState(settings.value("mainwinstate").toByteArray());
+    restoreState(settings.value("mainwinstate").toByteArray());
     if (settings.value("maximized", false).toBool())
         showMaximized();
     else
         showNormal();
+
+    const auto tabi = std::min(ui->tabWidget->count() - 1, std::max(0, settings.value("tab_index", 0).toInt()));
+    ui->tabWidget->setCurrentIndex(tabi);
 }
 
 void MainWindow::settingsHidden()

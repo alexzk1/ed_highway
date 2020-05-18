@@ -142,13 +142,26 @@ void RoundTripWidget::saveValues() const
 
 void RoundTripWidget::loadValues()
 {
+    QStringList values;
+    QString last;
+
     QSettings settings;
     settings.beginGroup(settingsGroup);
-    model->setSystems(settings.value("system_list", {}).toStringList());
-    lastSelected = settings.value("lastSelected").toString();
+    values = settings.value("system_list", {}).toStringList();
+    last   = settings.value("lastSelected").toString();
     settings.endGroup();
 
-    updateSelection();
+    //setSystems may trigger long EDSM query for distances, lets try to do it by timer so GUI is shown
+    switchUI(false);
+    QTimer::singleShot(500, [last, values, this]()
+    {
+        blockSignals(true);
+        model->setSystems(values);
+        lastSelected = last;
+        updateSelection();
+        blockSignals(false);
+        switchUI(true);
+    });
 }
 
 void RoundTripWidget::updateSelection()

@@ -51,7 +51,7 @@ SpanshRouteWidget::SpanshRouteWidget(QWidget *parent) :
         QJsonTableModel::Heading({{"title", tr("Distance Left")}, {"index", "distance_left"}}),
         QJsonTableModel::Heading({{"title", tr("Distance Jumped")}, {"index", "distance_jumped"}}),
     };
-    model = new QJsonTableModel( header, this );
+    model = new QJsonTableModel( header, this, QJsonTableModel::VerticalNums::BASEZERO);
     ui->tableView->setModel(model);
 
     connect(ui->tableView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),

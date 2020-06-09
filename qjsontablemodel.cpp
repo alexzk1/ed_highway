@@ -2,9 +2,10 @@
 #include <QJsonObject>
 #include "edsmwrapper.h"
 
-QJsonTableModel::QJsonTableModel( const QJsonTableModel::Header& header, QObject * parent )
-    : QAbstractTableModel( parent )
-    , m_header( header )
+QJsonTableModel::QJsonTableModel(const QJsonTableModel::Header& header, QObject * parent, VerticalNums nums):
+    QAbstractTableModel( parent ),
+    vhdr(nums),
+    m_header( header )
 {
 
 }
@@ -32,8 +33,13 @@ QVariant QJsonTableModel::headerData(int section, Qt::Orientation orientation, i
         case Qt::Horizontal:
             return m_header[section]["title"];
         case Qt::Vertical:
-            //return section + 1;
+        {
+            if (vhdr == VerticalNums::BASEZERO)
+                return section;
+            if (vhdr == VerticalNums::BASEONE)
+                return section + 1;
             return QVariant();
+        }
         default:
             return QVariant();
     }

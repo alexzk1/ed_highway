@@ -11,9 +11,10 @@
 class QJsonTableModel : public QAbstractTableModel
 {
 public:
-    typedef QMap<QString,QString> Heading;
+    enum class VerticalNums {NONE, BASEZERO, BASEONE};
+    typedef QMap<QString, QString> Heading;
     typedef QVector<Heading> Header;
-    QJsonTableModel( const Header& header, QObject * parent = 0);
+    QJsonTableModel(const Header& header, QObject * parent = 0, VerticalNums nums = VerticalNums::NONE);
 
     bool setJson( const QJsonDocument& json );
     bool setJson( const QJsonArray& array );
@@ -26,6 +27,7 @@ public:
     virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
 
 private:
+    const VerticalNums vhdr;
     Header m_header;
     QJsonArray m_json;
 };

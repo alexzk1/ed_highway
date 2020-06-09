@@ -18,7 +18,7 @@ namespace format_helper
     {
         return v.c_str();
     }
-};
+}
 
 template <typename... Ts>
 inline std::string stringfmt (const std::string &fmt, Ts&&... vs)

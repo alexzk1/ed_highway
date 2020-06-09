@@ -28,6 +28,10 @@ QVariant EDSMSystemsModel::headerData(int section, Qt::Orientation orientation, 
         if (index < types_ns::countof(headers))
             return headers[section];
     }
+
+    if (role == Qt::DisplayRole && orientation == Qt::Vertical)
+        return section;
+
     return QVariant();
 }
 

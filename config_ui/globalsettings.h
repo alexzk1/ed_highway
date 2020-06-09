@@ -98,7 +98,7 @@ public:
     }
 
     explicit GlobSaveableTempl(const QString& key, const T& def, const QString& group = defaultGroup):
-        nmsp_gs::SaveableToStorage(key, qVariantFromValue(def), group)
+        nmsp_gs::SaveableToStorage(key, QVariant::fromValue(def), group)
     {
         reload();
     }
@@ -110,7 +110,7 @@ public:
 
     virtual QVariant valueAsVariant() const override
     {
-        return qVariantFromValue(getCachedValue());
+        return QVariant::fromValue(getCachedValue());
     }
 
     const T getCachedValue() const

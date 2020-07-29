@@ -12,6 +12,7 @@
 #include <QThread>
 #include <QDesktopServices>
 #include "execonmainthread.h"
+#include "utils/strutils.h"
 
 const static QString settingsGroup{"RoundTripWidget"};
 
@@ -62,6 +63,14 @@ RoundTripWidget::RoundTripWidget(QWidget *parent) :
         updateSelection();
         switchUI(true);
     });
+
+
+    connect(ui->cbgN, &QCheckBox::toggled, this, [this](bool t)
+    {
+        ui->giantsSpin->setEnabled(t);
+    });
+
+    ui->giantsSpin->setEnabled(ui->cbgN->isChecked());
 
     connect(model, &EDSMSystemsModel::systemsChanged, this, &RoundTripWidget::updateSelection);
     connect(ui->btnUndo, &QPushButton::clicked, this, &RoundTripWidget::doUndo);
@@ -261,9 +270,6 @@ void RoundTripWidget::on_btnBulkAdd_clicked()
 }
 
 
-//"subType": "Gas giant with ammonia-based life",
-
-
 void RoundTripWidget::on_btnBulkQuery_clicked()
 {
     const auto center = ui->edCenter->text();
@@ -291,8 +297,10 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
         const bool r_metall     = ui->cbrMetal->isChecked();
         const bool r_richmetall = ui->cbrRichMetall->isChecked();
 
+        const bool r_giants     = ui->cbgN->isChecked();
+
         //this variable allows to add more body-related filters later easier
-        const bool need_bodies_info = r_icy || r_rocky || r_metall || r_richmetall;
+        const bool need_bodies_info = r_icy || r_rocky || r_metall || r_richmetall || r_giants;
 
         queryThread = utility::startNewRunner([ = ](auto wasCanceled)
         {
@@ -404,8 +412,15 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
                                 {
                                     const auto& bjs = it->second; //bodies full json
                                     const auto bodies = EDSMWrapper::valueFromJson<nlohmann::json>(bjs, "bodies");
+
+                                    const auto Ng = ui->giantsSpin->value();
+                                    int current_giants_count = 0;
+
                                     for (const auto& b : bodies)
                                     {
+                                        if (can_push_2)
+                                            break;
+
                                         //testing rings, ignore warning about always true, need_bodies_info may contain more conditions later
                                         if (r_icy || r_rocky || r_metall || r_richmetall)
                                         {
@@ -426,6 +441,21 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
                                             }
                                             catch (...)
                                             {
+                                            }
+                                        }
+
+                                        if (r_giants)
+                                        {
+                                            //"subType": "Gas giant with ammonia-based life",
+                                            try
+                                            {
+                                                const auto rtype = EDSMWrapper::valueFromJson<std::string>(b, "subType");
+                                                current_giants_count += (utility::strcontains(rtype, "giant")) ? 1 : 0;
+                                                can_push_2 = can_push_2 || (current_giants_count >= Ng);
+                                            }
+                                            catch (...)
+                                            {
+
                                             }
                                         }
                                     }

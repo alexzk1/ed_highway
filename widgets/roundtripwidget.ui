@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>903</width>
-    <height>597</height>
+    <width>945</width>
+    <height>728</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -168,7 +168,7 @@
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
             <horstretch>0</horstretch>
-            <verstretch>1</verstretch>
+            <verstretch>0</verstretch>
            </sizepolicy>
           </property>
           <property name="widgetResizable">
@@ -178,9 +178,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>0</y>
-             <width>606</width>
-             <height>329</height>
+             <y>-3</y>
+             <width>627</width>
+             <height>407</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -209,7 +209,7 @@
                <item row="0" column="1">
                 <widget class="QLineEdit" name="edCenter"/>
                </item>
-               <item row="7" column="0" colspan="2">
+               <item row="8" column="0" colspan="2">
                 <widget class="QPushButton" name="btnBulkQuery">
                  <property name="text">
                   <string>Query EDSM and Add To List</string>
@@ -329,6 +329,38 @@
                  </layout>
                 </widget>
                </item>
+               <item row="7" column="0" colspan="2">
+                <widget class="QGroupBox" name="groupBox_4">
+                 <property name="title">
+                  <string>Giants</string>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_4">
+                  <item>
+                   <widget class="QCheckBox" name="cbgN">
+                    <property name="text">
+                     <string>At least N giant(s) present, N:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QSpinBox" name="giantsSpin">
+                    <property name="suffix">
+                     <string/>
+                    </property>
+                    <property name="minimum">
+                     <number>1</number>
+                    </property>
+                    <property name="maximum">
+                     <number>30</number>
+                    </property>
+                    <property name="value">
+                     <number>1</number>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
@@ -346,7 +378,7 @@
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
-       <verstretch>2</verstretch>
+       <verstretch>5</verstretch>
       </sizepolicy>
      </property>
      <property name="editTriggers">

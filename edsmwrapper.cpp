@@ -1,8 +1,12 @@
+#include <QUrl>
+#include <iostream>
+
 #include "edsmwrapper.h"
 #include "stringsfilecache.h"
 #include "edsmv1_nearest.h"
 #include "edsmv1_sysinfo.h"
-#include <iostream>
+#include "dump_help.h"
+
 
 template <class RequestCallable>
 static std::vector<nlohmann::json> requestMany(const QStringList& names, const RequestCallable& request, const EDSMWrapper::progress_update& progress)
@@ -284,4 +288,12 @@ std::vector<nlohmann::json> EDSMWrapper::requestManyBodiesInfoInRadius(const QSt
 {
     const auto names = selectSystemsInRadiusNamesOnly(center_name, radius);
     return requestManyBodiesInfo(names, progress);
+}
+
+QString EDSMWrapper::getSystemUrl(const QString &systemName)
+{
+    const auto js = requestBodiesInfo(systemName);
+    // std::cout << dump_helper::toStdStr(js) << std::endl;
+    const auto id = valueFromJson<uint32_t>(js, "id");
+    return QStringLiteral("https://www.edsm.net/en/system/id/%1/name/%2").arg(id).arg(QString(QUrl::toPercentEncoding(systemName)));
 }

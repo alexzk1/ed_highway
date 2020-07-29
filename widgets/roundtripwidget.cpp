@@ -10,6 +10,7 @@
 #include <QProgressDialog>
 #include "utils/exec_exit.h"
 #include <QThread>
+#include <QDesktopServices>
 #include "execonmainthread.h"
 
 const static QString settingsGroup{"RoundTripWidget"};
@@ -24,7 +25,12 @@ RoundTripWidget::RoundTripWidget(QWidget *parent) :
     new SpanshSysSuggest(ui->edCenter);
 
     rclickMenu = new QMenu(this);
+    rclickMenu->addAction(ui->actionOpen_in_Browser);
+
+    rclickMenu->addSeparator();
     rclickMenu->addAction(ui->actionRemoveSelected);
+
+
 
     const auto switchAddAction = [this](const QString & txt)
     {
@@ -254,6 +260,10 @@ void RoundTripWidget::on_btnBulkAdd_clicked()
     }
 }
 
+
+//"subType": "Gas giant with ammonia-based life",
+
+
 void RoundTripWidget::on_btnBulkQuery_clicked()
 {
     const auto center = ui->edCenter->text();
@@ -454,4 +464,16 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
 void RoundTripWidget::on_btnCopy_clicked()
 {
     model->copyCurrentList();
+}
+
+void RoundTripWidget::on_actionOpen_in_Browser_triggered()
+{
+    if (!lastSelected.isEmpty())
+        try
+        {
+            QDesktopServices::openUrl(EDSMWrapper::getSystemUrl(lastSelected));
+        }
+        catch (...)
+        {
+        }
 }

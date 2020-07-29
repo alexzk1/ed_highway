@@ -113,7 +113,7 @@ void test_body_info()
     //    });
     //    dump_helper::dumpContainer(list);
     //    exit(0);
-    auto i = EDSMWrapper::requestBodiesInfo("Col 285 Sector SY-W b16-1");
+    auto i = EDSMWrapper::requestBodiesInfo("Borann");
     std::cout << dump_helper::toStdStr(i) << std::endl;
     exit(0);
 #endif

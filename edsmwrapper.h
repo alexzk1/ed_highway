@@ -79,4 +79,6 @@ public:
         static EdsmApiV1 edsm((int)std::max(1u, std::thread::hardware_concurrency() / 2u));
         return edsm;
     }
+
+    static QString getSystemUrl(const QString& systemName);
 };

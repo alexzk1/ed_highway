@@ -98,13 +98,16 @@ QString EliteOCR::tryDetectStarFromMapPopup(const QStringList &src)
         const bool a = test_if_star_pattern(parts.rbegin(), parts.rend());
 
 
-
         return a || b;
         //return a;
     });
 
     if (it != src.rend())
-        return *it;
+    {
+        QString s = *it;
+        s.replace("!", "I");
+        return s;
+    }
 
     const static QString nothing;
     return nothing;

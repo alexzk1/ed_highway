@@ -30,6 +30,10 @@ const StaticSettingsMap &StaticSettingsMap::getGlobalSetts()
                   tr("Sets how many stages can be undone in route optimizer tab. Consumes RAM."),
                   5, 100),
 
+        DECL_SETT(GlobalStorableInt, "04_Int_tritiumstep", 704, tr("Tritium +/- step."),
+                  tr("The step of how much to add/remove tritium in FC calc per arrows click (cargo ship size). In tonnes."),
+                  1, 2000),
+
 #ifdef OCR_ADDED
         DECL_SETT(GlobalHotkeyStorable, "51_MapOcrHotkey", "CTRL+ALT+M", tr("OCR Galaxy Map and put star's name to clipboard."),
                   tr("Hotkey to OCR Elite Map and extract star's name.")),

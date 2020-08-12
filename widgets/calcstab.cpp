@@ -3,6 +3,7 @@
 #include "delayedsignal.h"
 #include <math.h>
 #include <QSpinBox>
+#include "config_ui/globalsettings.h"
 
 constexpr static int max_carrier_cargo = 25000;
 const static QString settingsGroup = "CalcsTabSettings";
@@ -27,6 +28,7 @@ CalcsTab::CalcsTab(QWidget *parent) :
     setup_spin(ui->sbCargo);
     setup_spin(ui->sbModules);
     setup_spin(ui->sbFuel);
+
 
     loadSettings();
 }
@@ -63,6 +65,7 @@ void CalcsTab::saveSettings()
 
 void CalcsTab::loadSettings()
 {
+    setTritiumStepping();
     QSettings settings;
     settings.beginGroup(settingsGroup);
 
@@ -85,7 +88,7 @@ void CalcsTab::calcCarrierFuel()
     const auto mods = ui->sbModules->value();
     const auto carg = ui->sbCargo->value();
     const auto fuel = ui->sbFuel->value();
-    ui->lblMass->setText(tr("Non-fuel mass of carrier: %1(t)").arg(mods + carg));
+    ui->lblMass->setText(tr("Non-fuel mass of carrier: %1(t). This should be same as total mass - tritium mass.").arg(mods + carg));
 
     if (mods + carg + fuel > max_carrier_cargo)
         ui->lblResult->setText(tr("Total mass is bigger then maximum cargo %1(t).").arg(max_carrier_cargo));
@@ -105,4 +108,11 @@ void CalcsTab::calcCarrierFuel()
 
         ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly).").arg(distance).arg(distance / 2));
     }
+    setTritiumStepping();
+}
+
+void CalcsTab::setTritiumStepping()
+{
+    const int val = StaticSettingsMap::getGlobalSetts().readInt("04_Int_tritiumstep");
+    ui->sbFuel->setSingleStep(val);
 }

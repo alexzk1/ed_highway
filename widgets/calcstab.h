@@ -31,6 +31,7 @@ private:
     void loadSettings();
 private slots:
     void calcCarrierFuel();
+    void setTritiumStepping();
 };
 
 #endif // CALCSTAB_H

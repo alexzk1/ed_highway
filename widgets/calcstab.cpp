@@ -54,9 +54,9 @@ void CalcsTab::saveSettings()
 {
     QSettings settings;
     settings.beginGroup(settingsGroup);
-    settings.setValue("mass_mods", ui->sbModules->value());
-    settings.setValue("mass_cargo", ui->sbCargo->value());
-    settings.setValue("mass_fuel", ui->sbFuel->value());
+    settings.setValue(QStringLiteral("mass_mods"), ui->sbModules->value());
+    settings.setValue(QStringLiteral("mass_cargo"), ui->sbCargo->value());
+    settings.setValue(QStringLiteral("mass_fuel"), ui->sbFuel->value());
 
     settings.endGroup();
 }

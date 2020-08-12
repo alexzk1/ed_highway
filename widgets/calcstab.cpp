@@ -85,8 +85,10 @@ void CalcsTab::calcCarrierFuel()
     const auto mods = ui->sbModules->value();
     const auto carg = ui->sbCargo->value();
     const auto fuel = ui->sbFuel->value();
+    ui->lblMass->setText(tr("Non-fuel mass of carrier: %1(t)").arg(mods + carg));
+
     if (mods + carg + fuel > max_carrier_cargo)
-        ui->lblResult->setText(tr("Total mass is bigger then maximum cargo %1t.").arg(max_carrier_cargo));
+        ui->lblResult->setText(tr("Total mass is bigger then maximum cargo %1(t).").arg(max_carrier_cargo));
     else
     {
         constexpr static int jump_distance = 500;

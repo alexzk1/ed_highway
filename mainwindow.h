@@ -25,8 +25,8 @@ public:
 
 protected:
     void changeEvent(QEvent *e);
-    virtual void recurseWrite(QSettings& settings, QObject* object) override;
-    virtual void recurseRead(QSettings& settings, QObject* object) override;
+    void recurseWrite(QSettings& settings, QObject* object) override;
+    void recurseRead(QSettings& settings, QObject* object) override;
 private:
     Ui::MainWindow *ui;
     QPointer<SettingsDialog> settDialog;

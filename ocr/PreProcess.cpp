@@ -363,7 +363,7 @@ PIXPtr PreProcess::extractTextBlock(const PIXPtr& pixs, int pt_x, int pt_y, int 
     negRect.h = qMin((int)binarizeForNegPixs->h - negRect.y, idealNegRectLength);
 
     float pixelAvg = 0.0f;
-    status = pixAverageInRect(binarizeForNegPixs.get(), &negRect, &pixelAvg);
+    status = pixAverageInRect(binarizeForNegPixs.get(), nullptr, &negRect, 0, std::numeric_limits<l_int32>::max(), 0, &pixelAvg);
     binarizeForNegPixs.reset();
 
     // qDebug() << "Pixel Avg: " << pixelAvg;

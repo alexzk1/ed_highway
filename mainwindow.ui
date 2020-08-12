@@ -25,7 +25,7 @@
        <enum>QTabWidget::West</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <property name="tabBarAutoHide">
        <bool>false</bool>
@@ -46,6 +46,11 @@
         <string>Visit each desired system once route.</string>
        </attribute>
       </widget>
+      <widget class="CalcsTab" name="tab_3">
+       <attribute name="title">
+        <string>&amp;3. Calculations</string>
+       </attribute>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -57,7 +62,7 @@
      <x>0</x>
      <y>0</y>
      <width>761</width>
-     <height>22</height>
+     <height>29</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSettings">
@@ -116,6 +121,12 @@
    <class>RoundTripWidget</class>
    <extends>QWidget</extends>
    <header location="global">roundtripwidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CalcsTab</class>
+   <extends>QWidget</extends>
+   <header location="global">calcstab.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

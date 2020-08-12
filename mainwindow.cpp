@@ -53,21 +53,21 @@ void MainWindow::changeEvent(QEvent *e)
 void MainWindow::recurseWrite(QSettings &settings, QObject *object)
 {
     Q_UNUSED(object);
-    settings.setValue("mainwinstate", saveState());
-    settings.setValue("maximized",  isMaximized());
-    settings.setValue("tab_index", ui->tabWidget->currentIndex());
+    settings.setValue(QStringLiteral("mainwinstate"), saveState());
+    settings.setValue(QStringLiteral("maximized"),  isMaximized());
+    settings.setValue(QStringLiteral("tab_index"), ui->tabWidget->currentIndex());
 }
 
 void MainWindow::recurseRead(QSettings &settings, QObject *object)
 {
     Q_UNUSED(object);
-    restoreState(settings.value("mainwinstate").toByteArray());
-    if (settings.value("maximized", false).toBool())
+    restoreState(settings.value(QStringLiteral("mainwinstate")).toByteArray());
+    if (settings.value(QStringLiteral("maximized"), false).toBool())
         showMaximized();
     else
         showNormal();
 
-    const auto tabi = std::min(ui->tabWidget->count() - 1, std::max(0, settings.value("tab_index", 0).toInt()));
+    const auto tabi = std::min(ui->tabWidget->count() - 1, std::max(0, settings.value(QStringLiteral("tab_index"), 0).toInt()));
     ui->tabWidget->setCurrentIndex(tabi);
 }
 
@@ -76,7 +76,7 @@ void MainWindow::settingsHidden()
     //need to install global shortcuts for ocr
 #ifdef OCR_ADDED
     if (ocrKey)
-        ocrKey->setShortcut(QKeySequence(StaticSettingsMap::getGlobalSetts().readString("51_MapOcrHotkey")), true);
+        ocrKey->setShortcut(QKeySequence(StaticSettingsMap::getGlobalSetts().readString(QStringLiteral("51_MapOcrHotkey"))), true);
 #endif
 }
 
@@ -93,7 +93,7 @@ void MainWindow::doScreenOCR()
     const auto list = ocrElite.recognizeScreen();
     const auto s = EliteOCR::tryDetectStarFromMapPopup(list);
     if (s.isEmpty())
-        QMessageBox::critical(this, "OCR Error", "Cannot read system name.");
+        QMessageBox::critical(this, tr("OCR Error"), tr("Cannot read system name."));
     else
         qApp->clipboard()->setText(s);
 }

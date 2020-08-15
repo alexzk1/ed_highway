@@ -115,7 +115,8 @@ void CalcsTab::calcCarrierFuel()
     {
         constexpr static int jump_distance = 500;
         constexpr static float max_cargo = static_cast<float>(max_carrier_cargo);
-        constexpr static float jd_mul = jump_distance / 4.f;
+        constexpr static float jd_mul = jump_distance / 8.f;
+        constexpr static float minimum_jump_cost = 5.f;
 
         int distance = 0;
 
@@ -134,7 +135,7 @@ void CalcsTab::calcCarrierFuel()
                     current_fuel = 0;
                     tank = total;
                 }
-                current_used = round(10 + jd_mul * (1 + (current_fuel + carg + mods) / max_cargo));
+                current_used = round(minimum_jump_cost + jd_mul * (1 + (current_fuel + carg + mods) / max_cargo));
 
                 if (keep_full)
                 {

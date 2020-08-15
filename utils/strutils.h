@@ -284,5 +284,6 @@ namespace utility
 
         return vec.size();
     }
+
 }
 #endif // STDSTRINGFMT_H

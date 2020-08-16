@@ -125,7 +125,11 @@ void CalcsTab::calcCarrierFuel()
             distance += jump_distance;
         };
 
-        for (int current_fuel = fuel, current_used = 0, tank = carrier_tank_size; current_fuel + tank > current_used;)
+        int jumps_till_recharge = 0;
+        bool jumps_till_recharge_once = true;
+
+        for (int current_fuel = fuel, current_used = 0, tank = carrier_tank_size;
+                current_fuel + tank > current_used;)
         {
             for (int r = 0; r < 2; ++r)
             {
@@ -147,7 +151,6 @@ void CalcsTab::calcCarrierFuel()
                     }
                     else
                     {
-
                         if (tank > current_used)
                         {
                             tank -= current_used;
@@ -167,18 +170,23 @@ void CalcsTab::calcCarrierFuel()
                         const int delta = std::min(carrier_tank_size - tank, current_fuel);
                         tank += delta;
                         current_fuel -= delta;
+                        jumps_till_recharge_once = false;
                     }
                     else
                     {
                         tank -= current_used;
+                        if (jumps_till_recharge_once)
+                            ++jumps_till_recharge;
                         jump();
                         break;
                     }
                 }
             }
         }
-
-        ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly).").arg(distance).arg(distance / 2));
+        if (refuel_empty)
+            ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly). Jumps till refuel: %3").arg(distance).arg(distance / 2).arg(jumps_till_recharge));
+        else
+            ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly).").arg(distance).arg(distance / 2));
     }
 }
 

@@ -130,6 +130,55 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>Distance</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>System 1:</string>
+        </property>
+        <property name="buddy">
+         <cstring>leSys1</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>System 2:</string>
+        </property>
+        <property name="buddy">
+         <cstring>leSys2</cstring>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="leSys1"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="leSys2"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QPushButton" name="distCalc">
+        <property name="text">
+         <string>Calc</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLabel" name="lblDistRes">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>

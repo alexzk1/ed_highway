@@ -2,8 +2,13 @@
 #include "ui_calcstab.h"
 #include "delayedsignal.h"
 #include <math.h>
+#include <iostream>
 #include <QSpinBox>
 #include "config_ui/globalsettings.h"
+#include "spanshsyssuggest.h"
+#include "edsmwrapper.h"
+#include "point.h"
+#include "utils/exec_exit.h"
 
 constexpr static int max_carrier_cargo = 25000;
 constexpr static int carrier_tank_size = 1000;
@@ -43,7 +48,11 @@ CalcsTab::CalcsTab(QWidget *parent) :
     setup_radio(ui->rbOnEmpty);
     setup_radio(ui->rbTankFull);
 
+    new SpanshSysSuggest(ui->leSys1);
+    new SpanshSysSuggest(ui->leSys2);
+
     loadSettings();
+    on_leSys1_textChanged("");
 }
 
 CalcsTab::~CalcsTab()
@@ -73,6 +82,9 @@ void CalcsTab::saveSettings()
     settings.setValue(QStringLiteral("mass_cargo"), ui->sbCargo->value());
     settings.setValue(QStringLiteral("mass_fuel"), ui->sbFuel->value());
 
+    settings.setValue(QStringLiteral("sys_dist1"), ui->leSys1->text());
+    settings.setValue(QStringLiteral("sys_dist2"), ui->leSys2->text());
+
     settings.endGroup();
 }
 
@@ -92,6 +104,9 @@ void CalcsTab::loadSettings()
     read_mass(QStringLiteral("mass_mods"), ui->sbModules);
     read_mass(QStringLiteral("mass_cargo"), ui->sbCargo);
     read_mass(QStringLiteral("mass_fuel"), ui->sbFuel);
+
+    ui->leSys1->setText(settings.value(QStringLiteral("sys_dist1"), "Sol").toString());
+    ui->leSys2->setText(settings.value(QStringLiteral("sys_dist2"), "").toString());
 
     settings.endGroup();
 }
@@ -194,4 +209,44 @@ void CalcsTab::setTritiumStepping()
 {
     const int val = StaticSettingsMap::getGlobalSetts().readInt("04_Int_tritiumstep");
     ui->sbFuel->setSingleStep(val);
+}
+
+void CalcsTab::on_distCalc_clicked()
+{
+    if (ui->leSys1->text().isEmpty() || ui->leSys2->text().isEmpty())
+        ui->lblDistRes->setText(tr("Both systems must be non-empty."));
+    else
+    {
+        exec_onexit ex([this]()
+        {
+            ui->distCalc->setEnabled(true);
+        });
+        (void)ex;
+        ui->distCalc->setEnabled(false);
+
+        try
+        {
+
+            const auto j1 = EDSMWrapper::requestSysInfo(ui->leSys1->text());
+            const auto j2 = EDSMWrapper::requestSysInfo(ui->leSys2->text());
+            const auto dist = Point::fromJson(j1).distance(Point::fromJson(j2));
+            ui->lblDistRes->setText(tr("Distance between systems is %1 LY.").arg(dist));
+        }
+        catch (std::exception& e)
+        {
+            std::cerr << e.what() << std::endl;
+            ui->lblDistRes->setText(tr("Can't calculate distance. Possible unknown system."));
+        }
+    }
+}
+
+void CalcsTab::on_leSys1_textChanged(const QString &arg1)
+{
+    (void)arg1;
+    ui->lblDistRes->setText(tr("Press button to calc."));
+}
+
+void CalcsTab::on_leSys2_textChanged(const QString &arg1)
+{
+    on_leSys1_textChanged(arg1);
 }

@@ -29,9 +29,13 @@ private:
 
     void saveSettings();
     void loadSettings();
+
 private slots:
     void calcCarrierFuel();
     void setTritiumStepping();
+    void on_distCalc_clicked();
+    void on_leSys1_textChanged(const QString &arg1);
+    void on_leSys2_textChanged(const QString &arg1);
 };
 
 #endif // CALCSTAB_H

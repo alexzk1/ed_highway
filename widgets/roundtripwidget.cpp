@@ -358,6 +358,8 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
                 QStringList lst;
                 QString eco12 = ui->list1_or_2->currentText();
                 const bool eco_filter12 = ui->cb1_or2->isChecked() && !eco12.isEmpty();
+                const bool star_class_filter = ui->starClass->areLimitsInEffect();
+
 
                 for (const auto& json : info)
                 {
@@ -390,6 +392,8 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
 
                     //filtering sys-info
                     const auto sys_name = value_or_none("", "name");
+
+
                     if (!sys_name.isEmpty())
                     {
                         bool can_push_1 = true;
@@ -402,71 +406,80 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
                             can_push_1 = eco12.compare(e1, Qt::CaseInsensitive) == 0 || eco12.compare(e2, Qt::CaseInsensitive) == 0;
                         }
 
-                        //filtering by bodies
-                        if (need_bodies_info)
+                        if (star_class_filter)
                         {
-                            can_push_2 = false;
-                            const auto it = binfo.find(sys_name);
-                            if (it != binfo.end())
-                                try
-                                {
-                                    const auto& bjs = it->second; //bodies full json
-                                    const auto bodies = EDSMWrapper::valueFromJson<nlohmann::json>(bjs, "bodies");
+                            const auto type_name = value_or_none("primaryStar", "type");
+                            can_push_1 = can_push_1 && ui->starClass->isSelected(type_name);
+                        }
 
-                                    const auto Ng = ui->giantsSpin->value();
-                                    int current_giants_count = 0;
-
-                                    for (const auto& b : bodies)
+                        if (can_push_1)
+                        {
+                            //filtering by bodies
+                            if (need_bodies_info)
+                            {
+                                can_push_2 = false;
+                                const auto it = binfo.find(sys_name);
+                                if (it != binfo.end())
+                                    try
                                     {
-                                        if (can_push_2)
-                                            break;
+                                        const auto& bjs = it->second; //bodies full json
+                                        const auto bodies = EDSMWrapper::valueFromJson<nlohmann::json>(bjs, "bodies");
 
-                                        //testing rings, ignore warning about always true, need_bodies_info may contain more conditions later
-                                        if (r_icy || r_rocky || r_metall || r_richmetall)
+                                        const auto Ng = ui->giantsSpin->value();
+                                        int current_giants_count = 0;
+
+                                        for (const auto& b : bodies)
                                         {
-                                            try
+                                            if (can_push_2)
+                                                break;
+
+                                            //testing rings, ignore warning about always true, need_bodies_info may contain more conditions later
+                                            if (r_icy || r_rocky || r_metall || r_richmetall)
                                             {
-                                                const auto rings = EDSMWrapper::valueFromJson<nlohmann::json>(b, "rings");
-                                                for (const auto& r : rings)
+                                                try
                                                 {
-                                                    const auto rtype = EDSMWrapper::valueFromJson<std::string>(r, "type");
-                                                    can_push_2 = can_push_2
-                                                                 || (r_icy   && rtype == "Icy")
-                                                                 || (r_rocky && rtype == "Rocky")
-                                                                 || (r_richmetall && rtype == "Metal Rich")
-                                                                 || (r_metall && rtype == "Metallic");
-                                                    if (can_push_2)
-                                                        break;
+                                                    const auto rings = EDSMWrapper::valueFromJson<nlohmann::json>(b, "rings");
+                                                    for (const auto& r : rings)
+                                                    {
+                                                        const auto rtype = EDSMWrapper::valueFromJson<std::string>(r, "type");
+                                                        can_push_2 = can_push_2
+                                                                     || (r_icy   && rtype == "Icy")
+                                                                     || (r_rocky && rtype == "Rocky")
+                                                                     || (r_richmetall && rtype == "Metal Rich")
+                                                                     || (r_metall && rtype == "Metallic");
+                                                        if (can_push_2)
+                                                            break;
+                                                    }
+                                                }
+                                                catch (...)
+                                                {
                                                 }
                                             }
-                                            catch (...)
-                                            {
-                                            }
-                                        }
 
-                                        if (r_giants)
-                                        {
-                                            //"subType": "Gas giant with ammonia-based life",
-                                            try
+                                            if (r_giants)
                                             {
-                                                const auto rtype = EDSMWrapper::valueFromJson<std::string>(b, "subType");
-                                                current_giants_count += (utility::strcontains(rtype, "giant")) ? 1 : 0;
-                                                can_push_2 = can_push_2 || (current_giants_count >= Ng);
-                                            }
-                                            catch (...)
-                                            {
+                                                //"subType": "Gas giant with ammonia-based life",
+                                                try
+                                                {
+                                                    const auto rtype = EDSMWrapper::valueFromJson<std::string>(b, "subType");
+                                                    current_giants_count += (utility::strcontains(rtype, "giant")) ? 1 : 0;
+                                                    can_push_2 = can_push_2 || (current_giants_count >= Ng);
+                                                }
+                                                catch (...)
+                                                {
 
+                                                }
                                             }
                                         }
                                     }
-                                }
-                                catch (...)
-                                {
-                                }
-                        }
+                                    catch (...)
+                                    {
+                                    }
+                            }
 
-                        if (can_push_1 && can_push_2)
-                            lst.push_back(sys_name);
+                            if (can_push_2)
+                                lst.push_back(sys_name);
+                        }
                     }
                 }
 

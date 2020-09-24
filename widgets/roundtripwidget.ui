@@ -178,9 +178,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-3</y>
+             <y>0</y>
              <width>627</width>
-             <height>407</height>
+             <height>656</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -208,13 +208,6 @@
                </item>
                <item row="0" column="1">
                 <widget class="QLineEdit" name="edCenter"/>
-               </item>
-               <item row="8" column="0" colspan="2">
-                <widget class="QPushButton" name="btnBulkQuery">
-                 <property name="text">
-                  <string>Query EDSM and Add To List</string>
-                 </property>
-                </widget>
                </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="label_2">
@@ -248,7 +241,24 @@
                  </property>
                 </widget>
                </item>
-               <item row="3" column="0" colspan="2">
+               <item row="2" column="0" colspan="2">
+                <widget class="QLabel" name="label_5">
+                 <property name="font">
+                  <font>
+                   <pointsize>14</pointsize>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Primary Star Class Only</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0" colspan="2">
                 <widget class="QLabel" name="label_3">
                  <property name="font">
                   <font>
@@ -265,17 +275,17 @@
                  </property>
                 </widget>
                </item>
-               <item row="4" column="0">
+               <item row="5" column="0">
                 <widget class="QCheckBox" name="cb1_or2">
                  <property name="text">
                   <string>1st or2nd is</string>
                  </property>
                 </widget>
                </item>
-               <item row="4" column="1">
+               <item row="5" column="1">
                 <widget class="QComboBox" name="list1_or_2"/>
                </item>
-               <item row="5" column="0" colspan="2">
+               <item row="6" column="0" colspan="2">
                 <widget class="QLabel" name="label_4">
                  <property name="font">
                   <font>
@@ -292,7 +302,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="6" column="0" colspan="2">
+               <item row="7" column="0" colspan="2">
                 <widget class="QGroupBox" name="groupBox_3">
                  <property name="title">
                   <string>Rings</string>
@@ -329,7 +339,7 @@
                  </layout>
                 </widget>
                </item>
-               <item row="7" column="0" colspan="2">
+               <item row="8" column="0" colspan="2">
                 <widget class="QGroupBox" name="groupBox_4">
                  <property name="title">
                   <string>Giants</string>
@@ -359,6 +369,29 @@
                    </widget>
                   </item>
                  </layout>
+                </widget>
+               </item>
+               <item row="9" column="0" colspan="2">
+                <widget class="QPushButton" name="btnBulkQuery">
+                 <property name="text">
+                  <string>Query EDSM and Add To List</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0" colspan="2">
+                <widget class="EDSMStarClassSelector" name="starClass" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>20</width>
+                   <height>220</height>
+                  </size>
+                 </property>
                 </widget>
                </item>
               </layout>
@@ -427,6 +460,12 @@
    <class>ActionButton</class>
    <extends>QPushButton</extends>
    <header location="global">actionbutton.h</header>
+  </customwidget>
+  <customwidget>
+   <class>EDSMStarClassSelector</class>
+   <extends>QWidget</extends>
+   <header>edsmstarclassselector.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>

@@ -226,7 +226,6 @@ void CalcsTab::on_distCalc_clicked()
 
         try
         {
-
             const auto j1 = EDSMWrapper::requestSysInfo(ui->leSys1->text());
             const auto j2 = EDSMWrapper::requestSysInfo(ui->leSys2->text());
             const auto dist = Point::fromJson(j1).distance(Point::fromJson(j2));

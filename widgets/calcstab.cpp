@@ -9,9 +9,7 @@
 #include "edsmwrapper.h"
 #include "point.h"
 #include "utils/exec_exit.h"
-
-constexpr static int max_carrier_cargo = 25000;
-constexpr static int carrier_tank_size = 1000;
+#include "carriers_info.h"
 
 const static QString settingsGroup = "CalcsTabSettings";
 
@@ -26,7 +24,7 @@ CalcsTab::CalcsTab(QWidget *parent) :
 
     const auto setup_spin = [this](QSpinBox * ptr)
     {
-        ptr->setMaximum(max_carrier_cargo);
+        ptr->setMaximum(max_carrier_cargo());
         connect(ptr, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](int)
         {
             delayedStart->sourceSignal(delay_ms);
@@ -124,12 +122,12 @@ void CalcsTab::calcCarrierFuel()
 
     ui->lblMass->setText(tr("Non-fuel mass of carrier: %1(t). This should be same as (total mass - tritium mass).").arg(mods + carg));
 
-    if (mods + carg + fuel > max_carrier_cargo)
-        ui->lblResult->setText(tr("Total mass is bigger then maximum cargo %1(t).").arg(max_carrier_cargo));
+    if (mods + carg + fuel > max_carrier_cargo())
+        ui->lblResult->setText(tr("Total mass is bigger then maximum cargo %1(t).").arg(max_carrier_cargo()));
     else
     {
         constexpr static int jump_distance = 500;
-        constexpr static float max_cargo = static_cast<float>(max_carrier_cargo);
+        constexpr static float max_cargo = static_cast<float>(max_carrier_cargo());
         constexpr static float jd_mul = jump_distance / 8.f;
         constexpr static float minimum_jump_cost = 5.f;
 
@@ -143,13 +141,13 @@ void CalcsTab::calcCarrierFuel()
         int jumps_till_recharge = 0;
         bool jumps_till_recharge_once = true;
 
-        for (int current_fuel = fuel, current_used = 0, tank = carrier_tank_size;
+        for (int current_fuel = fuel, current_used = 0, tank = carrier_tank_size();
                 current_fuel + tank > current_used;)
         {
             for (int r = 0; r < 2; ++r)
             {
                 const int total = current_fuel + tank;
-                if (total < carrier_tank_size)
+                if (total < carrier_tank_size())
                 {
                     current_fuel = 0;
                     tank = total;
@@ -182,7 +180,7 @@ void CalcsTab::calcCarrierFuel()
 
                     if (tank < current_used)
                     {
-                        const int delta = std::min(carrier_tank_size - tank, current_fuel);
+                        const int delta = std::min((int)carrier_tank_size() - tank, current_fuel);
                         tank += delta;
                         current_fuel -= delta;
                         jumps_till_recharge_once = false;

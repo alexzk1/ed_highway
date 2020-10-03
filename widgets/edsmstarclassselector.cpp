@@ -44,10 +44,9 @@ void EDSMStarClassSelector::buildGui(bool multi_select)
     const auto containerLayout = new QVBoxLayout();
     container->setLayout(containerLayout);
     ui->scrollArea->setWidget(container);
-    for (const auto& v : edsmStarClasses())
+
+    addContainerAsCheckboxes(containerLayout, edsmStarClasses(), [&](const QPointer<QCheckBox>& checkbox, auto)
     {
-        QPointer<QCheckBox> checkbox = new QCheckBox(v);
-        containerLayout->addWidget(checkbox);
         connect(checkbox, &QCheckBox::toggled, this, [this, checkbox](bool set)
         {
             if (checkbox)
@@ -58,7 +57,7 @@ void EDSMStarClassSelector::buildGui(bool multi_select)
                     selected -= checkbox->text();
             }
         });
-    }
+    });
 }
 
 bool EDSMStarClassSelector::isSelected(const QString &star_class) const

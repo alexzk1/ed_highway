@@ -3,6 +3,9 @@ INCLUDEPATH += $$PWD
 HEADERS += \
     $$PWD/actionbutton.h \
     $$PWD/calcstab.h \
+    $$PWD/carriermodules.h \
+    $$PWD/carriermodulesdialog.h \
+    $$PWD/carriers_info.h \
     $$PWD/clickablelabel.h \
     $$PWD/delayedsignal.h \
     $$PWD/edsmstarclassselector.h \
@@ -18,6 +21,8 @@ HEADERS += \
 
 FORMS += \
     $$PWD/calcstab.ui \
+    $$PWD/carriermodules.ui \
+    $$PWD/carriermodulesdialog.ui \
     $$PWD/edsmstarclassselector.ui \
     $$PWD/roundtripwidget.ui \
     $$PWD/spanshroutewidget.ui
@@ -25,6 +30,8 @@ FORMS += \
 SOURCES += \
     $$PWD/actionbutton.cpp \
     $$PWD/calcstab.cpp \
+    $$PWD/carriermodules.cpp \
+    $$PWD/carriermodulesdialog.cpp \
     $$PWD/delayedsignal.cpp \
     $$PWD/edsmstarclassselector.cpp \
     $$PWD/edsmsystemsmodel.cpp \

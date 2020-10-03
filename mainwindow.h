@@ -39,6 +39,7 @@ private slots:
     void settingsBeforeShow();
     void doScreenOCR();
     void on_actionClear_Cache_triggered();
+    void on_actionCarrier_Calculator_triggered();
 };
 
 #endif // MAINWINDOW_H

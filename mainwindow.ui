@@ -86,6 +86,7 @@
    </attribute>
    <addaction name="actionShow_Settings"/>
    <addaction name="actionClear_Cache"/>
+   <addaction name="actionCarrier_Calculator"/>
   </widget>
   <action name="actionShow_Settings">
    <property name="icon">
@@ -106,6 +107,18 @@
    </property>
    <property name="toolTip">
     <string>Clear cache of EDSM' access.</string>
+   </property>
+  </action>
+  <action name="actionCarrier_Calculator">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/images/carrier-waybill-query-128.png</normaloff>:/images/carrier-waybill-query-128.png</iconset>
+   </property>
+   <property name="text">
+    <string>Carrier Calculator</string>
+   </property>
+   <property name="toolTip">
+    <string>Calculates carrier modules.</string>
    </property>
   </action>
  </widget>

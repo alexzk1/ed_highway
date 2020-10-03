@@ -5,6 +5,7 @@
 #include <QMessageBox>
 #include "edsmwrapper.h"
 #include "stringsfilecache.h"
+#include "carriermodulesdialog.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -101,4 +102,10 @@ void MainWindow::doScreenOCR()
 void MainWindow::on_actionClear_Cache_triggered()
 {
     StringsFileCache::instance().cleanAll();
+}
+
+void MainWindow::on_actionCarrier_Calculator_triggered()
+{
+    CarrierModulesDialog cd(true, this);
+    cd.exec();
 }

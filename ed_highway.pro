@@ -89,8 +89,8 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 QMAKE_CXXFLAGS +=  -pipe -std=c++14 -Wall -frtti -fexceptions -Werror=return-type -Werror=overloaded-virtual
-QMAKE_CXXFLAGS +=  -Wctor-dtor-privacy -Werror=delete-non-virtual-dtor -fstrict-aliasing
-QMAKE_CXXFLAGS +=  -Werror=strict-aliasing -Wstrict-aliasing=2
+QMAKE_CXXFLAGS +=  -Werror=delete-non-virtual-dtor -fno-strict-aliasing
+#QMAKE_CXXFLAGS +=  -Werror=strict-aliasing -Wstrict-aliasing=2
 
 LIBS += -lcurl
 LIBS += -lz -dead_strip

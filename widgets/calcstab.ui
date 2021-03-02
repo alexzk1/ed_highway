@@ -37,6 +37,13 @@
           </widget>
          </item>
          <item>
+          <widget class="QRadioButton" name="rbRandom">
+           <property name="text">
+            <string>Keep Full + Random 100t mine</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QRadioButton" name="rbOnEmpty">
            <property name="text">
             <string>Refuel on Empty</string>

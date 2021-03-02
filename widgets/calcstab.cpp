@@ -2,6 +2,7 @@
 #include "ui_calcstab.h"
 #include "delayedsignal.h"
 #include <math.h>
+#include <random>
 #include <iostream>
 #include <QSpinBox>
 #include "config_ui/globalsettings.h"
@@ -12,6 +13,16 @@
 #include "carriers_info.h"
 
 const static QString settingsGroup = "CalcsTabSettings";
+
+template <class T = float>
+inline T uniformRandom(T low = static_cast<T>(0.), T hi = static_cast<T>(1.))
+{
+    static_assert (std::is_floating_point<T>::value, "T must be floating point one.");
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<T> dis(low, hi);
+    return dis(gen);
+}
 
 CalcsTab::CalcsTab(QWidget *parent) :
     QWidget(parent),
@@ -45,6 +56,7 @@ CalcsTab::CalcsTab(QWidget *parent) :
 
     setup_radio(ui->rbOnEmpty);
     setup_radio(ui->rbTankFull);
+    setup_radio(ui->rbRandom);
 
     new SpanshSysSuggest(ui->leSys1);
     new SpanshSysSuggest(ui->leSys2);
@@ -115,7 +127,8 @@ void CalcsTab::calcCarrierFuel()
     const auto carg = ui->sbCargo->value();
     const auto fuel = ui->sbFuel->value();
 
-    const bool keep_full    = ui->rbTankFull->isChecked();
+    const bool random_mine  = ui->rbRandom->isChecked();
+    const bool keep_full    = random_mine || ui->rbTankFull->isChecked();
     const bool refuel_empty = ui->rbOnEmpty->isChecked();
 
     setTritiumStepping();
@@ -126,80 +139,108 @@ void CalcsTab::calcCarrierFuel()
         ui->lblResult->setText(tr("Total mass is bigger then maximum cargo %1(t).").arg(max_carrier_cargo()));
     else
     {
+        constexpr static int refuel_random_mine = 100; //tonns
+
         constexpr static int jump_distance = 500;
         constexpr static float max_cargo = static_cast<float>(max_carrier_cargo());
         constexpr static float jd_mul = jump_distance / 8.f;
         constexpr static float minimum_jump_cost = 5.f;
 
-        int distance = 0;
+        const int sims_count = (random_mine) ? 20 : 1;
 
-        const auto jump = [&distance]()
-        {
-            distance += jump_distance;
-        };
-
+        int64_t total = 0;
         int jumps_till_recharge = 0;
-        bool jumps_till_recharge_once = true;
 
-        for (int current_fuel = fuel, current_used = 0, tank = carrier_tank_size();
-                current_fuel + tank > current_used;)
+        for (int s = 0; s < sims_count; ++s)
         {
-            for (int r = 0; r < 2; ++r)
+            int distance = 0;
+
+            const auto jump = [&distance]()
             {
-                const int total = current_fuel + tank;
-                if (total < carrier_tank_size())
-                {
-                    current_fuel = 0;
-                    tank = total;
-                }
-                current_used = round(minimum_jump_cost + jd_mul * (1 + (current_fuel + carg + mods) / max_cargo));
+                distance += jump_distance;
+            };
 
-                if (keep_full)
-                {
 
-                    if (current_fuel > current_used)
+            bool jumps_till_recharge_once = true;
+
+            for (int current_fuel = fuel, current_used = 0, tank = carrier_tank_size();
+                    current_fuel + tank > current_used;)
+            {
+                for (int r = 0; r < 2; ++r)
+                {
+                    const int total = current_fuel + tank;
+                    if (total < carrier_tank_size())
                     {
-                        current_fuel -= current_used;
-                        jump();
+                        current_fuel = 0;
+                        tank = total;
                     }
-                    else
+                    current_used = round(minimum_jump_cost + jd_mul * (1 + (current_fuel + carg + mods) / max_cargo));
+
+                    if (random_mine && uniformRandom() < 0.2f)
                     {
-                        if (tank > current_used)
+                        if (current_used >= refuel_random_mine)
+                            current_used -= refuel_random_mine;
                         {
-                            tank -= current_used;
-                            jump();
+                            const auto extra = refuel_random_mine - current_used;
+                            current_used = 0;
+                            const auto target = mods + carg + current_fuel + extra;
+                            if (target > max_carrier_cargo())
+                                current_fuel = max_carrier_cargo() - mods - carg;
+                            else
+                                current_fuel += extra;
                         }
                     }
-                    break;
-                }
-
-                if (refuel_empty)
-                {
-                    if (current_used > total)
-                        break;
-
-                    if (tank < current_used)
+                    if (keep_full)
                     {
-                        const int delta = std::min((int)carrier_tank_size() - tank, current_fuel);
-                        tank += delta;
-                        current_fuel -= delta;
-                        jumps_till_recharge_once = false;
+
+                        if (current_fuel > current_used)
+                        {
+                            current_fuel -= current_used;
+                            jump();
+                        }
+                        else
+                        {
+                            if (tank > current_used)
+                            {
+                                tank -= current_used;
+                                jump();
+                            }
+                        }
+                        break;
                     }
-                    else
+
+                    if (refuel_empty)
                     {
-                        tank -= current_used;
-                        if (jumps_till_recharge_once)
-                            ++jumps_till_recharge;
-                        jump();
-                        break;
+                        if (current_used > total)
+                            break;
+
+                        if (tank < current_used)
+                        {
+                            const int delta = std::min((int)carrier_tank_size() - tank, current_fuel);
+                            tank += delta;
+                            current_fuel -= delta;
+                            jumps_till_recharge_once = false;
+                        }
+                        else
+                        {
+                            tank -= current_used;
+                            if (jumps_till_recharge_once)
+                                ++jumps_till_recharge;
+                            jump();
+                            break;
+                        }
                     }
                 }
             }
+            total += distance;
         }
+
+        total /= sims_count;
+
         if (refuel_empty)
-            ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly). Jumps till refuel: %3").arg(distance).arg(distance / 2).arg(jumps_till_recharge));
+            ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly). Jumps till refuel: %3").arg(total).arg(total / 2).arg(jumps_till_recharge));
         else
-            ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly).").arg(distance).arg(distance / 2));
+            ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly).").arg(total).arg(total / 2));
     }
 }
 

@@ -184,7 +184,7 @@ QString StringsFileCache::getData(const QString &key)
                 written_value_type v;
                 if (loadFromFile(file, v))
                 {
-                    if (QDateTime::currentDateTime().toMSecsSinceEpoch() < v.first)
+                    if (static_cast<uint64_t>(QDateTime::currentDateTime().toMSecsSinceEpoch()) < v.first)
                     {
                         std::unique_ptr<uint8_t[]> decompressed(new uint8_t[v.second.first]);
                         std::size_t decompressed_size;

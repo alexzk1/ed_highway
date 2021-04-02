@@ -165,6 +165,7 @@ void CalcsTab::calcCarrierFuel()
 
         int64_t total = 0;
         int jumps_till_recharge = 0;
+        bool infinite = false;
 
         for (int s = 0; s < sims_count; ++s)
         {
@@ -181,8 +182,11 @@ void CalcsTab::calcCarrierFuel()
             for (int current_fuel = fuel, current_used = 0, tank = carrier_tank_size(), njump = 1;
                     current_fuel + tank > current_used; ++njump)
             {
-                if (njump > 10000)
+                if (njump > 20000)
+                {
+                    infinite = true;
                     break;
+                }
 
                 for (int r = 0; r < 2; ++r)
                 {
@@ -255,10 +259,15 @@ void CalcsTab::calcCarrierFuel()
 
         total /= sims_count;
 
-        if (refuel_empty)
-            ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly). Jumps till refuel: %3").arg(total).arg(total / 2).arg(jumps_till_recharge));
+        if (infinite)
+            ui->lblResult->setText(tr("Infinite travel."));
         else
-            ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly).").arg(total).arg(total / 2));
+        {
+            if (refuel_empty)
+                ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly). Jumps till refuel: %3").arg(total).arg(total / 2).arg(jumps_till_recharge));
+            else
+                ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly).").arg(total).arg(total / 2));
+        }
     }
 }
 

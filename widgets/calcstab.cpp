@@ -12,6 +12,7 @@
 #include "utils/exec_exit.h"
 #include "carriers_info.h"
 
+constexpr static int delay_ms = 2000;
 const static QString settingsGroup = "CalcsTabSettings";
 
 template <class T = float>
@@ -29,7 +30,6 @@ CalcsTab::CalcsTab(QWidget *parent) :
     ui(new Ui::CalcsTab),
     delayedStart(new DelayedSignal(this))
 {
-    constexpr static int delay_ms = 2000;
     ui->setupUi(this);
     connect(delayedStart, &DelayedSignal::delayedSignal, this, &CalcsTab::calcCarrierFuel);
 
@@ -38,6 +38,7 @@ CalcsTab::CalcsTab(QWidget *parent) :
         ptr->setMaximum(max_carrier_cargo());
         connect(ptr, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](int)
         {
+            updateCargoToMax();
             delayedStart->sourceSignal(delay_ms);
         });
     };
@@ -53,6 +54,7 @@ CalcsTab::CalcsTab(QWidget *parent) :
     setup_spin(ui->sbCargo);
     setup_spin(ui->sbModules);
     setup_spin(ui->sbFuel);
+    setup_spin(ui->sbEachNth);
 
     setup_radio(ui->rbOnEmpty);
     setup_radio(ui->rbTankFull);
@@ -91,6 +93,7 @@ void CalcsTab::saveSettings()
     settings.setValue(QStringLiteral("mass_mods"), ui->sbModules->value());
     settings.setValue(QStringLiteral("mass_cargo"), ui->sbCargo->value());
     settings.setValue(QStringLiteral("mass_fuel"), ui->sbFuel->value());
+    settings.setValue(QStringLiteral("mass_nth"), ui->sbEachNth->value());
 
     settings.setValue(QStringLiteral("sys_dist1"), ui->leSys1->text());
     settings.setValue(QStringLiteral("sys_dist2"), ui->leSys2->text());
@@ -114,6 +117,7 @@ void CalcsTab::loadSettings()
     read_mass(QStringLiteral("mass_mods"), ui->sbModules);
     read_mass(QStringLiteral("mass_cargo"), ui->sbCargo);
     read_mass(QStringLiteral("mass_fuel"), ui->sbFuel);
+    read_mass(QStringLiteral("mass_nth"), ui->sbEachNth);
 
     ui->leSys1->setText(settings.value(QStringLiteral("sys_dist1"), "Sol").toString());
     ui->leSys2->setText(settings.value(QStringLiteral("sys_dist2"), "").toString());
@@ -121,11 +125,22 @@ void CalcsTab::loadSettings()
     settings.endGroup();
 }
 
+void CalcsTab::updateCargoToMax()
+{
+    if (ui->cbKeepCargo->isChecked())
+    {
+        const auto used = ui->sbModules->value() + ui->sbFuel->value();
+        ui->sbCargo->setValue(max_carrier_cargo() - used);
+    }
+}
+
 void CalcsTab::calcCarrierFuel()
 {
     const auto mods = ui->sbModules->value();
     const auto carg = ui->sbCargo->value();
     const auto fuel = ui->sbFuel->value();
+    const auto refuel_each_nth = ui->sbEachNth->value();
+
 
     const bool random_mine  = ui->rbRandom->isChecked();
     const bool keep_full    = random_mine || ui->rbTankFull->isChecked();
@@ -146,7 +161,7 @@ void CalcsTab::calcCarrierFuel()
         constexpr static float jd_mul = jump_distance / 8.f;
         constexpr static float minimum_jump_cost = 5.f;
 
-        const int sims_count = (random_mine) ? 20 : 1;
+        const int sims_count = 1;//(random_mine) ? 20 : 1;
 
         int64_t total = 0;
         int jumps_till_recharge = 0;
@@ -163,9 +178,12 @@ void CalcsTab::calcCarrierFuel()
 
             bool jumps_till_recharge_once = true;
 
-            for (int current_fuel = fuel, current_used = 0, tank = carrier_tank_size();
-                    current_fuel + tank > current_used;)
+            for (int current_fuel = fuel, current_used = 0, tank = carrier_tank_size(), njump = 1;
+                    current_fuel + tank > current_used; ++njump)
             {
+                if (njump > 10000)
+                    break;
+
                 for (int r = 0; r < 2; ++r)
                 {
                     const int total = current_fuel + tank;
@@ -176,7 +194,7 @@ void CalcsTab::calcCarrierFuel()
                     }
                     current_used = round(minimum_jump_cost + jd_mul * (1 + (current_fuel + carg + mods) / max_cargo));
 
-                    if (random_mine && uniformRandom() < 0.2f)
+                    if (random_mine && (njump % refuel_each_nth == 0))
                     {
                         if (current_used >= refuel_random_mine)
                             current_used -= refuel_random_mine;
@@ -287,4 +305,12 @@ void CalcsTab::on_leSys1_textChanged(const QString &arg1)
 void CalcsTab::on_leSys2_textChanged(const QString &arg1)
 {
     on_leSys1_textChanged(arg1);
+}
+
+void CalcsTab::on_cbKeepCargo_stateChanged(int arg1)
+{
+    const bool checked = arg1;
+    ui->sbCargo->setEnabled(!checked);
+    updateCargoToMax();
+    delayedStart->sourceSignal(delay_ms);
 }

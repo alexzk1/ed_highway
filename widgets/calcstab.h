@@ -29,13 +29,14 @@ private:
 
     void saveSettings();
     void loadSettings();
-
+    void updateCargoToMax();
 private slots:
     void calcCarrierFuel();
     void setTritiumStepping();
     void on_distCalc_clicked();
     void on_leSys1_textChanged(const QString &arg1);
     void on_leSys2_textChanged(const QString &arg1);
+    void on_cbKeepCargo_stateChanged(int arg1);
 };
 
 #endif // CALCSTAB_H

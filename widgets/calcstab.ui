@@ -129,7 +129,7 @@
          <item>
           <widget class="QRadioButton" name="rbRandom">
            <property name="text">
-            <string>Keep Full + 100t mine each Nth jump:</string>
+            <string>Keep Full + mine each Nth jump</string>
            </property>
           </widget>
          </item>
@@ -143,6 +143,29 @@
            </property>
            <property name="value">
             <number>5</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string> of (tonnes):</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="sbTonnes">
+           <property name="minimum">
+            <number>10</number>
+           </property>
+           <property name="maximum">
+            <number>500</number>
+           </property>
+           <property name="singleStep">
+            <number>10</number>
+           </property>
+           <property name="value">
+            <number>100</number>
            </property>
           </widget>
          </item>

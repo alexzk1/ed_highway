@@ -55,6 +55,8 @@ CalcsTab::CalcsTab(QWidget *parent) :
     setup_spin(ui->sbModules);
     setup_spin(ui->sbFuel);
     setup_spin(ui->sbEachNth);
+    setup_spin(ui->sbTonnes);
+
 
     setup_radio(ui->rbOnEmpty);
     setup_radio(ui->rbTankFull);
@@ -94,6 +96,7 @@ void CalcsTab::saveSettings()
     settings.setValue(QStringLiteral("mass_cargo"), ui->sbCargo->value());
     settings.setValue(QStringLiteral("mass_fuel"), ui->sbFuel->value());
     settings.setValue(QStringLiteral("mass_nth"), ui->sbEachNth->value());
+    settings.setValue(QStringLiteral("mass_tonnes"), ui->sbTonnes->value());
 
     settings.setValue(QStringLiteral("sys_dist1"), ui->leSys1->text());
     settings.setValue(QStringLiteral("sys_dist2"), ui->leSys2->text());
@@ -118,6 +121,7 @@ void CalcsTab::loadSettings()
     read_mass(QStringLiteral("mass_cargo"), ui->sbCargo);
     read_mass(QStringLiteral("mass_fuel"), ui->sbFuel);
     read_mass(QStringLiteral("mass_nth"), ui->sbEachNth);
+    read_mass(QStringLiteral("mass_tonnes"), ui->sbTonnes);
 
     ui->leSys1->setText(settings.value(QStringLiteral("sys_dist1"), "Sol").toString());
     ui->leSys2->setText(settings.value(QStringLiteral("sys_dist2"), "").toString());
@@ -140,7 +144,7 @@ void CalcsTab::calcCarrierFuel()
     const auto carg = ui->sbCargo->value();
     const auto fuel = ui->sbFuel->value();
     const auto refuel_each_nth = ui->sbEachNth->value();
-
+    const auto refuel_random_mine = ui->sbTonnes->value();
 
     const bool random_mine  = ui->rbRandom->isChecked();
     const bool keep_full    = random_mine || ui->rbTankFull->isChecked();
@@ -154,7 +158,7 @@ void CalcsTab::calcCarrierFuel()
         ui->lblResult->setText(tr("Total mass is bigger then maximum cargo %1(t).").arg(max_carrier_cargo()));
     else
     {
-        constexpr static int refuel_random_mine = 100; //tonns
+
 
         constexpr static int jump_distance = 500;
         constexpr static float max_cargo = static_cast<float>(max_carrier_cargo());
@@ -202,6 +206,7 @@ void CalcsTab::calcCarrierFuel()
                     {
                         if (current_used >= refuel_random_mine)
                             current_used -= refuel_random_mine;
+                        else
                         {
                             const auto extra = refuel_random_mine - current_used;
                             current_used = 0;

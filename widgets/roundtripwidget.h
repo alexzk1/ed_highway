@@ -44,6 +44,7 @@ private slots:
     void on_actionOpen_in_Browser_triggered();
 
 private:
+    void showError(const QString& msg) const;
     Ui::RoundTripWidget *ui;
     QPointer<EDSMSystemsModel> model;
     QString lastSelected;

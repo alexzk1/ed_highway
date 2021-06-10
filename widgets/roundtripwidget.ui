@@ -179,8 +179,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>627</width>
-             <height>656</height>
+             <width>640</width>
+             <height>687</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -204,20 +204,29 @@
                  <property name="text">
                   <string>Sphere Center:</string>
                  </property>
+                 <property name="buddy">
+                  <cstring>edCenter</cstring>
+                 </property>
                 </widget>
                </item>
                <item row="0" column="1">
                 <widget class="QLineEdit" name="edCenter"/>
                </item>
-               <item row="1" column="0">
+               <item row="2" column="0">
                 <widget class="QLabel" name="label_2">
                  <property name="text">
                   <string>Sphere Radius (ly):</string>
                  </property>
+                 <property name="buddy">
+                  <cstring>spinLY</cstring>
+                 </property>
                 </widget>
                </item>
-               <item row="1" column="1">
+               <item row="2" column="1">
                 <widget class="QSpinBox" name="spinLY">
+                 <property name="toolTip">
+                  <string/>
+                 </property>
                  <property name="buttonSymbols">
                   <enum>QAbstractSpinBox::PlusMinus</enum>
                  </property>
@@ -231,7 +240,7 @@
                   <number>1</number>
                  </property>
                  <property name="maximum">
-                  <number>100</number>
+                  <number>200</number>
                  </property>
                  <property name="stepType">
                   <enum>QAbstractSpinBox::AdaptiveDecimalStepType</enum>
@@ -241,7 +250,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="2" column="0" colspan="2">
+               <item row="5" column="0" colspan="2">
                 <widget class="QLabel" name="label_5">
                  <property name="font">
                   <font>
@@ -258,7 +267,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="4" column="0" colspan="2">
+               <item row="7" column="0" colspan="2">
                 <widget class="QLabel" name="label_3">
                  <property name="font">
                   <font>
@@ -275,17 +284,17 @@
                  </property>
                 </widget>
                </item>
-               <item row="5" column="0">
+               <item row="8" column="0">
                 <widget class="QCheckBox" name="cb1_or2">
                  <property name="text">
                   <string>1st or2nd is</string>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="1">
+               <item row="8" column="1">
                 <widget class="QComboBox" name="list1_or_2"/>
                </item>
-               <item row="6" column="0" colspan="2">
+               <item row="9" column="0" colspan="2">
                 <widget class="QLabel" name="label_4">
                  <property name="font">
                   <font>
@@ -302,7 +311,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="7" column="0" colspan="2">
+               <item row="10" column="0" colspan="2">
                 <widget class="QGroupBox" name="groupBox_3">
                  <property name="title">
                   <string>Rings</string>
@@ -339,7 +348,7 @@
                  </layout>
                 </widget>
                </item>
-               <item row="8" column="0" colspan="2">
+               <item row="11" column="0" colspan="2">
                 <widget class="QGroupBox" name="groupBox_4">
                  <property name="title">
                   <string>Giants</string>
@@ -371,14 +380,14 @@
                  </layout>
                 </widget>
                </item>
-               <item row="9" column="0" colspan="2">
+               <item row="12" column="0" colspan="2">
                 <widget class="QPushButton" name="btnBulkQuery">
                  <property name="text">
                   <string>Query EDSM and Add To List</string>
                  </property>
                 </widget>
                </item>
-               <item row="3" column="0" colspan="2">
+               <item row="6" column="0" colspan="2">
                 <widget class="EDSMStarClassSelector" name="starClass" native="true">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -391,6 +400,26 @@
                    <width>20</width>
                    <height>220</height>
                   </size>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="label_6">
+                 <property name="text">
+                  <string>Sphere Inner Radius (ly):</string>
+                 </property>
+                 <property name="buddy">
+                  <cstring>spinInnerLY</cstring>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QSpinBox" name="spinInnerLY">
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Limits range to [inner ly; ly].&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="maximum">
+                  <number>200</number>
                  </property>
                 </widget>
                </item>
@@ -468,6 +497,30 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>edSysManul</tabstop>
+  <tabstop>btnAdd</tabstop>
+  <tabstop>btnClear</tabstop>
+  <tabstop>btnUndo</tabstop>
+  <tabstop>btnCopy</tabstop>
+  <tabstop>btnCalc</tabstop>
+  <tabstop>bulkAdd</tabstop>
+  <tabstop>btnBulkAdd</tabstop>
+  <tabstop>scrollArea</tabstop>
+  <tabstop>edCenter</tabstop>
+  <tabstop>spinInnerLY</tabstop>
+  <tabstop>spinLY</tabstop>
+  <tabstop>cb1_or2</tabstop>
+  <tabstop>list1_or_2</tabstop>
+  <tabstop>cbrIcy</tabstop>
+  <tabstop>cbrRocky</tabstop>
+  <tabstop>cbrMetal</tabstop>
+  <tabstop>cbrRichMetall</tabstop>
+  <tabstop>cbgN</tabstop>
+  <tabstop>giantsSpin</tabstop>
+  <tabstop>btnBulkQuery</tabstop>
+  <tabstop>tableView</tabstop>
+ </tabstops>
  <resources>
   <include location="../resources.qrc"/>
  </resources>

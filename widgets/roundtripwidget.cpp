@@ -11,10 +11,19 @@
 #include "utils/exec_exit.h"
 #include <QThread>
 #include <QDesktopServices>
+#include <QMessageBox>
 #include "execonmainthread.h"
 #include "utils/strutils.h"
+#include "point.h"
 
 const static QString settingsGroup{"RoundTripWidget"};
+
+void static limitRangeToEdsm(QSpinBox* ptr)
+{
+    constexpr static int edsm_range_limit = 100; //limited by website
+    if (ptr)
+        ptr->setMaximum(std::min(edsm_range_limit, ptr->maximum()));
+}
 
 RoundTripWidget::RoundTripWidget(QWidget *parent) :
     QWidget(parent),
@@ -22,6 +31,11 @@ RoundTripWidget::RoundTripWidget(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->btnAdd->setAction(ui->actionAdd);
+
+    //limiting whatever we configured in editor to edsm limit
+    limitRangeToEdsm(ui->spinInnerLY);
+    limitRangeToEdsm(ui->spinLY);
+
     new SpanshSysSuggest(ui->edSysManul);
     new SpanshSysSuggest(ui->edCenter);
 
@@ -275,7 +289,14 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
     const auto center = ui->edCenter->text();
     if (!center.isEmpty())
     {
+        const auto center_point = Point::fromJson(EDSMWrapper::requestSysInfo(center));
         const int ly = ui->spinLY->value();
+        const int inner_ly = ui->spinInnerLY->value();
+        if (inner_ly > ly)
+        {
+            showError(tr("Inner LY must be less-or-equal to LY parameter."));
+            return;
+        }
 
         switchUI(false);
         if (!progress)
@@ -363,6 +384,10 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
 
                 for (const auto& json : info)
                 {
+                    const auto current_point = Point::fromJson(json);
+                    if (center_point.distance(current_point) < inner_ly)
+                        continue;
+
                     //lamda to extract value from json
                     const auto value_or_none = [&json](const std::string & root, const std::string & name) ->QString
                     {
@@ -502,6 +527,8 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
             });
         });
     }
+    else
+        showError(tr("Center is not given."));
 }
 
 void RoundTripWidget::on_btnCopy_clicked()
@@ -519,4 +546,9 @@ void RoundTripWidget::on_actionOpen_in_Browser_triggered()
         catch (...)
         {
         }
+}
+
+void RoundTripWidget::showError(const QString &msg) const
+{
+    QMessageBox::critical((QWidget*)this->parent(), qAppName(), msg);
 }

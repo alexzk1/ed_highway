@@ -10,6 +10,8 @@
 #include <type_traits>
 #include <iterator>
 #include <set>
+#include <limits>
+#include <map>
 
 #ifdef QT_CORE_LIB
     #include <QString>

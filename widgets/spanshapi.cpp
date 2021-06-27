@@ -2,6 +2,7 @@
 #include "utils/strfmt.h"
 #include <iostream>
 #include <chrono>
+#include <thread>
 #include "utils/strutils.h"
 #include "utils/exec_exit.h"
 

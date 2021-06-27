@@ -3,6 +3,7 @@
 #include "utils/strutils.h"
 #include "point.h"
 #include <iostream>
+#include <thread>
 
 #define ERROR(MSG) throw std::runtime_error(MSG)
 

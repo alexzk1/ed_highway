@@ -27,7 +27,6 @@ public:
     static void selfTest();
     static void selfTest2();
     static void selfTest3();
-private:
     struct bisector
     {
         constexpr static auto INVALID_IJ = std::numeric_limits<size_t>::max();
@@ -54,6 +53,7 @@ private:
             return stringfmt("(I: %zu; J: %zu), D: %u", i + 1, j + 1, d);
         }
     };
+private:
     std::vector<bisector> result;
 
     LittleAlgorithm() = default;

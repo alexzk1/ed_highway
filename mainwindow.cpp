@@ -89,15 +89,19 @@ void MainWindow::settingsBeforeShow()
 #endif
 }
 
+
 void MainWindow::doScreenOCR()
 {
+#ifdef OCR_ADDED
     const auto list = ocrElite.recognizeScreen();
     const auto s = EliteOCR::tryDetectStarFromMapPopup(list);
     if (s.isEmpty())
         QMessageBox::critical(this, tr("OCR Error"), tr("Cannot read system name."));
     else
         qApp->clipboard()->setText(s);
+#endif
 }
+
 
 void MainWindow::on_actionClear_Cache_triggered()
 {

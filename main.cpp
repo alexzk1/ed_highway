@@ -10,12 +10,15 @@
 #include "edsmv1_nearest.h"
 #include "edsmv1_sysinfo.h"
 #include <QDebug>
-#include "eliteocr.h"
 #include "stringsfilecache.h"
 #include "edsmwrapper.h"
 #include "dump_help.h"
 #include "salesman/LittleAlgorithm.h"
 #include "execonmainthread.h"
+
+#ifdef OCR_ADDED
+    #include "eliteocr.h"
+#endif
 
 void test_ocr()
 {
@@ -42,6 +45,7 @@ void test_ocr()
         //HYPOE FLYI FN-H D11-1555
         "EliteDangerousCLIENT_1581954025449_112006.png",
     };
+#ifdef OCR_ADDED
     EliteOCR ocr;
     const static auto p = QStringLiteral("%1/test_ocr_screens/").arg(SRC_PATH);
     for (const auto& s : tests)
@@ -52,6 +56,7 @@ void test_ocr()
 
     }
     exit(0);
+#endif
 #endif
 }
 

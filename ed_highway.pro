@@ -78,7 +78,7 @@ include($$PWD/config_ui/config_ui.pri)
 
 
 #ocr functionality, comment out to disable it
-include($$PWD/ocr/ocr.pri)
+#include($$PWD/ocr/ocr.pri)
 
 #support for global hotkeys even when program is not active
 include($$PWD/QHotkey/qhotkey.pri)

@@ -291,9 +291,19 @@ void RoundTripWidget::on_btnBulkAdd_clicked()
 void RoundTripWidget::on_btnBulkQuery_clicked()
 {
     const auto center = ui->edCenter->text();
+    Point center_point;
     if (!center.isEmpty())
     {
-        const auto center_point = Point::fromJson(EDSMWrapper::requestSysInfo(center));
+        try
+        {
+            center_point = Point::fromJson(EDSMWrapper::requestSysInfo(center));
+        }
+        catch (std::exception&)
+        {
+            showError(QString("Failed to query EDSM for \"%1\"").arg(center));
+            return;
+        }
+
         const int ly = ui->spinLY->value();
         const int inner_ly = ui->spinInnerLY->value();
         if (inner_ly > ly)
@@ -513,15 +523,9 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
                 }
 
                 //making sure "center" is 1st in list if it is present there
-                for (auto & v : lst)
-                {
-                    if (v == center)
-                    {
-                        if (v != lst.first())
-                            std::swap(v, lst.first());
-                        break;
-                    }
-                }
+                const auto it = std::find(lst.begin(), lst.end(), center);
+                if (it != lst.end() && it != lst.begin())
+                    std::iter_swap(it, lst.begin());
 
                 model->addSystems(lst);
 

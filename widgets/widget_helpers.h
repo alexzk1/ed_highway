@@ -3,6 +3,7 @@
 #include <QCheckBox>
 #include <QPointer>
 #include <QString>
+#include <QLocale>
 
 inline void cleanAllChildren(QWidget *parentWidget)
 {
@@ -21,4 +22,13 @@ inline void addContainerAsCheckboxes(Layout* addto, const Container& src, const 
         addto->addWidget(checkbox);
         func(checkbox, v);
     }
+}
+
+template<class Integer>
+inline auto spaced_1000s(const Integer value)
+{
+    static_assert (std::is_integral<Integer>::value, "Only integers are accepted.");
+    //this makes thouthands to be space-separated, which I like
+    const static QLocale pretty_numbers(QLocale::Language::Finnish, QLocale::Country::Finland);
+    return pretty_numbers.toString(value);
 }

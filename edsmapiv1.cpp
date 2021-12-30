@@ -17,6 +17,10 @@ void EdsmApiV1::executeRequest(const std::string &api, const RestClient::paramet
     using namespace nlohmann;
 
     const auto url = (utility::strcontains(api, "https://")) ? api : stringfmt("https://www.edsm.net/api-v1/%s", api);
+
+    //TODO: uncoment to print GET link
+    //std::cout << "API: " << url << std::endl;
+
     const auto eparams{RestClient::encodePOSTParameters(params)};
     if (!is_get)
     {

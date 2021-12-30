@@ -28,7 +28,12 @@ template<class Integer>
 inline auto spaced_1000s(const Integer value)
 {
     static_assert (std::is_integral<Integer>::value, "Only integers are accepted.");
+
     //this makes thouthands to be space-separated, which I like
     const static QLocale pretty_numbers(QLocale::Language::Finnish, QLocale::Country::Finland);
-    return pretty_numbers.toString(value);
+
+    const static QLocale dumb;
+    const static bool needs_pretty_numbers = dumb.toString(115222).length() == 6;
+
+    return (needs_pretty_numbers) ? pretty_numbers.toString(value) : dumb.toString(value);
 }

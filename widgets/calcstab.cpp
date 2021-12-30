@@ -11,6 +11,7 @@
 #include "point.h"
 #include "utils/exec_exit.h"
 #include "carriers_info.h"
+#include "widget_helpers.h"
 
 constexpr static int delay_ms = 2000;
 const static QString settingsGroup = "CalcsTabSettings";
@@ -269,9 +270,14 @@ void CalcsTab::calcCarrierFuel()
         else
         {
             if (refuel_empty)
-                ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly). Jumps till refuel: %3").arg(total).arg(total / 2).arg(jumps_till_recharge));
+                ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly). Jumps till refuel: %3")
+                                       .arg(spaced_1000s(total))
+                                       .arg(spaced_1000s(total / 2))
+                                       .arg(spaced_1000s(jumps_till_recharge)));
             else
-                ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly).").arg(total).arg(total / 2));
+                ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly).")
+                                       .arg(spaced_1000s(total))
+                                       .arg(spaced_1000s(total / 2)));
         }
     }
 }

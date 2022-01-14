@@ -4,6 +4,7 @@
 #include <QPointer>
 #include <QString>
 #include <QLocale>
+#include <random>
 
 inline void cleanAllChildren(QWidget *parentWidget)
 {
@@ -25,7 +26,7 @@ inline void addContainerAsCheckboxes(Layout* addto, const Container& src, const 
 }
 
 template<class Integer>
-inline auto spaced_1000s(const Integer value)
+inline auto spaced_1000s(const Integer value, const bool force_spaces = false)
 {
     static_assert (std::is_integral<Integer>::value, "Only integers are accepted.");
 
@@ -35,5 +36,39 @@ inline auto spaced_1000s(const Integer value)
     const static QLocale dumb;
     const static bool needs_pretty_numbers = dumb.toString(115222).length() == 6;
 
-    return (needs_pretty_numbers) ? pretty_numbers.toString(value) : dumb.toString(value);
+    return (needs_pretty_numbers | force_spaces) ? pretty_numbers.toString(value) : dumb.toString(value);
+}
+
+inline auto spaced_1000s(const float value, const bool force_spaces = false)
+{
+    return spaced_1000s(static_cast<int32_t>(value), force_spaces);
+}
+
+namespace myrnd
+{
+    template <class T = float>
+    inline T uniformRandom(T low = static_cast<T>(0.), T hi = static_cast<T>(1.))
+    {
+        static_assert (std::is_floating_point<T>::value, "T must be floating point one.");
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<T> dis(low, hi);
+        return dis(gen);
+    }
+
+    //----------------------------------------------------------------------------
+    template <class T = float>
+    inline T gaussRandom(T mean = 0.0f, T stdev = 1.0f)
+    {
+        static_assert (std::is_floating_point<T>::value, "T must be floating point one.");
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::normal_distribution<T> dis(mean, stdev);
+        return dis(gen);
+    }
+
+    inline bool randomBool()
+    {
+        return uniformRandom<float>(0.f, 1.f) < 0.5;
+    }
 }

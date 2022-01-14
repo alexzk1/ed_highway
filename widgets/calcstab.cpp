@@ -34,34 +34,55 @@ CalcsTab::CalcsTab(QWidget *parent) :
     ui->setupUi(this);
     connect(delayedStart, &DelayedSignal::delayedSignal, this, &CalcsTab::calcCarrierFuel);
 
-    const auto setup_spin = [this](QSpinBox * ptr)
+    //attaching change event to spin boxes
     {
-        ptr->setMaximum(max_carrier_cargo());
-        connect(ptr, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](int)
+        const auto setup_spin = [this](QSpinBox * ptr)
         {
-            updateCargoToMax();
-            delayedStart->sourceSignal(delay_ms);
-        });
-    };
+            ptr->setMaximum(max_carrier_cargo());
+            connect(ptr, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](int)
+            {
+                updateCargoToMax();
+                delayedStart->sourceSignal(delay_ms);
+            });
+        };
 
-    const auto setup_radio = [this](QRadioButton * rb)
+        const std::vector<QSpinBox*> spins =
+        {
+            ui->sbCargo,
+            ui->sbModules,
+            ui->sbFuel,
+            ui->sbEachNth,
+            ui->sbTonnes,
+        };
+
+        for (const auto& s : spins)
+            setup_spin(s);
+    }
+
+    //attaching change event to radios
     {
-        connect(rb, &QRadioButton::toggled, this, [this](bool)
+        const auto setup_radio = [this](QRadioButton * rb)
         {
-            delayedStart->sourceSignal(delay_ms / 4);
-        });
-    };
+            connect(rb, &QRadioButton::toggled, this, [this](bool)
+            {
+                delayedStart->sourceSignal(delay_ms / 4);
+            });
+        };
 
-    setup_spin(ui->sbCargo);
-    setup_spin(ui->sbModules);
-    setup_spin(ui->sbFuel);
-    setup_spin(ui->sbEachNth);
-    setup_spin(ui->sbTonnes);
+        const std::vector<QRadioButton*> radios =
+        {
+            ui->rbOnEmpty,
+            ui->rbTankFull,
+            ui->rbRandom,
 
+            ui->rbD470,
+            ui->rbD495,
+            ui->rbD500,
+        };
 
-    setup_radio(ui->rbOnEmpty);
-    setup_radio(ui->rbTankFull);
-    setup_radio(ui->rbRandom);
+        for (const auto& r : radios)
+            setup_radio(r);
+    }
 
     new SpanshSysSuggest(ui->leSys1);
     new SpanshSysSuggest(ui->leSys2);
@@ -112,7 +133,7 @@ void CalcsTab::loadSettings()
     settings.beginGroup(settingsGroup);
 
 
-    const auto read_mass = [this, &settings](const QString & v, QSpinBox * s)
+    const auto read_mass = [ &settings](const QString & v, QSpinBox * s)
     {
         const int def = s->value();
         const int val = settings.value(v, def).toInt();
@@ -159,125 +180,139 @@ void CalcsTab::calcCarrierFuel()
         ui->lblResult->setText(tr("Total mass is bigger then maximum cargo %1(t).").arg(max_carrier_cargo()));
     else
     {
+        constexpr static int consider_infinite_travel_with_jumps  = 20000;
 
-
-        constexpr static int jump_distance = 500;
         constexpr static float max_cargo = static_cast<float>(max_carrier_cargo());
-        constexpr static float jd_mul = jump_distance / 8.f;
         constexpr static float minimum_jump_cost = 5.f;
+        const static float jd_mul = 1.f / 8.f;
 
-        const int sims_count = 1;//(random_mine) ? 20 : 1;
-
-        int64_t total = 0;
         int jumps_till_recharge = 0;
         bool infinite = false;
 
-        for (int s = 0; s < sims_count; ++s)
+        //rbD500 default value
+        float jump_distance = carrier_max_jump();
+
+        const auto update_distance_for_range = [&jump_distance](float range)
         {
-            int distance = 0;
+            jump_distance = myrnd::uniformRandom<float>(0.f, carrier_max_jump() - range) + range;
+            assert(jump_distance < carrier_max_jump());
+        };
 
-            const auto jump = [&distance]()
+        const auto update_distance = [this, &update_distance_for_range]()
+        {
+            if (ui->rbD470->isChecked())
+                update_distance_for_range(470.f);
+
+            if (ui->rbD495->isChecked())
+                update_distance_for_range(495.f);
+
+        };
+
+        float distance = 0;
+        const auto jump = [&distance, &update_distance, &jump_distance]()
+        {
+            distance += jump_distance;
+            update_distance();
+        };
+
+
+        bool jumps_till_recharge_once = true;
+
+        update_distance();
+        for (int current_fuel = fuel, current_used = 0, tank = carrier_tank_size(), njump = 1;
+                current_fuel + tank > current_used; ++njump)
+        {
+            if (njump > consider_infinite_travel_with_jumps)
             {
-                distance += jump_distance;
-            };
+                infinite = true;
+                break;
+            }
 
-
-            bool jumps_till_recharge_once = true;
-
-            for (int current_fuel = fuel, current_used = 0, tank = carrier_tank_size(), njump = 1;
-                    current_fuel + tank > current_used; ++njump)
+            for (int r = 0; r < 2; ++r)
             {
-                if (njump > 20000)
+                const int total = current_fuel + tank;
+                if (total < carrier_tank_size())
                 {
-                    infinite = true;
+                    current_fuel = 0;
+                    tank = total;
+                }
+                current_used = round(minimum_jump_cost + jump_distance * jd_mul * (1.f + static_cast<float>(current_fuel + carg + mods) / max_cargo));
+
+                if (random_mine && (njump % refuel_each_nth == 0))
+                {
+                    if (current_used >= refuel_random_mine)
+                        current_used -= refuel_random_mine;
+                    else
+                    {
+                        const auto extra = refuel_random_mine - current_used;
+                        current_used = 0;
+                        const auto target = mods + carg + current_fuel + extra;
+                        if (target > max_carrier_cargo())
+                            current_fuel = max_carrier_cargo() - mods - carg;
+                        else
+                            current_fuel += extra;
+                    }
+                }
+                if (keep_full)
+                {
+
+                    if (current_fuel > current_used)
+                    {
+                        current_fuel -= current_used;
+                        jump();
+                    }
+                    else
+                    {
+                        if (tank > current_used)
+                        {
+                            tank -= current_used;
+                            jump();
+                        }
+                    }
                     break;
                 }
 
-                for (int r = 0; r < 2; ++r)
+                if (refuel_empty)
                 {
-                    const int total = current_fuel + tank;
-                    if (total < carrier_tank_size())
-                    {
-                        current_fuel = 0;
-                        tank = total;
-                    }
-                    current_used = round(minimum_jump_cost + jd_mul * (1 + (current_fuel + carg + mods) / max_cargo));
-
-                    if (random_mine && (njump % refuel_each_nth == 0))
-                    {
-                        if (current_used >= refuel_random_mine)
-                            current_used -= refuel_random_mine;
-                        else
-                        {
-                            const auto extra = refuel_random_mine - current_used;
-                            current_used = 0;
-                            const auto target = mods + carg + current_fuel + extra;
-                            if (target > max_carrier_cargo())
-                                current_fuel = max_carrier_cargo() - mods - carg;
-                            else
-                                current_fuel += extra;
-                        }
-                    }
-                    if (keep_full)
-                    {
-
-                        if (current_fuel > current_used)
-                        {
-                            current_fuel -= current_used;
-                            jump();
-                        }
-                        else
-                        {
-                            if (tank > current_used)
-                            {
-                                tank -= current_used;
-                                jump();
-                            }
-                        }
+                    if (current_used > total)
                         break;
-                    }
 
-                    if (refuel_empty)
+                    if (tank < current_used)
                     {
-                        if (current_used > total)
-                            break;
-
-                        if (tank < current_used)
-                        {
-                            const int delta = std::min((int)carrier_tank_size() - tank, current_fuel);
-                            tank += delta;
-                            current_fuel -= delta;
-                            jumps_till_recharge_once = false;
-                        }
-                        else
-                        {
-                            tank -= current_used;
-                            if (jumps_till_recharge_once)
-                                ++jumps_till_recharge;
-                            jump();
-                            break;
-                        }
+                        const int delta = std::min((int)carrier_tank_size() - tank, current_fuel);
+                        tank += delta;
+                        current_fuel -= delta;
+                        jumps_till_recharge_once = false;
+                    }
+                    else
+                    {
+                        tank -= current_used;
+                        if (jumps_till_recharge_once)
+                            ++jumps_till_recharge;
+                        jump();
+                        break;
                     }
                 }
             }
-            total += distance;
         }
-
-        total /= sims_count;
 
         if (infinite)
             ui->lblResult->setText(tr("Infinite travel."));
         else
         {
+            //todo: make setting for this
+            //if true - it will be always spaces, if false - it will try to use separator by current locale like comma and add spaces only if none
+            constexpr static bool force_always_spaces = true;
+
             if (refuel_empty)
                 ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly). Jumps till refuel: %3")
-                                       .arg(spaced_1000s(total))
-                                       .arg(spaced_1000s(total / 2))
-                                       .arg(spaced_1000s(jumps_till_recharge)));
+                                       .arg(spaced_1000s(distance, force_always_spaces))
+                                       .arg(spaced_1000s(distance / 2.f, force_always_spaces))
+                                       .arg(spaced_1000s(jumps_till_recharge, force_always_spaces)));
             else
                 ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly).")
-                                       .arg(spaced_1000s(total))
-                                       .arg(spaced_1000s(total / 2)));
+                                       .arg(spaced_1000s(distance, force_always_spaces))
+                                       .arg(spaced_1000s(distance / 2.f, force_always_spaces)));
         }
     }
 }

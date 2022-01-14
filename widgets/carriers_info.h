@@ -2,6 +2,7 @@
 #include <QString>
 #include <stdint.h>
 #include <vector>
+#include <QObject>
 
 struct CarrierModuleInfo
 {
@@ -60,4 +61,9 @@ constexpr inline int max_carrier_cargo()
 constexpr inline int carrier_tank_size()
 {
     return 1000;
+}
+
+constexpr inline float carrier_max_jump()
+{
+    return 500.f;
 }

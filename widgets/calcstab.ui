@@ -227,7 +227,7 @@
          <item>
           <widget class="QRadioButton" name="rbD500">
            <property name="text">
-            <string>Exact 500</string>
+            <string>Exact 500 ly</string>
            </property>
           </widget>
          </item>
@@ -267,7 +267,7 @@
          <item>
           <widget class="QRadioButton" name="rbD495">
            <property name="text">
-            <string>[495-500)</string>
+            <string>[495-500) ly</string>
            </property>
            <property name="checked">
             <bool>true</bool>

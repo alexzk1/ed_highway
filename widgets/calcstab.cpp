@@ -194,8 +194,7 @@ void CalcsTab::calcCarrierFuel()
 
         const auto update_distance_for_range = [&jump_distance](float range)
         {
-            jump_distance = myrnd::uniformRandom<float>(0.f, carrier_max_jump() - range) + range;
-            assert(jump_distance < carrier_max_jump());
+            jump_distance = std::fmax(carrier_max_jump(), myrnd::uniformRandom<float>(0.f, carrier_max_jump() - range) + range);
         };
 
         const auto update_distance = [this, &update_distance_for_range]()

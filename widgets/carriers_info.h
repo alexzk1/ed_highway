@@ -48,6 +48,11 @@ inline const std::vector<CarrierModuleInfo> &getCarrierModulesInfoList()
         {QObject::tr("Outfitting"), 250000000, 5000000, 1500000, 1750},
         {QObject::tr("Secure warehouse(black market)"), 165000000, 2000000, 1250000, 250},
         {QObject::tr("Universal Cartographics"), 150000000, 1850000, 700000, 120},
+
+        //Odyssey addition
+        {QObject::tr("Concourse Bar"), 200000000, 1750000, 1250000, 250},
+        {QObject::tr("Vista Genomics"), 150000000, 1500000, 700000, 120},
+        {QObject::tr("Pioneer Supplies"), 250000000, 5000000, 1500000, 200},
     };
 
     return arr;

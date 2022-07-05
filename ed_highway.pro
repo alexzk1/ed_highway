@@ -82,13 +82,15 @@ include($$PWD/config_ui/config_ui.pri)
 
 #support for global hotkeys even when program is not active
 include($$PWD/QHotkey/qhotkey.pri)
+INCLUDEPATH += $$PWD/QHotkey/QHotkey
+
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-QMAKE_CXXFLAGS +=  -pipe -std=c++14 -Wall -frtti -fexceptions -Werror=return-type -Werror=overloaded-virtual
+QMAKE_CXXFLAGS +=  -pipe -Wall -frtti -fexceptions -Werror=return-type -Werror=overloaded-virtual
 QMAKE_CXXFLAGS +=  -Werror=delete-non-virtual-dtor -fno-strict-aliasing
 #QMAKE_CXXFLAGS +=  -Werror=strict-aliasing -Wstrict-aliasing=2
 

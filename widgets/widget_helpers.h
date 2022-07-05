@@ -5,6 +5,7 @@
 #include <QString>
 #include <QLocale>
 #include <random>
+#include <vector>
 
 inline void cleanAllChildren(QWidget *parentWidget)
 {
@@ -15,14 +16,20 @@ inline void cleanAllChildren(QWidget *parentWidget)
 }
 
 template <class Layout, class Container, class CallbackPrepareCheckbox>
-inline void addContainerAsCheckboxes(Layout* addto, const Container& src, const CallbackPrepareCheckbox& func)
+inline auto addContainerAsCheckboxes(Layout* addto, const Container& src, const CallbackPrepareCheckbox& func)
 {
+    std::vector<QPointer<QCheckBox>> res;
+    res.reserve(std::distance(std::begin(src), std::end(src)));
+
     for (const auto& v : src)
     {
         QPointer<QCheckBox> checkbox = new QCheckBox(static_cast<const QString&>(v));
         addto->addWidget(checkbox);
         func(checkbox, v);
+        res.push_back(std::move(checkbox));
     }
+
+    return res;
 }
 
 template<class Integer>

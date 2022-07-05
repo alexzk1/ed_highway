@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <QWidget>
 #include "carriers_info.h"
 
@@ -23,6 +24,7 @@ protected:
 private:
     Ui::carriermodules *ui;
     CarrierModuleInfo total;
+
     void buildGui();
     void showTotal();
 };

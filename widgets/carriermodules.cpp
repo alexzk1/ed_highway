@@ -31,11 +31,11 @@ void CarrierModules::changeEvent(QEvent *e)
     QWidget::changeEvent(e);
     switch (e->type())
     {
-        case QEvent::LanguageChange:
-            ui->retranslateUi(this);
-            break;
-        default:
-            break;
+    case QEvent::LanguageChange:
+        ui->retranslateUi(this);
+        break;
+    default:
+        break;
     }
 }
 
@@ -49,9 +49,13 @@ void CarrierModules::buildGui()
     container->setLayout(containerLayout);
     ui->scrollArea->setWidget(container);
 
-    addContainerAsCheckboxes(containerLayout, getCarrierModulesInfoList(), [&](const QPointer<QCheckBox>& checkbox, const CarrierModuleInfo & mi)
+    //temporary in-ram storing of checkboxes states, do not save on disk
+    static std::vector<bool> allChecks;
+    size_t index = 0;
+
+    const auto vptrs = addContainerAsCheckboxes(containerLayout, getCarrierModulesInfoList(), [&](const QPointer<QCheckBox>& checkbox, const CarrierModuleInfo & mi)
     {
-        connect(checkbox, &QCheckBox::toggled, this, [this, checkbox, &mi](bool set)
+        connect(checkbox, &QCheckBox::toggled, this, [this, checkbox, &mi, index](bool set)
         {
             if (checkbox)
             {
@@ -59,10 +63,21 @@ void CarrierModules::buildGui()
                     total += mi;
                 else
                     total -= mi;
+                allChecks[index] = set;
             }
             showTotal();
         });
+        ++index;
     });
+
+    //loading checkboxes from ram
+    if (allChecks.size() != vptrs.size())
+        allChecks.resize(vptrs.size(), false);
+    else
+    {
+        for (size_t i = 0, sz = vptrs.size(); i < sz; ++i)
+            vptrs[i]->setChecked(allChecks[i]);
+    }
 }
 
 void CarrierModules::showTotal()

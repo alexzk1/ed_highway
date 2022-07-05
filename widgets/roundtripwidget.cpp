@@ -6,7 +6,7 @@
 #include <QVariant>
 #include <QClipboard>
 #include "config_ui/globalsettings.h"
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QProgressDialog>
 #include "utils/exec_exit.h"
 #include <QThread>
@@ -120,11 +120,11 @@ void RoundTripWidget::changeEvent(QEvent *e)
     QWidget::changeEvent(e);
     switch (e->type())
     {
-        case QEvent::LanguageChange:
-            ui->retranslateUi(this);
-            break;
-        default:
-            break;
+    case QEvent::LanguageChange:
+        ui->retranslateUi(this);
+        break;
+    default:
+        break;
     }
 }
 
@@ -274,8 +274,8 @@ void RoundTripWidget::on_btnBulkAdd_clicked()
 
     if (!src.isEmpty())
     {
-        const static QRegExp ns("\\n");
-        auto ls = src.split(ns, QString::SplitBehavior::SkipEmptyParts);
+        const static QRegularExpression ns("\\n");
+        auto ls = src.split(ns, Qt::SkipEmptyParts);
         for (auto& s : ls)
             s = s.trimmed();
         if (ls.size())

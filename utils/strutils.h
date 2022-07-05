@@ -178,7 +178,10 @@ namespace utility
     template <class Str>
     inline Str &ltrim(Str &s)
     {
-        s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](auto c)
+        {
+            return !std::isspace(c);
+        }));
         return s;
     }
 
@@ -186,7 +189,10 @@ namespace utility
     template <class Str>
     inline Str &rtrim(Str &s)
     {
-        s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+        s.erase(std::find_if(s.rbegin(), s.rend(), [](auto c)
+        {
+            return !std::isspace(c);
+        }).base(), s.end());
         return s;
     }
 
@@ -201,15 +207,15 @@ namespace utility
     {
         switch (src.size())
         {
-            case 0:
-                return "";
-            case 1:
-                return src.at(0);
-            default:
-                std::ostringstream os;
-                std::copy(src.begin(), src.end() - 1, std::ostream_iterator<std::string>(os, sep.c_str()));
-                os << *src.rbegin();
-                return os.str();
+        case 0:
+            return "";
+        case 1:
+            return src.at(0);
+        default:
+            std::ostringstream os;
+            std::copy(src.begin(), src.end() - 1, std::ostream_iterator<std::string>(os, sep.c_str()));
+            os << *src.rbegin();
+            return os.str();
         }
     }
 

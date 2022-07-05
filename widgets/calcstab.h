@@ -37,6 +37,7 @@ private slots:
     void on_leSys1_textChanged(const QString &arg1);
     void on_leSys2_textChanged(const QString &arg1);
     void on_cbKeepCargo_stateChanged(int arg1);
+    void on_btnCarMods_clicked();
 };
 
 #endif // CALCSTAB_H

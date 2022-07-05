@@ -12,6 +12,7 @@
 #include "utils/exec_exit.h"
 #include "carriers_info.h"
 #include "widget_helpers.h"
+#include "carriermodulesdialog.h"
 
 constexpr static int delay_ms = 2000;
 const static QString settingsGroup = "CalcsTabSettings";
@@ -102,11 +103,11 @@ void CalcsTab::changeEvent(QEvent *e)
     QWidget::changeEvent(e);
     switch (e->type())
     {
-        case QEvent::LanguageChange:
-            ui->retranslateUi(this);
-            break;
-        default:
-            break;
+    case QEvent::LanguageChange:
+        ui->retranslateUi(this);
+        break;
+    default:
+        break;
     }
 }
 
@@ -368,3 +369,11 @@ void CalcsTab::on_cbKeepCargo_stateChanged(int arg1)
     updateCargoToMax();
     delayedStart->sourceSignal(delay_ms);
 }
+
+void CalcsTab::on_btnCarMods_clicked()
+{
+    CarrierModulesDialog dlg(false, this);
+    if (QDialog::DialogCode::Accepted == dlg.exec())
+        ui->sbModules->setValue(dlg.getTotal().cargo_use);
+}
+

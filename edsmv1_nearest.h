@@ -7,6 +7,7 @@
 
 #include <string>
 
+/// @brief Corresponds to "find nearest systems" web-API.
 class EDSMV1NearerstSystem
 {
   private:

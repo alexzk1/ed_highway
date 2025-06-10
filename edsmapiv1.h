@@ -7,9 +7,11 @@
 
 #include <atomic>
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <string>
 
+/// @brief executes web-api calls in threads.
 class EdsmApiV1
 {
   public:
@@ -21,7 +23,7 @@ class EdsmApiV1
     }
     ~EdsmApiV1();
 
-    // 1st parameter is error if any
+    /// @brief 1st parameter is error if any
     using callback_t = std::function<void(std::string, nlohmann::json)>;
 
     void executeRequest(const std::string &api, const RestClient::parameters &params, bool is_get,
@@ -32,6 +34,7 @@ class EdsmApiV1
     {
         executeRequest(src.api(), src.params(), src.isGet(), callback, timeout_seconds);
     }
+
     bool isWorking() const
     {
         return working > 0;
@@ -47,5 +50,5 @@ class EdsmApiV1
   private:
     friend void dotest();
     ctpl::thread_pool threads;
-    std::atomic<int32_t> working{0};
+    std::atomic<std::int32_t> working{0};
 };

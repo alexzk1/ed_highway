@@ -3,66 +3,76 @@
 
 #include "utils/restclient.h"
 
+#include <string>
+
 class EDSMV1SysInfo
 {
-    RestClient::parameters p;
-
   public:
     EDSMV1SysInfo() = delete;
 
-    EDSMV1SysInfo(const std::string &name)
+    explicit EDSMV1SysInfo(const std::string &name)
     {
-        p["systemName"] = name;
-        p["showCoordinates"] = "1";
-        p["showPermit"] = "1";
-        p["showInformation"] = "1";
-        p["showPrimaryStar"] = "1";
+        restParams["systemName"] = name;
+        restParams["showCoordinates"] = "1";
+        restParams["showPermit"] = "1";
+        restParams["showInformation"] = "1";
+        restParams["showPrimaryStar"] = "1";
     }
 
+    [[nodiscard]]
     constexpr bool isGet() const
     {
         return true;
     }
 
+    [[nodiscard]]
     const auto &params() const
     {
-        return p;
+        return restParams;
     }
 
+    [[nodiscard]]
     const std::string &api() const
     {
         const static std::string v{"system"};
         return v;
     }
+
+  private:
+    RestClient::parameters restParams;
 };
 
 class EDSMV1SysBodies
 {
-    RestClient::parameters p;
-
   public:
     EDSMV1SysBodies() = delete;
 
-    EDSMV1SysBodies(const std::string &name)
+    explicit EDSMV1SysBodies(const std::string &name)
     {
-        p["systemName"] = name;
+        restParams["systemName"] = name;
     }
 
+    [[nodiscard]]
     constexpr bool isGet() const
     {
         return true;
     }
 
+    [[nodiscard]]
     const auto &params() const
     {
-        return p;
+        return restParams;
     }
 
+    [[nodiscard]]
     const std::string &api() const
     {
         const static std::string v{"https://www.edsm.net/api-system-v1/bodies"};
         return v;
     }
+
+  private:
+    RestClient::parameters restParams;
 };
 
 #endif // EDSMV1_SYSINFO_H

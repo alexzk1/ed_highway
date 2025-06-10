@@ -1,9 +1,16 @@
 #pragma once
+
+#include "edsmwrapper.h"
 #include "namedstarsystem.h"
 #include "utils/strfmt.h"
 
+#include <QString>
 #include <QStringList>
 
+#include <cstddef>
+#include <cstdint>
+#include <limits>
+#include <map>
 #include <vector>
 
 class LittleAlgorithm
@@ -12,8 +19,8 @@ class LittleAlgorithm
     std::vector<NamedStarSystem> source;
 
   public:
-    using weight_type = uint64_t;
-    using matrix_type = std::map<size_t, std::map<size_t, weight_type>>;
+    using weight_type = std::uint64_t;
+    using matrix_type = std::map<std::size_t, std::map<std::size_t, weight_type>>;
 
     float originalLength{0.f};
     float lastRouteLen{0.f};
@@ -30,16 +37,18 @@ class LittleAlgorithm
     static void selfTest3();
     struct bisector
     {
-        constexpr static auto INVALID_IJ = std::numeric_limits<size_t>::max();
-        size_t i{INVALID_IJ}; // index
-        size_t j{INVALID_IJ}; // index
+        constexpr static auto INVALID_IJ = std::numeric_limits<std::size_t>::max();
+        std::size_t i{INVALID_IJ}; // index
+        std::size_t j{INVALID_IJ}; // index
         LittleAlgorithm::weight_type d{0};
         bisector() = default;
+        // NOLINTNEXTLINE
         bisector(size_t i, size_t j) :
             i(i),
             j(j)
         {
         }
+        // NOLINTNEXTLINE
         bisector(size_t i, size_t j, weight_type d) :
             i(i),
             j(j),
@@ -56,8 +65,10 @@ class LittleAlgorithm
             return d <= c.d;
         }
 
+        [[nodiscard]]
         matrix_type makeSmallerMatrix(matrix_type matrix) const;
 
+        // NOLINTNEXTLINE
         operator std::string() const
         {
             return stringfmt("(I: %zu; J: %zu), D: %u", i + 1, j + 1, d);

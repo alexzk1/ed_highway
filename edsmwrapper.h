@@ -9,32 +9,35 @@
 #include <QStringList>
 
 #include <algorithm>
+#include <cstddef>
 #include <functional>
 #include <stdexcept>
 #include <string>
 #include <thread>
 #include <vector>
 
-// this class solves some exact tasks, using caching, so do not stress edsm too much
-
+/// @brief Top level API to use to query EDSM from C++. Hides http details in lower levels calls.
+/// It tries to use cache to avoid too often http calls.
 class EDSMWrapper
 {
   public:
     using callback_t = EdsmApiV1::callback_t;
-    using progress_update = std::function<bool(size_t, size_t)>; // 1st current value, 2nd total
+    using progress_update =
+      std::function<bool(std::size_t, std::size_t)>; // 1st current value, 2nd total
     EDSMWrapper() = delete;
 
+    /// @returns value of the field "name" in JSON.
     static QString getNameFromJson(const nlohmann::json &js);
 
-    // does not block caller thread, callback executed in other thread scope (not the caller) if
-    // network request made or immediatly in caller thread if cache used
+    /// @brief Does not block caller thread, callback executed in other thread scope (not the
+    /// caller) if network request made or immediatly in caller thread if cache was used.
     static void selectSystemsInRadius(const QString &center_name, int radius,
                                       const callback_t &callback);
 
-    // blocks caller thread until have return value, may return empty list
+    /// @brief Blocks caller thread until have return value, may return empty list.
     static QStringList selectSystemsInRadiusNamesOnly(const QString &center_name, int radius);
 
-    // blocks caller thread until all done
+    /// @brief Blocks caller thread until all done.
     static std::vector<nlohmann::json> requestManySysInfo(
       const QStringList &names, const progress_update &progress = [](auto, auto) {
           return false;
@@ -44,24 +47,24 @@ class EDSMWrapper
           return false;
       });
 
-    // does not block caller thread, callback executed in other thread scope (not the caller) if
-    // network request made or immediatly in caller thread if cache used
+    /// @brief Does not block caller thread, callback executed in other thread scope (not the
+    /// caller) if network request made or immediatly in caller thread if cache was used.
     static void requestSysInfo(const QString &sys_name, const callback_t &callback);
 
-    // blocks caller thread
+    /// @brief blocks caller thread
     static nlohmann::json requestSysInfo(const QString &sys_name);
 
-    // blocks caller thread
+    /// @brief blocks caller thread
     static QString tooltipWithSysInfo(const QString &sys_name);
 
-    // does not block caller thread, callback executed in other thread scope (not the caller) if
-    // network request made or immediatly in caller thread if cache used
+    /// @brief Does not block caller thread, callback executed in other thread scope (not the
+    /// caller) if network request made or immediatly in caller thread if cache was used.
     static void requestBodiesInfo(const QString &sys_name, const callback_t &callback);
 
-    // blocks caller thread
+    /// @brief blocks caller thread
     static nlohmann::json requestBodiesInfo(const QString &sys_name);
 
-    // blocks caller thread until all done
+    /// @brief blocks caller thread
     static std::vector<nlohmann::json> requestManyBodiesInfo(
       const QStringList &names, const progress_update &progress = [](auto, auto) {
           return false;
@@ -82,6 +85,7 @@ class EDSMWrapper
         return it->get<Res>();
     }
 
+    /// @returns static threaded executor for http-API calls.
     static EdsmApiV1 &api()
     {
         static EdsmApiV1 edsm(
@@ -89,5 +93,6 @@ class EDSMWrapper
         return edsm;
     }
 
+    /// @returns GET url for "system" endpoint of the web-API.
     static QString getSystemUrl(const QString &systemName);
 };

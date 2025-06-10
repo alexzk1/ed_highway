@@ -1,7 +1,8 @@
 #include "edsmwrapper.h" // IWYU pragma: keep
 
-#include "edsmv1_nearest.h"
+#include "edsmv1_nearest.h" // IWYU pragma: keep
 #include "edsmv1_sysinfo.h" // IWYU pragma: keep
+#include "qurl.h"
 #include "stringsfilecache.h"
 #include "utils/conditional_wait.h" // IWYU pragma: keep
 #include "utils/json.hpp"

@@ -1,28 +1,42 @@
-#include "LittleAlgorithm.h"
+#include "LittleAlgorithm.h" // IWYU pragma: keep
 
 #include "dump_help.h"
 #include "edsmwrapper.h"
+#include "namedstarsystem.h"
+#include "point.h"
 #include "utils/containers_helpers.h"
 #include "utils/strutils.h"
 
-#include <functional>
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <iostream>
+#include <iterator>
+#include <limits>
 #include <map>
+#include <utility>
+
 #ifdef SRC_PATH
 // #define DUMP_DURING_WORKING
 #endif
 
 #define INFW (std::numeric_limits<LittleAlgorithm::weight_type>::max())
 
+// NOLINTNEXTLINE
 LittleAlgorithm::LittleAlgorithm(QStringList source_names)
 {
     utility::RemoveDuplicatesKeepOrder<QString, QStringList>(source_names);
     if (source_names.size() < 3)
     {
         if (source_names.size() == 1)
+        {
             result.emplace_back(0, 0, 0);
+        }
 
         if (source_names.size() == 2)
+        {
             result.emplace_back(0, 1, 0);
+        }
 
         return;
     }
@@ -43,10 +57,14 @@ LittleAlgorithm::LittleAlgorithm(QStringList source_names)
         if (source.size() < 3)
         {
             if (source.size() == 1)
+            {
                 result.emplace_back(0, 0, 0);
+            }
 
             if (source.size() == 2)
+            {
                 result.emplace_back(0, 1, 0);
+            }
 
             return;
         }
@@ -62,12 +80,12 @@ LittleAlgorithm::LittleAlgorithm(QStringList source_names)
 
     std::vector<std::vector<weight_type>> distances;
     distances.resize(source.size());
-    for (size_t i = 0, sz = source.size(); i < sz; ++i)
+    for (std::size_t i = 0, sz = source.size(); i < sz; ++i)
     {
         distances.at(i).reserve(sz);
         const Point &pi = source.at(i).p;
 
-        for (size_t j = 0; j < sz; ++j)
+        for (std::size_t j = 0; j < sz; ++j)
             distances.at(i).push_back((i == j) ? INFW : toWeightT(pi.no_sqrt_dist(source.at(j).p)));
     }
 
@@ -87,9 +105,13 @@ QStringList LittleAlgorithm::getRoute(const QString &startAt)
             if (source.size() == 2)
             {
                 if (sit == source.begin())
+                {
                     res.push_back(source.back());
+                }
                 else
+                {
                     res.push_back(*source.begin());
+                }
                 length = source.begin()->p.distance(source.back().p);
             }
         }
@@ -106,12 +128,16 @@ QStringList LittleAlgorithm::getRoute(const QString &startAt)
                   });
 
                 if (fit == result.end())
+                {
                     break;
+                }
 
                 length += source.at(index).p.distance(source.at(fit->j).p);
                 index = fit->j;
                 if (index == startindex)
+                {
                     break;
+                }
             }
         }
     }
@@ -121,10 +147,12 @@ QStringList LittleAlgorithm::getRoute(const QString &startAt)
 
 QStringList LittleAlgorithm::route(QStringList source_names, const QString &start, float *length)
 {
-    LittleAlgorithm a(source_names);
+    LittleAlgorithm a(std::move(source_names));
     QStringList l1 = a.getRoute(start);
     if (length)
+    {
         *length = a.lastRouteLen;
+    }
     return l1;
 }
 
@@ -134,103 +162,130 @@ float LittleAlgorithm::pathLength(const std::vector<NamedStarSystem> &src)
     if (src.size() > 1)
     {
         for (size_t i = 0, top = src.size() - 1; i < top; ++i)
+        {
             res += src.at(i).p.distance(src.at(i + 1).p);
+        }
     }
     return res;
 }
 
+namespace {
 template <class Cont, class Pred>
-static void ForEachInRow(Cont &src, size_t row, const Pred &cb)
+void ForEachInRow(Cont &src, size_t row, const Pred &cb)
 {
     auto it = src.find(row);
     if (it != src.end())
     {
         for (auto &m2 : it->second)
+        {
             cb(m2.second);
+        }
     }
 }
 
 template <class Cont, class Pred>
-static void ForEachInCol(Cont &src, size_t col, const Pred &cb)
+void ForEachInCol(Cont &src, size_t col, const Pred &cb)
 {
     for (auto &m1 : src)
     {
         auto it = m1.second.find(col);
         if (it != m1.second.end())
+        {
             cb(it->second);
+        }
     }
 }
 
 template <class Cont, class Pred>
-static void ForEach(Cont &src, const Pred &func)
+void ForEach(Cont &src, const Pred &func)
 {
     for (auto &m1 : src)
+    {
         for (auto &m2 : m1.second)
+        {
             func(m2.second, m1.first, m2.first);
+        }
+    }
 }
 
 template <class Cont>
-static void dumpMatrix(const Cont &src)
+void dumpMatrix(const Cont &src)
 {
     size_t ci = INFW;
     std::cout << "\t";
     for (auto &m1 : src.begin()->second)
+    {
         std::cout << "J" << m1.first + 1 << "\t";
+    }
     std::cout << std::endl;
     ForEach(src, [&ci](auto v, auto i, auto) {
         if (i != ci)
         {
             if (ci != INFW)
+            {
                 std::cout << std::endl;
+            }
             ci = i;
             std::cout << "I" << i + 1 << "\t";
         }
         if (v > INFW / 2)
+        {
             std::cout << "INF";
+        }
         else
+        {
             std::cout << v;
+        }
         std::cout << "\t";
     });
     std::cout << std::endl;
 }
 
-enum class check {
+enum class check : std::uint8_t {
     Row,
     Col
 };
 
 template <class Cont>
-static LittleAlgorithm::weight_type getMin(Cont &matrix, size_t sel, check pos)
+LittleAlgorithm::weight_type getMin(Cont &matrix, size_t sel, check pos)
 {
     auto min = std::numeric_limits<LittleAlgorithm::weight_type>::max();
     const auto cb = [&min](const auto &v) {
         min = std::min(v, min);
     };
     if (check::Row == pos)
+    {
         ForEachInRow(matrix, sel, cb);
+    }
     else
+    {
         ForEachInCol(matrix, sel, cb);
+    }
 
     return min;
 }
 
 template <class Cont>
-static LittleAlgorithm::weight_type getMax(Cont &matrix, size_t sel, check pos)
+LittleAlgorithm::weight_type getMax(Cont &matrix, size_t sel, check pos)
 {
     auto max = std::numeric_limits<LittleAlgorithm::weight_type>::min();
     const auto cb = [&max](const auto &v) {
         max = std::max(v, max);
     };
     if (check::Row == pos)
+    {
         ForEachInRow(matrix, sel, cb);
+    }
     else
+    {
         ForEachInCol(matrix, sel, cb);
+    }
 
     return max;
 }
 
 template <class Cont>
-static LittleAlgorithm::weight_type normalizeMatrix(Cont &matrix)
+LittleAlgorithm::weight_type normalizeMatrix(Cont &matrix)
 {
 
     LittleAlgorithm::weight_type sum = 0;
@@ -256,19 +311,21 @@ static LittleAlgorithm::weight_type normalizeMatrix(Cont &matrix)
 }
 
 template <class Cont>
-static void inf_if(Cont &matrix, size_t a, size_t b)
+void inf_if(Cont &matrix, size_t a, size_t b)
 {
     auto it1 = matrix.find(a);
     if (it1 != matrix.end())
     {
         auto it2 = it1->second.find(b);
         if (it2 != it1->second.end())
+        {
             it2->second = INFW;
+        }
     }
 }
 
 template <class Cont>
-static void ensure_infinity(Cont &matrix)
+void ensure_infinity(Cont &matrix)
 {
     // need to make sure each row/column has INF
     constexpr static auto almost_inf = static_cast<LittleAlgorithm::weight_type>(0.75 * INFW);
@@ -296,6 +353,7 @@ static void ensure_infinity(Cont &matrix)
         inf_if(matrix, wr, wc);
     }
 }
+} // namespace
 
 std::vector<LittleAlgorithm::bisector>
 LittleAlgorithm::matrixProcedure(const std::vector<std::vector<weight_type>> &src)
@@ -305,7 +363,9 @@ LittleAlgorithm::matrixProcedure(const std::vector<std::vector<weight_type>> &sr
     {
         auto &m1 = matrix[i];
         for (size_t j = 0; j < sz; ++j)
+        {
             m1[j] = src[i][j];
+        }
     }
 
     std::vector<bisector> result;
@@ -332,7 +392,9 @@ LittleAlgorithm::matrixProcedure(const std::vector<std::vector<weight_type>> &sr
                 bisector tmp(i, j, getMin(matrix, i, check::Row) + getMin(matrix, j, check::Col));
                 value = 0;
                 if (max_dij.d == tmp.d)
+                {
                     dij.push_back(tmp);
+                }
                 if (max_dij < tmp)
                 {
                     max_dij = tmp;
@@ -363,7 +425,9 @@ LittleAlgorithm::matrixProcedure(const std::vector<std::vector<weight_type>> &sr
         }
 
         if (Swo < Sw)
+        {
             matrix[max_dij.i][max_dij.j] = INFW;
+        }
         else
         {
             matrix = std::move(reducedMatrix);
@@ -382,7 +446,9 @@ LittleAlgorithm::matrixProcedure(const std::vector<std::vector<weight_type>> &sr
 
     ForEach(matrix, [&result](const auto &value, auto i, auto j) {
         if (0 == value)
+        {
             result.emplace_back(i, j);
+        }
     });
 
     return result;
@@ -394,7 +460,9 @@ LittleAlgorithm::bisector::makeSmallerMatrix(LittleAlgorithm::matrix_type matrix
     matrix.erase(i);
 
     for (auto &m : matrix)
+    {
         m.second.erase(j);
+    }
 
     // i, j is used (removed), so can't do j/i as well
 
@@ -428,7 +496,7 @@ void LittleAlgorithm::selfTest2()
 
 void LittleAlgorithm::selfTest3()
 {
-    float len;
+    float len = 0.0f;
     auto l = route(
       {
         "Atrimih",

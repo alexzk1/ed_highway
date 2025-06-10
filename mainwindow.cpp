@@ -1,23 +1,26 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
+
+#include "carriermodulesdialog.h"
 #include "config_ui/globalsettings.h"
-#include <QClipboard>
-#include <QMessageBox>
 #include "edsmwrapper.h"
 #include "stringsfilecache.h"
-#include "carriermodulesdialog.h"
+
+#include "ui_mainwindow.h"
+
+#include <QClipboard>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     settDialog(new SettingsDialog(this))
 #ifdef OCR_ADDED
-    , ocrKey(new QHotkey(this))
+    ,
+    ocrKey(new QHotkey(this))
 #endif
 {
     ui->setupUi(this);
-    connect(ui->actionShow_Settings, &QAction::triggered, this, [this]()
-    {
+    connect(ui->actionShow_Settings, &QAction::triggered, this, [this]() {
         if (settDialog)
         {
             settingsBeforeShow();
@@ -55,7 +58,7 @@ void MainWindow::recurseWrite(QSettings &settings, QObject *object)
 {
     Q_UNUSED(object);
     settings.setValue(QStringLiteral("mainwinstate"), saveState());
-    settings.setValue(QStringLiteral("maximized"),  isMaximized());
+    settings.setValue(QStringLiteral("maximized"), isMaximized());
     settings.setValue(QStringLiteral("tab_index"), ui->tabWidget->currentIndex());
 }
 
@@ -68,16 +71,19 @@ void MainWindow::recurseRead(QSettings &settings, QObject *object)
     else
         showNormal();
 
-    const auto tabi = std::min(ui->tabWidget->count() - 1, std::max(0, settings.value(QStringLiteral("tab_index"), 0).toInt()));
+    const auto tabi = std::min(ui->tabWidget->count() - 1,
+                               std::max(0, settings.value(QStringLiteral("tab_index"), 0).toInt()));
     ui->tabWidget->setCurrentIndex(tabi);
 }
 
 void MainWindow::settingsHidden()
 {
-    //need to install global shortcuts for ocr
+    // need to install global shortcuts for ocr
 #ifdef OCR_ADDED
     if (ocrKey)
-        ocrKey->setShortcut(QKeySequence(StaticSettingsMap::getGlobalSetts().readString(QStringLiteral("51_MapOcrHotkey"))), true);
+        ocrKey->setShortcut(QKeySequence(StaticSettingsMap::getGlobalSetts().readString(
+                              QStringLiteral("51_MapOcrHotkey"))),
+                            true);
 #endif
 }
 
@@ -88,7 +94,6 @@ void MainWindow::settingsBeforeShow()
         ocrKey->setRegistered(false);
 #endif
 }
-
 
 void MainWindow::doScreenOCR()
 {
@@ -101,7 +106,6 @@ void MainWindow::doScreenOCR()
         qApp->clipboard()->setText(s);
 #endif
 }
-
 
 void MainWindow::on_actionClear_Cache_triggered()
 {

@@ -1,16 +1,17 @@
 #include "spanshapi.h"
-#include "utils/strfmt.h"
-#include <iostream>
-#include <chrono>
-#include <thread>
-#include "utils/strutils.h"
+
 #include "utils/exec_exit.h"
+#include "utils/strfmt.h"
+#include "utils/strutils.h"
 
+#include <chrono>
+#include <iostream>
+#include <thread>
 
-//based on: https://github.com/chriszero/ED-Router/blob/master/libspanch/SpanchApi.cs
+// based on: https://github.com/chriszero/ED-Router/blob/master/libspanch/SpanchApi.cs
 
-constexpr static size_t timeout_1st_request = 10; //seconds
-constexpr static size_t timeout_2nd_request = 5; //seconds
+constexpr static size_t timeout_1st_request = 10; // seconds
+constexpr static size_t timeout_2nd_request = 5;  // seconds
 
 #define ERROR(MSG) throw std::runtime_error(MSG)
 
@@ -19,7 +20,8 @@ SpanshApi::~SpanshApi()
     threads.stop(false);
 }
 
-void SpanshApi::executeRequest(const std::string &api, const RestClient::parameters &params, bool has_job, callback_t callback)
+void SpanshApi::executeRequest(const std::string &api, const RestClient::parameters &params,
+                               bool has_job, callback_t callback)
 {
     using namespace nlohmann;
 
@@ -29,10 +31,8 @@ void SpanshApi::executeRequest(const std::string &api, const RestClient::paramet
 
     ++working;
 
-    const auto executor = [url, eparams, callback, has_job, this](auto)
-    {
-        exec_onexit ensure([this]()
-        {
+    const auto executor = [url, eparams, callback, has_job, this](auto) {
+        exec_onexit ensure([this]() {
             --this->working;
         });
         (void)ensure;
@@ -44,7 +44,7 @@ void SpanshApi::executeRequest(const std::string &api, const RestClient::paramet
                 ERROR("Job ID request returned empty body.");
 
             const auto j1{json::parse(resp1.body)};
-            const auto& j1root = j1.at(0);
+            const auto &j1root = j1.at(0);
             if (has_job)
             {
                 const auto jobit = j1root.find("job");
@@ -55,7 +55,7 @@ void SpanshApi::executeRequest(const std::string &api, const RestClient::paramet
                 if (jobid.empty())
                     ERROR("JOBID is empty");
 
-                //const auto job_params{RestClient::encodePOSTParameters({{"job", jobid}})};
+                // const auto job_params{RestClient::encodePOSTParameters({{"job", jobid}})};
                 const auto res_url{stringfmt("%s/%s", results_url, jobid)};
 
                 for (int i = 0; i < 50; ++i)
@@ -66,7 +66,7 @@ void SpanshApi::executeRequest(const std::string &api, const RestClient::paramet
                     else
                     {
                         const auto j2{json::parse(resp2.body)};
-                        const auto& j2root = j2.at(0);
+                        const auto &j2root = j2.at(0);
                         const auto rit = j2root.find("result");
                         if (rit == j2root.end())
                             ERROR("Could not detect result field.");
@@ -79,14 +79,13 @@ void SpanshApi::executeRequest(const std::string &api, const RestClient::paramet
             else
                 callback("", j1root);
         }
-        catch (const std::exception& e)
+        catch (const std::exception &e)
         {
             callback(e.what(), {});
         }
     };
 
-    threads.push(executor, []()
-    {
+    threads.push(executor, []() {
         return true;
     });
 }

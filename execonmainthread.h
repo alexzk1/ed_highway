@@ -2,6 +2,7 @@
 #define EXECONMAINTHREAD_H
 
 #include <QObject>
+
 #include <functional>
 
 using SimpleVoidFunction = std::function<void()>;
@@ -10,12 +11,13 @@ class ExecOnMainThread : public QObject
 {
     Q_OBJECT
     explicit ExecOnMainThread(QObject *parent = nullptr);
-public:
+
+  public:
     void exec(SimpleVoidFunction func) const;
     static const ExecOnMainThread &get();
-signals:
+  signals:
     void needExec(SimpleVoidFunction lambda) const;
-private slots:
+  private slots:
     void doExex(SimpleVoidFunction lambda);
 };
 

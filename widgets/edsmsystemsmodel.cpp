@@ -1,24 +1,25 @@
 #include "edsmsystemsmodel.h"
+
+#include "execonmainthread.h"
+#include "salesman/LittleAlgorithm.h"
 #include "stringsfilecache.h"
 #include "utils/containers_helpers.h"
 #include "utils/guard_on.h"
-#include "salesman/LittleAlgorithm.h"
-#include "execonmainthread.h"
+
 #include <QClipboard>
 #include <QGuiApplication>
 
-EDSMSystemsModel::EDSMSystemsModel(QObject *parent)
-    : QAbstractTableModel(parent)
+EDSMSystemsModel::EDSMSystemsModel(QObject *parent) :
+    QAbstractTableModel(parent)
 {
 }
 
 QVariant EDSMSystemsModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
 
-    const static QString headers[] =
-    {
-        tr("System Name"),
-        tr("Distances"),
+    const static QString headers[] = {
+      tr("System Name"),
+      tr("Distances"),
     };
 
     const size_t index = static_cast<size_t>(section);
@@ -70,7 +71,9 @@ QVariant EDSMSystemsModel::data(const QModelIndex &index, int role) const
         if (Qt::ToolTipRole == role)
         {
             LOCK_GUARD_ON(lock);
-            return QStringLiteral("<p>Selected row is copied + is a 1st system during ordering.</p><hr%1").arg(EDSMWrapper::tooltipWithSysInfo(systemNames.at(row)));
+            return QStringLiteral(
+                     "<p>Selected row is copied + is a 1st system during ordering.</p><hr%1")
+              .arg(EDSMWrapper::tooltipWithSysInfo(systemNames.at(row)));
         }
     }
 
@@ -106,8 +109,7 @@ void EDSMSystemsModel::removeSystem(const QString &sys)
 {
     LOCK_GUARD_ON(lock);
     beginResetModel();
-    types_ns::remove_if(systemNames, [&sys](const auto & v)
-    {
+    types_ns::remove_if(systemNames, [&sys](const auto &v) {
         return v == sys;
     });
     fillDistances();
@@ -158,8 +160,7 @@ void EDSMSystemsModel::startRouteBuild(QString initialSystem)
         if (initialSystem.isEmpty())
             initialSystem = systemNames.at(0);
     }
-    routeBuilder = utility::startNewRunner([this, initialSystem](auto)
-    {
+    routeBuilder = utility::startNewRunner([this, initialSystem](auto) {
         QStringList snapshoot;
         {
             LOCK_GUARD_ON(lock);
@@ -172,8 +173,7 @@ void EDSMSystemsModel::startRouteBuild(QString initialSystem)
             routeLen = len;
         }
 
-        ExecOnMainThread::get().exec([route, this]()
-        {
+        ExecOnMainThread::get().exec([route, this]() {
             routeBuilder.reset();
             setSystems(std::move(route));
             emit routeReady();
@@ -190,8 +190,7 @@ void EDSMSystemsModel::copyCurrentList() const
 
 void EDSMSystemsModel::fillDistances()
 {
-    const auto static point = [](const QString & name)
-    {
+    const auto static point = [](const QString &name) {
         Point p;
         try
         {
@@ -200,7 +199,6 @@ void EDSMSystemsModel::fillDistances()
         }
         catch (...)
         {
-
         }
         return p;
     };

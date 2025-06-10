@@ -1,32 +1,32 @@
 #ifndef ROUNDTRIPWIDGET_H
 #define ROUNDTRIPWIDGET_H
 
-#include <QWidget>
-#include <QPointer>
 #include "edsmsystemsmodel.h"
-#include <QItemSelection>
-#include <QMenu>
-#include <QList>
 #include "utils/runners.h"
-#include <QProgressDialog>
 
-namespace Ui
-{
-    class RoundTripWidget;
+#include <QItemSelection>
+#include <QList>
+#include <QMenu>
+#include <QPointer>
+#include <QProgressDialog>
+#include <QWidget>
+
+namespace Ui {
+class RoundTripWidget;
 }
 
 class RoundTripWidget : public QWidget
 {
     Q_OBJECT
 
-public:
+  public:
     explicit RoundTripWidget(QWidget *parent = nullptr);
     ~RoundTripWidget();
 
-protected:
+  protected:
     void changeEvent(QEvent *e);
 
-private slots:
+  private slots:
     void on_actionAdd_triggered();
     void slotSystemSelected(const QItemSelection &, const QItemSelection &n);
     void on_tableView_clicked(const QModelIndex &index);
@@ -43,8 +43,8 @@ private slots:
 
     void on_actionOpen_in_Browser_triggered();
 
-private:
-    void showError(const QString& msg) const;
+  private:
+    void showError(const QString &msg) const;
     Ui::RoundTripWidget *ui;
     QPointer<EDSMSystemsModel> model;
     QString lastSelected;
@@ -56,11 +56,9 @@ private:
     void saveValues() const;
     void loadValues();
 
-
     void switchUI(bool enabled);
 
     void pushUndo();
-
 };
 
 #endif // ROUNDTRIPWIDGET_H

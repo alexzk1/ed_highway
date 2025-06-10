@@ -1,29 +1,31 @@
-//License: MIT, (c) Oleksiy Zakharov, 2016, alexzkhr@gmail.com
+// License: MIT, (c) Oleksiy Zakharov, 2016, alexzkhr@gmail.com
 
 #ifndef SETTINGSDIALOG_H
 #define SETTINGSDIALOG_H
 
-#include <QDialog>
 #include "saveable_widget.h"
 
-namespace Ui
-{
-    class SettingsDialog;
+#include <QDialog>
+
+namespace Ui {
+class SettingsDialog;
 }
 
 class SettingsDialog : public QDialog, protected virtual utility::SaveableWidget<SettingsDialog>
 {
     Q_OBJECT
 
-public:
+  public:
     explicit SettingsDialog(QWidget *parent = 0);
     ~SettingsDialog();
-signals:
+  signals:
     void dialogHidden();
-protected:
+
+  protected:
     void changeEvent(QEvent *e) override;
     void hideEvent(QHideEvent *event) override;
-private:
+
+  private:
     Ui::SettingsDialog *ui;
 };
 

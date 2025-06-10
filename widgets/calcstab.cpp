@@ -1,18 +1,23 @@
 #include "calcstab.h"
-#include "ui_calcstab.h"
-#include "delayedsignal.h"
-#include <math.h>
-#include <random>
-#include <iostream>
-#include <QSpinBox>
+
+#include "carriermodulesdialog.h"
+#include "carriers_info.h"
 #include "config_ui/globalsettings.h"
-#include "spanshsyssuggest.h"
+#include "delayedsignal.h"
 #include "edsmwrapper.h"
 #include "point.h"
+#include "spanshsyssuggest.h"
 #include "utils/exec_exit.h"
-#include "carriers_info.h"
 #include "widget_helpers.h"
-#include "carriermodulesdialog.h"
+
+#include "ui_calcstab.h"
+
+#include <QSpinBox>
+
+#include <math.h>
+
+#include <iostream>
+#include <random>
 
 constexpr static int delay_ms = 2000;
 const static QString settingsGroup = "CalcsTabSettings";
@@ -20,7 +25,7 @@ const static QString settingsGroup = "CalcsTabSettings";
 template <class T = float>
 inline T uniformRandom(T low = static_cast<T>(0.), T hi = static_cast<T>(1.))
 {
-    static_assert (std::is_floating_point<T>::value, "T must be floating point one.");
+    static_assert(std::is_floating_point<T>::value, "T must be floating point one.");
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<T> dis(low, hi);
@@ -35,53 +40,39 @@ CalcsTab::CalcsTab(QWidget *parent) :
     ui->setupUi(this);
     connect(delayedStart, &DelayedSignal::delayedSignal, this, &CalcsTab::calcCarrierFuel);
 
-    //attaching change event to spin boxes
+    // attaching change event to spin boxes
     {
-        const auto setup_spin = [this](QSpinBox * ptr)
-        {
+        const auto setup_spin = [this](QSpinBox *ptr) {
             ptr->setMaximum(max_carrier_cargo());
-            connect(ptr, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](int)
-            {
+            connect(ptr, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](int) {
                 updateCargoToMax();
                 delayedStart->sourceSignal(delay_ms);
             });
         };
 
-        const std::vector<QSpinBox*> spins =
-        {
-            ui->sbCargo,
-            ui->sbModules,
-            ui->sbFuel,
-            ui->sbEachNth,
-            ui->sbTonnes,
+        const std::vector<QSpinBox *> spins = {
+          ui->sbCargo, ui->sbModules, ui->sbFuel, ui->sbEachNth, ui->sbTonnes,
         };
 
-        for (const auto& s : spins)
+        for (const auto &s : spins)
             setup_spin(s);
     }
 
-    //attaching change event to radios
+    // attaching change event to radios
     {
-        const auto setup_radio = [this](QRadioButton * rb)
-        {
-            connect(rb, &QRadioButton::toggled, this, [this](bool)
-            {
+        const auto setup_radio = [this](QRadioButton *rb) {
+            connect(rb, &QRadioButton::toggled, this, [this](bool) {
                 delayedStart->sourceSignal(delay_ms / 4);
             });
         };
 
-        const std::vector<QRadioButton*> radios =
-        {
-            ui->rbOnEmpty,
-            ui->rbTankFull,
-            ui->rbRandom,
+        const std::vector<QRadioButton *> radios = {
+          ui->rbOnEmpty, ui->rbTankFull, ui->rbRandom,
 
-            ui->rbD470,
-            ui->rbD495,
-            ui->rbD500,
+          ui->rbD470,    ui->rbD495,     ui->rbD500,
         };
 
-        for (const auto& r : radios)
+        for (const auto &r : radios)
             setup_radio(r);
     }
 
@@ -103,11 +94,11 @@ void CalcsTab::changeEvent(QEvent *e)
     QWidget::changeEvent(e);
     switch (e->type())
     {
-    case QEvent::LanguageChange:
-        ui->retranslateUi(this);
-        break;
-    default:
-        break;
+        case QEvent::LanguageChange:
+            ui->retranslateUi(this);
+            break;
+        default:
+            break;
     }
 }
 
@@ -133,9 +124,7 @@ void CalcsTab::loadSettings()
     QSettings settings;
     settings.beginGroup(settingsGroup);
 
-
-    const auto read_mass = [ &settings](const QString & v, QSpinBox * s)
-    {
+    const auto read_mass = [&settings](const QString &v, QSpinBox *s) {
         const int def = s->value();
         const int val = settings.value(v, def).toInt();
         s->setValue(val);
@@ -169,19 +158,22 @@ void CalcsTab::calcCarrierFuel()
     const auto refuel_each_nth = ui->sbEachNth->value();
     const auto refuel_random_mine = ui->sbTonnes->value();
 
-    const bool random_mine  = ui->rbRandom->isChecked();
-    const bool keep_full    = random_mine || ui->rbTankFull->isChecked();
+    const bool random_mine = ui->rbRandom->isChecked();
+    const bool keep_full = random_mine || ui->rbTankFull->isChecked();
     const bool refuel_empty = ui->rbOnEmpty->isChecked();
 
     setTritiumStepping();
 
-    ui->lblMass->setText(tr("Non-fuel mass of carrier: %1(t). This should be same as (total mass - tritium mass).").arg(mods + carg));
+    ui->lblMass->setText(
+      tr("Non-fuel mass of carrier: %1(t). This should be same as (total mass - tritium mass).")
+        .arg(mods + carg));
 
     if (mods + carg + fuel > max_carrier_cargo())
-        ui->lblResult->setText(tr("Total mass is bigger then maximum cargo %1(t).").arg(max_carrier_cargo()));
+        ui->lblResult->setText(
+          tr("Total mass is bigger then maximum cargo %1(t).").arg(max_carrier_cargo()));
     else
     {
-        constexpr static int consider_infinite_travel_with_jumps  = 20000;
+        constexpr static int consider_infinite_travel_with_jumps = 20000;
 
         constexpr static float max_cargo = static_cast<float>(max_carrier_cargo());
         constexpr static float minimum_jump_cost = 5.f;
@@ -190,37 +182,34 @@ void CalcsTab::calcCarrierFuel()
         int jumps_till_recharge = 0;
         bool infinite = false;
 
-        //rbD500 default value
+        // rbD500 default value
         float jump_distance = carrier_max_jump();
 
-        const auto update_distance_for_range = [&jump_distance](float range)
-        {
-            jump_distance = std::fmax(carrier_max_jump(), myrnd::uniformRandom<float>(0.f, carrier_max_jump() - range) + range);
+        const auto update_distance_for_range = [&jump_distance](float range) {
+            jump_distance =
+              std::fmax(carrier_max_jump(),
+                        myrnd::uniformRandom<float>(0.f, carrier_max_jump() - range) + range);
         };
 
-        const auto update_distance = [this, &update_distance_for_range]()
-        {
+        const auto update_distance = [this, &update_distance_for_range]() {
             if (ui->rbD470->isChecked())
                 update_distance_for_range(470.f);
 
             if (ui->rbD495->isChecked())
                 update_distance_for_range(495.f);
-
         };
 
         float distance = 0;
-        const auto jump = [&distance, &update_distance, &jump_distance]()
-        {
+        const auto jump = [&distance, &update_distance, &jump_distance]() {
             distance += jump_distance;
             update_distance();
         };
-
 
         bool jumps_till_recharge_once = true;
 
         update_distance();
         for (int current_fuel = fuel, current_used = 0, tank = carrier_tank_size(), njump = 1;
-                current_fuel + tank > current_used; ++njump)
+             current_fuel + tank > current_used; ++njump)
         {
             if (njump > consider_infinite_travel_with_jumps)
             {
@@ -236,7 +225,10 @@ void CalcsTab::calcCarrierFuel()
                     current_fuel = 0;
                     tank = total;
                 }
-                current_used = round(minimum_jump_cost + jump_distance * jd_mul * (1.f + static_cast<float>(current_fuel + carg + mods) / max_cargo));
+                current_used =
+                  round(minimum_jump_cost
+                        + jump_distance * jd_mul
+                            * (1.f + static_cast<float>(current_fuel + carg + mods) / max_cargo));
 
                 if (random_mine && (njump % refuel_each_nth == 0))
                 {
@@ -300,19 +292,21 @@ void CalcsTab::calcCarrierFuel()
             ui->lblResult->setText(tr("Infinite travel."));
         else
         {
-            //todo: make setting for this
-            //if true - it will be always spaces, if false - it will try to use separator by current locale like comma and add spaces only if none
+            // todo: make setting for this
+            // if true - it will be always spaces, if false - it will try to use separator by
+            // current locale like comma and add spaces only if none
             constexpr static bool force_always_spaces = true;
 
             if (refuel_empty)
-                ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly). Jumps till refuel: %3")
-                                       .arg(spaced_1000s(distance, force_always_spaces))
-                                       .arg(spaced_1000s(distance / 2.f, force_always_spaces))
-                                       .arg(spaced_1000s(jumps_till_recharge, force_always_spaces)));
+                ui->lblResult->setText(
+                  tr("Max distance: %1 (ly). With return same way: %2 (ly). Jumps till refuel: %3")
+                    .arg(spaced_1000s(distance, force_always_spaces))
+                    .arg(spaced_1000s(distance / 2.f, force_always_spaces))
+                    .arg(spaced_1000s(jumps_till_recharge, force_always_spaces)));
             else
                 ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly).")
-                                       .arg(spaced_1000s(distance, force_always_spaces))
-                                       .arg(spaced_1000s(distance / 2.f, force_always_spaces)));
+                                         .arg(spaced_1000s(distance, force_always_spaces))
+                                         .arg(spaced_1000s(distance / 2.f, force_always_spaces)));
         }
     }
 }
@@ -329,8 +323,7 @@ void CalcsTab::on_distCalc_clicked()
         ui->lblDistRes->setText(tr("Both systems must be non-empty."));
     else
     {
-        exec_onexit ex([this]()
-        {
+        exec_onexit ex([this]() {
             ui->distCalc->setEnabled(true);
         });
         (void)ex;
@@ -343,7 +336,7 @@ void CalcsTab::on_distCalc_clicked()
             const auto dist = Point::fromJson(j1).distance(Point::fromJson(j2));
             ui->lblDistRes->setText(tr("Distance between systems is %1 LY.").arg(dist));
         }
-        catch (std::exception& e)
+        catch (std::exception &e)
         {
             std::cerr << e.what() << std::endl;
             ui->lblDistRes->setText(tr("Can't calculate distance. Possible unknown system."));
@@ -376,4 +369,3 @@ void CalcsTab::on_btnCarMods_clicked()
     if (QDialog::DialogCode::Accepted == dlg.exec())
         ui->sbModules->setValue(dlg.getTotal().cargo_use);
 }
-

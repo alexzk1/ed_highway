@@ -1,27 +1,27 @@
-#include <QBuffer>
-#include <QDebug>
-#include <QtGlobal>
 #include "PreProcess.h"
+
 #include "BoundingTextRect.h"
 #include "Furigana.h"
-#include "utils/shared_wrapper.h"
 #include "PreProcessCommon.h"
+#include "utils/shared_wrapper.h"
+
+#include <QBuffer>
+#include <QDebug>
+
+#include <QtGlobal>
 
 using namespace OCRHelpers;
 
-PreProcess::PreProcess()
-    : verticalText(false),
-      removeFurigana(false)
+PreProcess::PreProcess() :
+    verticalText(false),
+    removeFurigana(false)
 {
-
 }
 
 QRect PreProcess::getBoundingRect() const
 {
-    return QRect(boundingRect.x / scaleFactor,
-                 boundingRect.y / scaleFactor,
-                 boundingRect.w / scaleFactor,
-                 boundingRect.h / scaleFactor);
+    return QRect(boundingRect.x / scaleFactor, boundingRect.y / scaleFactor,
+                 boundingRect.w / scaleFactor, boundingRect.h / scaleFactor);
 }
 
 bool PreProcess::getRemoveFurigana() const
@@ -46,7 +46,7 @@ void PreProcess::setVerticalOrientation(bool value)
 
 // Set DPI so that Tesseract 4.0 doesn't issue this warning:
 // "Warning. Invalid resolution 0 dpi. Using 70 instead."
-void PreProcess::setDPI(const PIXPtr& pixs)
+void PreProcess::setDPI(const PIXPtr &pixs)
 {
     pixs->xres = 300;
     pixs->yres = 300;
@@ -67,7 +67,7 @@ void PreProcess::setScaleFactor(float value)
     scaleFactor = qMin(qMax(value, 0.71f), 5.0f);
 }
 
-void PreProcess::debugMsg(const QString& str, bool error)
+void PreProcess::debugMsg(const QString &str, bool error)
 {
 #ifdef QT_DEBUG
     if (debug || error)
@@ -76,17 +76,17 @@ void PreProcess::debugMsg(const QString& str, bool error)
     Q_UNUSED(str);
     Q_UNUSED(error);
 #endif
-
 }
 
-void PreProcess::debugImg(const QString& filename, const PIXPtr& pixs)
+void PreProcess::debugImg(const QString &filename, const PIXPtr &pixs)
 {
 #ifdef QT_DEBUG
     if (debug)
     {
         debugImgCount++;
         QString file = QString("G:\\Temp\\Temp\\c2t_debug\\%1_%2")
-                       .arg(debugImgCount, 2, 10, QChar('0')).arg(filename);
+                         .arg(debugImgCount, 2, 10, QChar('0'))
+                         .arg(filename);
         QByteArray ba = file.toLocal8Bit();
         pixWriteImpliedFormat(ba.constData(), pixs.get(), 0, 0);
     }
@@ -95,7 +95,6 @@ void PreProcess::debugImg(const QString& filename, const PIXPtr& pixs)
     Q_UNUSED(pixs);
 #endif
 }
-
 
 // Be sure to call pixDestroy() on the returned PIX pointer to avoid memory leak.
 PIXPtr PreProcess::convertImageToPix(const QImage &image)
@@ -107,25 +106,25 @@ PIXPtr PreProcess::convertImageToPix(const QImage &image)
     buffer.open(QIODevice::WriteOnly);
     image.save(&buffer, "TIF");
 
-    return createPP(pixReadMem((const unsigned char*)ba.data(), ba.size()));
+    return createPP(pixReadMem((const unsigned char *)ba.data(), ba.size()));
 }
 
 // Be sure to call pixDestroy() on the returned PIX pointer to avoid memory leak.
-PIXPtr PreProcess::makeGray(const PIXPtr& pixs)
+PIXPtr PreProcess::makeGray(const PIXPtr &pixs)
 {
     return createPP(pixConvertRGBToGray(pixs.get(), 0.0f, 0.0f, 0.0f));
 }
 
 // pixs must be 8 bpp.
 // Be sure to call pixDestroy() on the returned PIX pointer to avoid memory leak.
-PIXPtr PreProcess::scale(const PIXPtr& pixs)
+PIXPtr PreProcess::scale(const PIXPtr &pixs)
 {
     return createPP(pixScaleGrayLI(pixs.get(), scaleFactor, scaleFactor));
 }
 
 // pixs must be 8 bpp.
 // Be sure to call pixDestroy() on the returned PIX pointer to avoid memory leak.
-PIXPtr PreProcess::unsharpMask(const PIXPtr& pixs)
+PIXPtr PreProcess::unsharpMask(const PIXPtr &pixs)
 {
     const int usmHalfwidth = 5;
     const float usmFract = 2.5f;
@@ -135,7 +134,7 @@ PIXPtr PreProcess::unsharpMask(const PIXPtr& pixs)
 
 // pixs must be 8 bpp.
 // Be sure to call pixDestroy() on the returned PIX pointer to avoid memory leak.
-PIXPtr PreProcess::binarize(const PIXPtr& pixs)
+PIXPtr PreProcess::binarize(const PIXPtr &pixs)
 {
     const int otsuSX = 2000;
     const int otsuSY = 2000;
@@ -146,7 +145,8 @@ PIXPtr PreProcess::binarize(const PIXPtr& pixs)
     PIX *binarize_pixs = nullptr;
 
 #if 1
-    int status = pixOtsuAdaptiveThreshold(pixs.get(), otsuSX, otsuSY, otsuSmoothX, otsuSmoothY, otsuScorefract, nullptr, &binarize_pixs);
+    int status = pixOtsuAdaptiveThreshold(pixs.get(), otsuSX, otsuSY, otsuSmoothX, otsuSmoothY,
+                                          otsuScorefract, nullptr, &binarize_pixs);
 
     if (status != LEPT_OK)
     {
@@ -154,7 +154,9 @@ PIXPtr PreProcess::binarize(const PIXPtr& pixs)
         return nullptr;
     }
 #else
-    binarize_pixs = pixOtsuThreshOnBackgroundNorm(pixs.get(), nullptr, otsuSX, otsuSY, 100, 50, 255, otsuSmoothX, otsuSmoothY, otsuScorefract, nullptr);
+    binarize_pixs =
+      pixOtsuThreshOnBackgroundNorm(pixs.get(), nullptr, otsuSX, otsuSY, 100, 50, 255, otsuSmoothX,
+                                    otsuSmoothY, otsuScorefract, nullptr);
 
     if (binarize_pixs == nullptr)
     {
@@ -163,19 +165,18 @@ PIXPtr PreProcess::binarize(const PIXPtr& pixs)
     }
 #endif
 
-
     return createPP(binarize_pixs);
 }
 
 // pixs must be 8 bpp.
 // Be sure to call pixDestroy() on the returned PIX pointer to avoid memory leak.
-PIXPtr PreProcess::scaleUnsharpBinarize(const PIXPtr& pixs)
+PIXPtr PreProcess::scaleUnsharpBinarize(const PIXPtr &pixs)
 {
     return binarize(unsharpMask(scale(pixs)));
 }
 
 // Be sure to call pixDestroy() on the returned PIX pointer to avoid memory leak.
-PIXPtr PreProcess::deskew(const PIXPtr& pixs)
+PIXPtr PreProcess::deskew(const PIXPtr &pixs)
 {
 #if 0
     l_float32 angle;
@@ -195,27 +196,29 @@ PIXPtr PreProcess::deskew(const PIXPtr& pixs)
 
 // pixs must be 1 bpp.
 // Be sure to call pixDestroy() on the returned PIX pointer to avoid memory leak.
-PIXPtr PreProcess::addBorder(const PIXPtr& pixs)
+PIXPtr PreProcess::addBorder(const PIXPtr &pixs)
 {
     const int borderWidth = 10;
-    return createPP(pixAddBlackOrWhiteBorder(pixs.get(), borderWidth, borderWidth, borderWidth, borderWidth, L_GET_WHITE_VAL));
+    return createPP(pixAddBlackOrWhiteBorder(pixs.get(), borderWidth, borderWidth, borderWidth,
+                                             borderWidth, L_GET_WHITE_VAL));
 }
 
 // pixs must be 1 bpp.
 // Remove very small blobs.
 // Be sure to call pixDestroy() on the returned PIX pointer to avoid memory leak.
-PIXPtr PreProcess::removeNoise(const PIXPtr& pixs)
+PIXPtr PreProcess::removeNoise(const PIXPtr &pixs)
 {
-    //int minBlobSize = (int)(1.86 * scaleFactor);
+    // int minBlobSize = (int)(1.86 * scaleFactor);
     int minBlobSize = 3;
 
-    // Remove noise if both dimensions are less than minBlobSize (yes, L_SELECT_IF_EITHER is correct here).
-    return createPP(pixSelectBySize(pixs.get(), minBlobSize, minBlobSize, 8,
-                                    L_SELECT_IF_EITHER, L_SELECT_IF_GT, nullptr));
+    // Remove noise if both dimensions are less than minBlobSize (yes, L_SELECT_IF_EITHER is correct
+    // here).
+    return createPP(pixSelectBySize(pixs.get(), minBlobSize, minBlobSize, 8, L_SELECT_IF_EITHER,
+                                    L_SELECT_IF_GT, nullptr));
 }
 
 // pixs must be 1 bpp.
-PIXPtr PreProcess::eraseFurigana(const PIXPtr& pixs)
+PIXPtr PreProcess::eraseFurigana(const PIXPtr &pixs)
 {
     PIXPtr denoisePixs = nullptr;
     if (removeFurigana)
@@ -239,7 +242,7 @@ PIXPtr PreProcess::eraseFurigana(const PIXPtr& pixs)
 
 // Standard pre-process for OCR.
 // Be sure to call pixDestroy() on the returned PIX pointer to avoid memory leak.
-PIXPtr PreProcess::processImage(const PIXPtr& pixs, bool performDeskew, bool trim)
+PIXPtr PreProcess::processImage(const PIXPtr &pixs, bool performDeskew, bool trim)
 {
     debugImgCount = 0;
 
@@ -260,10 +263,12 @@ PIXPtr PreProcess::processImage(const PIXPtr& pixs, bool performDeskew, bool tri
     // Get the average intensity of the border pixels,
     // with average of 0.0 being completely white and 1.0 being completely black.
     // Top, bottom, left, right.
-    pixelAvg  = pixAverageOnLine(binarizeForNegPixs.get(), 0, 0, binarizeForNegPixs->w - 1, 0, 1);
-    pixelAvg += pixAverageOnLine(binarizeForNegPixs.get(), 0, binarizeForNegPixs->h - 1, binarizeForNegPixs->w - 1, binarizeForNegPixs->h - 1, 1);
+    pixelAvg = pixAverageOnLine(binarizeForNegPixs.get(), 0, 0, binarizeForNegPixs->w - 1, 0, 1);
+    pixelAvg += pixAverageOnLine(binarizeForNegPixs.get(), 0, binarizeForNegPixs->h - 1,
+                                 binarizeForNegPixs->w - 1, binarizeForNegPixs->h - 1, 1);
     pixelAvg += pixAverageOnLine(binarizeForNegPixs.get(), 0, 0, 0, binarizeForNegPixs->h - 1, 1);
-    pixelAvg += pixAverageOnLine(binarizeForNegPixs.get(), binarizeForNegPixs->w - 1, 0, binarizeForNegPixs->w - 1, binarizeForNegPixs->h - 1, 1);
+    pixelAvg += pixAverageOnLine(binarizeForNegPixs.get(), binarizeForNegPixs->w - 1, 0,
+                                 binarizeForNegPixs->w - 1, binarizeForNegPixs->h - 1, 1);
     pixelAvg /= 4.0f;
 
     binarizeForNegPixs.reset();
@@ -308,7 +313,8 @@ PIXPtr PreProcess::processImage(const PIXPtr& pixs, bool performDeskew, bool tri
 
         // Remove border
 
-        int status = pixClipToForeground(furiganaPixs.get(), shared_ptr_tmp_wrapper<PIXPtr>(foregroundPixs, pixDeletor), nullptr);
+        int status = pixClipToForeground(
+          furiganaPixs.get(), shared_ptr_tmp_wrapper<PIXPtr>(foregroundPixs, pixDeletor), nullptr);
         if (status != LEPT_OK)
         {
             debugMsg("pixClipToForeground failed!");
@@ -331,10 +337,10 @@ PIXPtr PreProcess::processImage(const PIXPtr& pixs, bool performDeskew, bool tri
     return furiganaPixs;
 }
 
-
 // Extract the text block closest to the provided point.
 // Be sure to call pixDestroy() on the returned PIX pointer to avoid memory leak.
-PIXPtr PreProcess::extractTextBlock(const PIXPtr& pixs, int pt_x, int pt_y, int lookahead, int lookbehind, int searchRadius)
+PIXPtr PreProcess::extractTextBlock(const PIXPtr &pixs, int pt_x, int pt_y, int lookahead,
+                                    int lookbehind, int searchRadius)
 {
     debugImgCount = 0;
     int status = LEPT_ERROR;
@@ -363,7 +369,8 @@ PIXPtr PreProcess::extractTextBlock(const PIXPtr& pixs, int pt_x, int pt_y, int 
     negRect.h = qMin((int)binarizeForNegPixs->h - negRect.y, idealNegRectLength);
 
     float pixelAvg = 0.0f;
-    status = pixAverageInRect(binarizeForNegPixs.get(), nullptr, &negRect, 0, std::numeric_limits<l_int32>::max(), 0, &pixelAvg);
+    status = pixAverageInRect(binarizeForNegPixs.get(), nullptr, &negRect, 0,
+                              std::numeric_limits<l_int32>::max(), 0, &pixelAvg);
     binarizeForNegPixs.reset();
 
     // qDebug() << "Pixel Avg: " << pixelAvg;
@@ -411,13 +418,9 @@ PIXPtr PreProcess::extractTextBlock(const PIXPtr& pixs, int pt_x, int pt_y, int 
         return nullptr;
 
     // Get rectangle surrounding the text to extract
-    boundingRect = BoundingTextRect::getBoundingRect(denoisePixs,
-                   pt_x * scaleFactor,
-                   pt_y * scaleFactor,
-                   verticalText,
-                   lookahead * scaleFactor,
-                   lookbehind * scaleFactor,
-                   searchRadius * scaleFactor);
+    boundingRect = BoundingTextRect::getBoundingRect(
+      denoisePixs, pt_x * scaleFactor, pt_y * scaleFactor, verticalText, lookahead * scaleFactor,
+      lookbehind * scaleFactor, searchRadius * scaleFactor);
     denoisePixs.reset();
 
     if (boundingRect.w < 3 && boundingRect.h < 3)
@@ -445,7 +448,9 @@ PIXPtr PreProcess::extractTextBlock(const PIXPtr& pixs, int pt_x, int pt_y, int 
     BOXPtr foregroundBox = nullptr;
 
     // Remove border
-    status = pixClipToForeground(furiganaPixs.get(), shared_ptr_tmp_wrapper<PIXPtr>(foregroundPixs, pixDeletor), shared_ptr_tmp_wrapper<BOXPtr>(foregroundBox, boxDeletor));
+    status = pixClipToForeground(furiganaPixs.get(),
+                                 shared_ptr_tmp_wrapper<PIXPtr>(foregroundPixs, pixDeletor),
+                                 shared_ptr_tmp_wrapper<BOXPtr>(foregroundBox, boxDeletor));
     furiganaPixs.reset();
 
     if (status != LEPT_OK)
@@ -471,15 +476,14 @@ PIXPtr PreProcess::extractTextBlock(const PIXPtr& pixs, int pt_x, int pt_y, int 
     return borderPixs;
 }
 
-
-static PIXPtr pixInvert(const PIXPtr& p1, const PIXPtr& p2)
+static PIXPtr pixInvert(const PIXPtr &p1, const PIXPtr &p2)
 {
     return createPP(pixInvert(p1.get(), p2.get()));
 }
 
 // Extract all text within an enclosed area such as a comic book speech/thought bubble.
 // Be sure to call pixDestroy() on the returned PIX pointer to avoid memory leak.
-PIXPtr PreProcess::extractBubbleText(const PIXPtr& pixs, int pt_x, int pt_y)
+PIXPtr PreProcess::extractBubbleText(const PIXPtr &pixs, int pt_x, int pt_y)
 {
     debugImgCount = 0;
     l_int32 status = LEPT_ERROR;
@@ -540,7 +544,8 @@ PIXPtr PreProcess::extractBubbleText(const PIXPtr& pixs, int pt_x, int pt_y)
 
     // Dilate to thicken lines and connect small gaps in the bubble
     int thickenAmount = (int)(2 * scaleFactor);
-    auto thickenLinesPixs = createPP(pixDilateBrick(nullptr, binarizePixs.get(), thickenAmount, thickenAmount));
+    auto thickenLinesPixs =
+      createPP(pixDilateBrick(nullptr, binarizePixs.get(), thickenAmount, thickenAmount));
 
     if (thickenLinesPixs == nullptr)
     {
@@ -561,7 +566,8 @@ PIXPtr PreProcess::extractBubbleText(const PIXPtr& pixs, int pt_x, int pt_y)
     }
 
     // Seed fill
-    auto seedFillPixs = createPP(pixSeedfillBinary(nullptr, seedStartPixs.get(), binarizeNegPixs.get(), 8));
+    auto seedFillPixs =
+      createPP(pixSeedfillBinary(nullptr, seedStartPixs.get(), binarizeNegPixs.get(), 8));
     seedStartPixs.reset();
     binarizeNegPixs.reset();
 
@@ -625,7 +631,9 @@ PIXPtr PreProcess::extractBubbleText(const PIXPtr& pixs, int pt_x, int pt_y)
     // Clip to text
     PIXPtr clippedPixs = nullptr;
     BOXPtr foregroundBox = nullptr;
-    status = pixClipToForeground(furiganaPixs.get(), shared_ptr_tmp_wrapper<PIXPtr>(clippedPixs, pixDeletor), shared_ptr_tmp_wrapper<BOXPtr>(foregroundBox, boxDeletor));
+    status = pixClipToForeground(furiganaPixs.get(),
+                                 shared_ptr_tmp_wrapper<PIXPtr>(clippedPixs, pixDeletor),
+                                 shared_ptr_tmp_wrapper<BOXPtr>(foregroundBox, boxDeletor));
     furiganaPixs.reset();
 
     if (status != LEPT_OK)

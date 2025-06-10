@@ -1,42 +1,44 @@
 #include "eliteocr.h"
-#include <QScreen>
-#include <QPixmap>
-#include <QApplication>
-#include <QRegularExpression>
-#include <QDesktopWidget>
-#include "utils/strutils.h"
+
 #include "utils/strfmt.h"
+#include "utils/strutils.h"
+
+#include <QApplication>
+#include <QDesktopWidget>
+#include <QPixmap>
+#include <QRegularExpression>
+#include <QScreen>
 
 #ifdef Q_OS_LINUX
-    #include <QX11Info>
-    #include <X11/Xlib.h>
     #include <X11/Xatom.h>
+    #include <X11/Xlib.h>
     #include <X11/extensions/Xfixes.h>
+
+    #include <QX11Info>
 #endif
 
 EliteOCR::EliteOCR()
 {
     preProcess.setVerticalOrientation(false);
     preProcess.setRemoveFurigana(false);
-    preProcess.setScaleFactor(2.7f); //this factor works for galaxy map on 1920 x 1080 screen
+    preProcess.setScaleFactor(2.7f); // this factor works for galaxy map on 1920 x 1080 screen
 }
 
 QStringList EliteOCR::recognize(const QImage &img)
 {
-    auto pix  = preProcess.convertImageToPix(img);
+    auto pix = preProcess.convertImageToPix(img);
     if (!pix)
         return QStringList();
     auto pix2 = preProcess.processImage(pix, false, false);
-    //auto pix2 = preProcess.extractBubbleText(pix, 0, 0);
+    // auto pix2 = preProcess.extractBubbleText(pix, 0, 0);
     if (!pix2)
         return QStringList();
 #ifdef SRC_PATH
-    static int dump_id {0};
-    OCRHelpers::dumpPix(stringfmt ("./pix2_%d", ++dump_id), pix2);
+    static int dump_id{0};
+    OCRHelpers::dumpPix(stringfmt("./pix2_%d", ++dump_id), pix2);
 #endif
     return split_filter(ocrEngine.performOcr(pix2, false));
 }
-
 
 QStringList EliteOCR::recognizeScreen()
 {
@@ -57,8 +59,7 @@ QString EliteOCR::tryDetectStarFromMapPopup(const QStringList &src)
     {
         const auto b = src.begin();
         const auto e = src.end();
-        auto it = std::find_if(b, e, [](const auto & s)
-        {
+        auto it = std::find_if(b, e, [](const auto &s) {
             return s.startsWith("DISTANCE: ") || s.startsWith("ARRIVAL POINT:");
         });
         if (it != e && it != b)
@@ -68,38 +69,41 @@ QString EliteOCR::tryDetectStarFromMapPopup(const QStringList &src)
         }
     }
 
-    //trying regex for auto-generated sys names as last resort, examples:
-    //PHROI PRI NX-A D1-785
-    //Pyrie Thae XO-Z D13-12
+    // trying regex for auto-generated sys names as last resort, examples:
+    // PHROI PRI NX-A D1-785
+    // Pyrie Thae XO-Z D13-12
     //"Suvaa LM-W F1-0"
-    //but going backward, as at top will be currently selected sys most likely
+    // but going backward, as at top will be currently selected sys most likely
     const static QRegularExpression last_check("^[A-H]\\d+-\\d+$");
     const static QRegularExpression before_last_check("^\\w\\w-\\w$");
     const static QRegularExpression planet("^\\d+\\s*\\w*$");
 
-    const static auto test_if_star_pattern = [](auto begin, auto end)
-    {
-        //at least 3 parts
+    const static auto test_if_star_pattern = [](auto begin, auto end) {
+        // at least 3 parts
         if (std::distance(begin, end) < 3)
             return false;
-        //checking if last 2 match to regexp
-        const bool a = last_check.match(*begin, 0, QRegularExpression::PartialPreferCompleteMatch).hasMatch();
-        const bool b = before_last_check.match(*(begin + 1), 0, QRegularExpression::PartialPreferCompleteMatch).hasMatch();
+        // checking if last 2 match to regexp
+        const bool a =
+          last_check.match(*begin, 0, QRegularExpression::PartialPreferCompleteMatch).hasMatch();
+        const bool b =
+          before_last_check.match(*(begin + 1), 0, QRegularExpression::PartialPreferCompleteMatch)
+            .hasMatch();
         return a && b;
     };
 
-    auto it = std::find_if(src.rbegin(), src.rend(), [](const auto & s)
-    {
+    auto it = std::find_if(src.rbegin(), src.rend(), [](const auto &s) {
         QStringList parts = s.split(" ", QString::SkipEmptyParts);
         if (parts.size() < 3)
             return false;
-        //maybe it is planet's name?
-        const bool b = (planet.match(*parts.rbegin(), 0, QRegularExpression::PartialPreferCompleteMatch).hasMatch() && test_if_star_pattern(parts.rbegin() + 1, parts.rend()));
+        // maybe it is planet's name?
+        const bool b =
+          (planet.match(*parts.rbegin(), 0, QRegularExpression::PartialPreferCompleteMatch)
+             .hasMatch()
+           && test_if_star_pattern(parts.rbegin() + 1, parts.rend()));
         const bool a = test_if_star_pattern(parts.rbegin(), parts.rend());
 
-
         return a || b;
-        //return a;
+        // return a;
     });
 
     if (it != src.rend())
@@ -118,7 +122,7 @@ QStringList EliteOCR::split_filter(const QString &src) const
     QStringList lst = src.split(QRegularExpression("[\n\r]"), QString::SkipEmptyParts);
     QStringList res;
     res.reserve((lst.size()));
-    for (auto& s : lst)
+    for (auto &s : lst)
     {
         s = s.trimmed();
         s = s.normalized(QString::NormalizationForm_D).toUpper();

@@ -1,14 +1,13 @@
 #include "BoundingTextRect.h"
 
-
 BoundingTextRect::BoundingTextRect()
 {
-
 }
 
-OcrPoint BoundingTextRect::findNearestBlackPixel(const PIXPtr &pixs, int startX, int startY, int maxDist)
+OcrPoint BoundingTextRect::findNearestBlackPixel(const PIXPtr &pixs, int startX, int startY,
+                                                 int maxDist)
 {
-    OcrPoint pt = { startX, startY };
+    OcrPoint pt = {startX, startY};
 
     for (int dist = 1; dist < maxDist; ++dist)
     {
@@ -61,7 +60,7 @@ OcrPoint BoundingTextRect::findNearestBlackPixel(const PIXPtr &pixs, int startX,
     return pt;
 }
 
-bool BoundingTextRect::lineContainBlackHoriz(const PIXPtr& pixs, int startX, int startY, int width)
+bool BoundingTextRect::lineContainBlackHoriz(const PIXPtr &pixs, int startX, int startY, int width)
 {
     for (int x = startX; x <= startX + width && inRangeX(pixs, x); ++x)
     {
@@ -87,8 +86,8 @@ bool BoundingTextRect::isBlack(const PIXPtr &pixs, int x, int y)
 {
     l_uint32 pixelValue = 0;
 
-    const bool r = (inRangeX(pixs, x) && inRangeY(pixs, y)) &&
-                   (pixGetPixel(pixs.get(), x, y, &pixelValue) == LEPT_OK) && (pixelValue == 1);
+    const bool r = (inRangeX(pixs, x) && inRangeY(pixs, y))
+                   && (pixGetPixel(pixs.get(), x, y, &pixelValue) == LEPT_OK) && (pixelValue == 1);
 
     return r;
 }
@@ -98,12 +97,12 @@ bool BoundingTextRect::inRangeX(const PIXPtr &pixs, int x)
     return ((x >= 0) && ((unsigned int)x < pixs->w));
 }
 
-bool BoundingTextRect::inRangeY(const PIXPtr& pixs, int y)
+bool BoundingTextRect::inRangeY(const PIXPtr &pixs, int y)
 {
     return ((y >= 0) && ((unsigned int)y < pixs->h));
 }
 
-bool BoundingTextRect::tryExpandRect(const PIXPtr& pixs, BOX &rect, D8 dir, int dist)
+bool BoundingTextRect::tryExpandRect(const PIXPtr &pixs, BOX &rect, D8 dir, int dist)
 {
     if (dir == D8::Top)
     {
@@ -114,83 +113,77 @@ bool BoundingTextRect::tryExpandRect(const PIXPtr& pixs, BOX &rect, D8 dir, int 
             return true;
         }
     }
-    else
-        if (dir == D8::TopRight)
+    else if (dir == D8::TopRight)
+    {
+        if (isBlack(pixs, rect.x + rect.w + dist, rect.y - dist))
         {
-            if (isBlack(pixs, rect.x + rect.w + dist, rect.y - dist))
-            {
-                rect.y -= dist;
-                rect.h += dist;
-                rect.w += dist;
-                return true;
-            }
+            rect.y -= dist;
+            rect.h += dist;
+            rect.w += dist;
+            return true;
         }
-        else
-            if (dir == D8::Right)
-            {
-                if (lineContainBlackVert(pixs, rect.x + rect.w + dist, rect.y, rect.h))
-                {
-                    rect.w += dist;
-                    return true;
-                }
-            }
-            else
-                if (dir == D8::BottomRight)
-                {
-                    if (isBlack(pixs, rect.x + rect.w + dist, rect.y + rect.h + dist))
-                    {
-                        rect.h += dist;
-                        rect.w += dist;
-                        return true;
-                    }
-                }
-                else
-                    if (dir == D8::Bottom)
-                    {
-                        if (lineContainBlackHoriz(pixs, rect.x, rect.y + rect.h + dist, rect.w))
-                        {
-                            rect.h += dist;
-                            return true;
-                        }
-                    }
-                    else
-                        if (dir == D8::BottomLeft)
-                        {
-                            if (isBlack(pixs, rect.x - dist, rect.y + rect.h + dist))
-                            {
-                                rect.x -= dist;
-                                rect.h += dist;
-                                rect.w += dist;
-                                return true;
-                            }
-                        }
-                        else
-                            if (dir == D8::Left)
-                            {
-                                if (lineContainBlackVert(pixs, rect.x - dist, rect.y, rect.h))
-                                {
-                                    rect.x -= dist;
-                                    rect.w += dist;
-                                    return true;
-                                }
-                            }
-                            else
-                                if (dir == D8::TopLeft)
-                                {
-                                    if (isBlack(pixs, rect.x - dist, rect.y + dist))
-                                    {
-                                        rect.x -= dist;
-                                        rect.y -= dist;
-                                        rect.h += dist;
-                                        rect.w += dist;
-                                        return true;
-                                    }
-                                }
+    }
+    else if (dir == D8::Right)
+    {
+        if (lineContainBlackVert(pixs, rect.x + rect.w + dist, rect.y, rect.h))
+        {
+            rect.w += dist;
+            return true;
+        }
+    }
+    else if (dir == D8::BottomRight)
+    {
+        if (isBlack(pixs, rect.x + rect.w + dist, rect.y + rect.h + dist))
+        {
+            rect.h += dist;
+            rect.w += dist;
+            return true;
+        }
+    }
+    else if (dir == D8::Bottom)
+    {
+        if (lineContainBlackHoriz(pixs, rect.x, rect.y + rect.h + dist, rect.w))
+        {
+            rect.h += dist;
+            return true;
+        }
+    }
+    else if (dir == D8::BottomLeft)
+    {
+        if (isBlack(pixs, rect.x - dist, rect.y + rect.h + dist))
+        {
+            rect.x -= dist;
+            rect.h += dist;
+            rect.w += dist;
+            return true;
+        }
+    }
+    else if (dir == D8::Left)
+    {
+        if (lineContainBlackVert(pixs, rect.x - dist, rect.y, rect.h))
+        {
+            rect.x -= dist;
+            rect.w += dist;
+            return true;
+        }
+    }
+    else if (dir == D8::TopLeft)
+    {
+        if (isBlack(pixs, rect.x - dist, rect.y + dist))
+        {
+            rect.x -= dist;
+            rect.y -= dist;
+            rect.h += dist;
+            rect.w += dist;
+            return true;
+        }
+    }
 
     return false;
 }
 
-void BoundingTextRect::expandRect(const PIXPtr &pixs, QList<DirDist> &dirDistList, BOX& rect, bool keepGoing)
+void BoundingTextRect::expandRect(const PIXPtr &pixs, QList<DirDist> &dirDistList, BOX &rect,
+                                  bool keepGoing)
 {
     int i = 0;
 
@@ -205,9 +198,8 @@ void BoundingTextRect::expandRect(const PIXPtr &pixs, QList<DirDist> &dirDistLis
         if (!hasBlack)
             ++i;
         // If caller wants to exit upon first successful expansion
-        else
-            if (!keepGoing)
-                return;
+        else if (!keepGoing)
+            return;
 
         // If we went through the entire list, return
         if (i >= dirDistList.size())
@@ -219,7 +211,7 @@ BOX BoundingTextRect::getBoundingRect(const PIXPtr &pixs, int startX, int startY
                                       int lookahead, int lookbehind, int maxSearchDist)
 {
     auto nearestPt = findNearestBlackPixel(pixs, startX, startY, maxSearchDist);
-    BOX rect = { nearestPt.x, nearestPt.y, 0, 0, 1};
+    BOX rect = {nearestPt.x, nearestPt.y, 0, 0, 1};
     BOX rectLast = rect;
 
     QList<DirDist> listD4;
@@ -261,10 +253,8 @@ BOX BoundingTextRect::getBoundingRect(const PIXPtr &pixs, int startX, int startY
         expandRect(pixs, listCorners, rect, false);
 
         // No change this iteration, no need to continue
-        if (rect.x == rectLast.x
-                && rect.y == rectLast.y
-                && rect.w == rectLast.w
-                && rect.h == rectLast.h)
+        if (rect.x == rectLast.x && rect.y == rectLast.y && rect.w == rectLast.w
+            && rect.h == rectLast.h)
             break;
 
         rectLast = rect;

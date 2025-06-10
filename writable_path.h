@@ -1,14 +1,14 @@
 #pragma once
-#include <QString>
-#include <QStandardPaths>
 #include <QDir>
+#include <QStandardPaths>
+#include <QString>
 
 QString inline getWritableLocation()
 {
     static QString s = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
     if (s.isEmpty())
     {
-        s = QDir::homePath(); //fallback
+        s = QDir::homePath(); // fallback
         if (s.isEmpty())
             throw std::runtime_error("Can not detect writable location to store data.");
     }

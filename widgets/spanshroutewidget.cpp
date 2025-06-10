@@ -1,20 +1,22 @@
 #include "spanshroutewidget.h"
-#include "ui_spanshroutewidget.h"
-#include "spanshsyssuggest.h"
+
 #include "config_ui/globalsettings.h"
 #include "spansh_route.h"
+#include "spanshsyssuggest.h"
 #include "utils/json.hpp"
 #include "utils/strutils.h"
 
-#include <QSpinBox>
-#include <QLineEdit>
-#include <QSettings>
-#include <QMessageBox>
+#include "ui_spanshroutewidget.h"
+
+#include <QClipboard>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <iostream>
-#include <QClipboard>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QSettings>
+#include <QSpinBox>
 
+#include <iostream>
 
 const static QString settingsGroup{"SpanshRouteWidget"};
 
@@ -26,10 +28,10 @@ SpanshRouteWidget::SpanshRouteWidget(QWidget *parent) :
     new SpanshSysSuggest(ui->fromE);
     new SpanshSysSuggest(ui->toE);
 
-    connect(this, &SpanshRouteWidget::crossThreadHasRouteSignal, this, &SpanshRouteWidget::crossThreadHasRoute, Qt::QueuedConnection);
+    connect(this, &SpanshRouteWidget::crossThreadHasRouteSignal, this,
+            &SpanshRouteWidget::crossThreadHasRoute, Qt::QueuedConnection);
 
-    const auto disable_btn_route = [this](const QString &)
-    {
+    const auto disable_btn_route = [this](const QString &) {
         switchRouteBtn();
     };
 
@@ -38,25 +40,24 @@ SpanshRouteWidget::SpanshRouteWidget(QWidget *parent) :
 
     loadValues();
 
-    //if we have all valid data stored, request route again and try make selection
+    // if we have all valid data stored, request route again and try make selection
     if (switchRouteBtn() && !lastSelectedSystem.isEmpty())
         on_btnRoute_clicked();
     else
         updateButtonsMenu();
 
-    const static QJsonTableModel::Header header =
-    {
-        QJsonTableModel::Heading({{"title", tr("System")}, {"index", "system"}}),
-        QJsonTableModel::Heading({{"title", tr("Jumps To")}, {"index", "jumps"}}),
-        QJsonTableModel::Heading({{"title", tr("Distance Left")}, {"index", "distance_left"}}),
-        QJsonTableModel::Heading({{"title", tr("Distance Jumped")}, {"index", "distance_jumped"}}),
+    const static QJsonTableModel::Header header = {
+      QJsonTableModel::Heading({{"title", tr("System")}, {"index", "system"}}),
+      QJsonTableModel::Heading({{"title", tr("Jumps To")}, {"index", "jumps"}}),
+      QJsonTableModel::Heading({{"title", tr("Distance Left")}, {"index", "distance_left"}}),
+      QJsonTableModel::Heading({{"title", tr("Distance Jumped")}, {"index", "distance_jumped"}}),
     };
-    model = new QJsonTableModel( header, this, QJsonTableModel::VerticalNums::BASEZERO);
+    model = new QJsonTableModel(header, this, QJsonTableModel::VerticalNums::BASEZERO);
     ui->tableView->setModel(model);
 
-    connect(ui->tableView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+    connect(ui->tableView->selectionModel(),
+            SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
             SLOT(slotSystemSelected(const QItemSelection &, const QItemSelection &)));
-
 }
 
 SpanshRouteWidget::~SpanshRouteWidget()
@@ -105,23 +106,25 @@ void SpanshRouteWidget::saveValues() const
 
 void SpanshRouteWidget::loadValues()
 {
-    const auto static cleanupStringList = [](QStringList & list)
-    {
-        list.erase(std::remove_if(list.begin(), list.end(), [](const auto & str)
-        {
-            return str.trimmed().isEmpty();
-        }), list.end());
+    const auto static cleanupStringList = [](QStringList &list) {
+        list.erase(std::remove_if(list.begin(), list.end(),
+                                  [](const auto &str) {
+                                      return str.trimmed().isEmpty();
+                                  }),
+                   list.end());
     };
     QSettings settings;
     settings.beginGroup(settingsGroup);
     ui->fromE->setText(settings.value("from", "").toString());
     ui->toE->setText(settings.value("to", "").toString());
-    ui->spinBoxRange->setValue(settings.value("ly", StaticSettingsMap::getGlobalSetts().readInt("Int_SHIP_LY")).toDouble());
-    ui->spinBoxPrecise->setValue(settings.value("prec", StaticSettingsMap::getGlobalSetts().readInt("Int_PRECISE")).toInt());
+    ui->spinBoxRange->setValue(
+      settings.value("ly", StaticSettingsMap::getGlobalSetts().readInt("Int_SHIP_LY")).toDouble());
+    ui->spinBoxPrecise->setValue(
+      settings.value("prec", StaticSettingsMap::getGlobalSetts().readInt("Int_PRECISE")).toInt());
 
     lastSelectedSystem = settings.value("lastSelected").toString();
     revertFrom = settings.value("revertFrom").toStringList();
-    revertTo   = settings.value("revertTo").toStringList();
+    revertTo = settings.value("revertTo").toStringList();
 
     cleanupStringList(revertFrom);
     cleanupStringList(revertTo);
@@ -131,11 +134,10 @@ void SpanshRouteWidget::loadValues()
 
 void SpanshRouteWidget::updateButtonsMenu()
 {
-    //1st we need to update stored names by entered names
+    // 1st we need to update stored names by entered names
     const auto limit = StaticSettingsMap::getGlobalSetts().readInt("01_1Int_Revertlen");
-    const static auto update_list = [&limit](const auto & src, auto & list)
-    {
-        //user could lower limit between runs
+    const static auto update_list = [&limit](const auto &src, auto &list) {
+        // user could lower limit between runs
         while (list.size() > limit)
             list.erase(list.begin());
 
@@ -150,31 +152,29 @@ void SpanshRouteWidget::updateButtonsMenu()
             list.erase(list.begin());
     };
     update_list(ui->fromE->text(), revertFrom);
-    update_list(ui->toE->text(),   revertTo);
+    update_list(ui->toE->text(), revertTo);
 
-    //2nd do menus
+    // 2nd do menus
 
-    const static auto add_list = [](QPointer<QLineEdit> edit, QMenu * menu, const QStringList & list)
-    {
+    const static auto add_list = [](QPointer<QLineEdit> edit, QMenu *menu,
+                                    const QStringList &list) {
         for (auto it = list.rbegin(); it != list.rend(); ++it)
         {
             const QString copy{*it};
-            menu->addAction(copy, [copy, edit]()
-            {
+            menu->addAction(copy, [copy, edit]() {
                 if (edit)
                     edit->setText(copy);
             });
         }
     };
 
-    const auto addMenu = [this](auto * button, QLineEdit * edit)
-    {
+    const auto addMenu = [this](auto *button, QLineEdit *edit) {
         QMenu *main = new QMenu(this);
 
         QMenu *from = main->addMenu(tr("From"));
-        QMenu *to   = main->addMenu(tr("To"));
+        QMenu *to = main->addMenu(tr("To"));
         add_list(edit, from, revertFrom);
-        add_list(edit, to,   revertTo);
+        add_list(edit, to, revertTo);
         button->setMenu(main);
         return main;
     };
@@ -185,22 +185,23 @@ void SpanshRouteWidget::updateButtonsMenu()
         toMenu->deleteLater();
 
     fromMenu = addMenu(ui->btnRevertFrom, ui->fromE);
-    toMenu   = addMenu(ui->btnRevertTo, ui->toE);
+    toMenu = addMenu(ui->btnRevertTo, ui->toE);
 }
 
 void SpanshRouteWidget::on_btnRoute_clicked()
 {
     ui->btnRoute->setEnabled(false);
-    updateButtonsMenu(); //add to last used menus only when user requested route
+    updateButtonsMenu(); // add to last used menus only when user requested route
     saveValues();
-    SpanshRoute r(ui->spinBoxPrecise->value(), ui->spinBoxRange->value(), ui->fromE->text().toStdString(), ui->toE->text().toStdString());
-    router.executeRequest(r, [this](auto err, auto js)
-    {
-        //okey, okey ...not optimal at all, but who cares ... that is not 2000000 routes per second
-        //api returned full response, need table only
+    SpanshRoute r(ui->spinBoxPrecise->value(), ui->spinBoxRange->value(),
+                  ui->fromE->text().toStdString(), ui->toE->text().toStdString());
+    router.executeRequest(r, [this](auto err, auto js) {
+        // okey, okey ...not optimal at all, but who cares ... that is not 2000000 routes per second
+        // api returned full response, need table only
         const auto it = js.find("system_jumps");
         if (it != js.end())
-            emit crossThreadHasRouteSignal(QString::fromStdString(err), QString::fromStdString(it->dump()));
+            emit crossThreadHasRouteSignal(QString::fromStdString(err),
+                                           QString::fromStdString(it->dump()));
         else
             emit crossThreadHasRouteSignal(QString::fromStdString(err), QString("[]"));
     });
@@ -216,11 +217,10 @@ bool SpanshRouteWidget::switchRouteBtn()
 
 void SpanshRouteWidget::crossThreadHasRoute(QString error, QString json)
 {
-    //because we did connect with Qt::QueuedConnection now we're in main thread and can use GUI
+    // because we did connect with Qt::QueuedConnection now we're in main thread and can use GUI
 
-    //let the thread stop ...
-    QTimer::singleShot(1000, [this]()
-    {
+    // let the thread stop ...
+    QTimer::singleShot(1000, [this]() {
         switchRouteBtn();
     });
     if (!error.isEmpty())
@@ -229,8 +229,7 @@ void SpanshRouteWidget::crossThreadHasRoute(QString error, QString json)
     {
         QJsonDocument jsonDocument = QJsonDocument::fromJson(json.toUtf8());
         model->setJson(jsonDocument);
-        QTimer::singleShot(200, [this]()
-        {
+        QTimer::singleShot(200, [this]() {
             auto hdr = ui->tableView->horizontalHeader();
             if (hdr)
             {
@@ -239,7 +238,7 @@ void SpanshRouteWidget::crossThreadHasRoute(QString error, QString json)
             }
         });
 
-        //we have something stored, try to find that system in list and select it
+        // we have something stored, try to find that system in list and select it
         if (!lastSelectedSystem.isEmpty())
         {
             const QVariant find(lastSelectedSystem);
@@ -251,7 +250,8 @@ void SpanshRouteWidget::crossThreadHasRoute(QString error, QString json)
                 const auto index = model->index(i, 0);
                 if (model->data(index, Qt::DisplayRole) == find)
                 {
-                    ui->tableView->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
+                    ui->tableView->selectionModel()->select(index,
+                                                            QItemSelectionModel::ClearAndSelect);
                     ui->tableView->scrollTo(index);
                     found = true;
                     break;
@@ -268,14 +268,14 @@ void SpanshRouteWidget::slotSystemSelected(const QItemSelection &, const QItemSe
     const auto ind = n.indexes();
     if (!ind.empty())
     {
-        const auto& i = ind.at(0);
+        const auto &i = ind.at(0);
         on_tableView_clicked(i);
     }
 }
 
 void SpanshRouteWidget::on_tableView_clicked(const QModelIndex &index)
 {
-    //some bug, when just clicking it does not change selection ...
+    // some bug, when just clicking it does not change selection ...
     QJsonObject object = model->getJsonObject(index);
     lastSelectedSystem = object["system"].toString();
     QClipboard *clipboard = QGuiApplication::clipboard();

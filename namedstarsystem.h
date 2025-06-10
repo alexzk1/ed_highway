@@ -1,22 +1,25 @@
 #pragma once
+#include "edsmwrapper.h"
+#include "point.h"
+#include "utils/cm_ctors.h"
+#include "utils/json.hpp"
+
 #include <QString>
 #include <QVariant>
+
 #include <string>
-#include "utils/json.hpp"
-#include "utils/cm_ctors.h"
-#include "point.h"
-#include "edsmwrapper.h"
 
 struct NamedStarSystem
 {
-public:
+  public:
     Point p;
     QString name;
     bool blank{true};
-public:
+
+  public:
     NamedStarSystem() = default;
     DEFAULT_COPYMOVE(NamedStarSystem);
-    static NamedStarSystem fromJsonInfo(const nlohmann::json& src)
+    static NamedStarSystem fromJsonInfo(const nlohmann::json &src)
     {
         NamedStarSystem r;
         try
@@ -32,27 +35,27 @@ public:
         return r;
     }
 
-    operator const QString& () const noexcept
+    operator const QString &() const noexcept
     {
         return name;
     }
 
-    operator const QVariant () const noexcept
+    operator const QVariant() const noexcept
     {
         return name;
     }
 
-    operator Point& () noexcept
+    operator Point &() noexcept
     {
         return p;
     }
 
-    operator const Point& () const noexcept
+    operator const Point &() const noexcept
     {
         return p;
     }
 
-    bool operator ==(const QString& v) const noexcept
+    bool operator==(const QString &v) const noexcept
     {
         return v == name;
     }

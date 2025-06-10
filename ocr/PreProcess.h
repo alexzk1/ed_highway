@@ -1,12 +1,13 @@
 #ifndef PRE_PROCESS_H
 #define PRE_PROCESS_H
 
-#include <QImage>
 #include "ocr_ptr_types.h"
+
+#include <QImage>
 
 class PreProcess
 {
-public:
+  public:
     PreProcess();
 
     bool getVerticalText() const;
@@ -25,10 +26,11 @@ public:
     PIXPtr convertImageToPix(const QImage &image);
 
     PIXPtr processImage(const PIXPtr &pixs, bool performDeskew = false, bool trim = false);
-    PIXPtr extractTextBlock(const PIXPtr &pixs, int pt_x, int pt_y, int lookahead, int lookbehind, int searchRadius);
+    PIXPtr extractTextBlock(const PIXPtr &pixs, int pt_x, int pt_y, int lookahead, int lookbehind,
+                            int searchRadius);
     PIXPtr extractBubbleText(const PIXPtr &pixs, int pt_x, int pt_y);
 
-private:
+  private:
     PIXPtr makeGray(const PIXPtr &pixs);
     PIXPtr scale(const PIXPtr &pixs);
     PIXPtr unsharpMask(const PIXPtr &pixs);
@@ -41,7 +43,7 @@ private:
     void setDPI(const PIXPtr &pixs);
 
     void debugMsg(const QString &str, bool error = true);
-    void debugImg(const QString& filename, const PIXPtr &pixs);
+    void debugImg(const QString &filename, const PIXPtr &pixs);
 
 #ifdef QT_DEBUG
     const bool debug = false;

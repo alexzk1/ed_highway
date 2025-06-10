@@ -1,20 +1,23 @@
 #ifndef OCR_ENGINE_H
 #define OCR_ENGINE_H
 
-#include <QString>
-#include <QStringList>
+#include "ocr_ptr_types.h"
+#include "utils/guard_on.h"
+
 #include <QMap>
 #include <QRect>
+#include <QString>
+#include <QStringList>
+
 #include <mutex>
-#include "utils/guard_on.h"
-#include "ocr_ptr_types.h"
 
 class OcrEngine
 {
-public:
+  public:
     OcrEngine();
     ~OcrEngine();
-public:
+
+  public:
     static QStringList getInstalledLangs();
     static const QStringList &getFoldersToFindLangs();
     static bool isLangInstalled(const QString &lang);
@@ -22,7 +25,7 @@ public:
     static QString altLangToLang(QString ocrLang);
 
     bool setLang(QString lang);
-    QString performOcr(const PIXPtr& pixs, bool singleLine);
+    QString performOcr(const PIXPtr &pixs, bool singleLine);
 
     QString getLang()
     {
@@ -78,15 +81,15 @@ public:
         configFile = value.trimmed();
     }
 
-private:
+  private:
     bool isLangCodeInstalled(const QString &langCode);
 
     // Key = Lang name, Value = Tesseract Code
-    static const QMap<QString, QString>& populateLangMap();
+    static const QMap<QString, QString> &populateLangMap();
     // Key = Tesseract Code, Value = Lang name
-    static const QMap<QString, QString>& populateCodeMap();
+    static const QMap<QString, QString> &populateCodeMap();
     // Key = Alt Lang name, Value = Lang name
-    static const QMap<QString, QString>& populateAltLangMap();
+    static const QMap<QString, QString> &populateAltLangMap();
 
     mutable std::mutex mutex;
     QString lang;
@@ -97,7 +100,6 @@ private:
     static QString langsFolder;
 
     std::shared_ptr<tesseract::TessBaseAPI> tessApi{nullptr};
-
 };
 
 #endif // OCR_ENGINE_H

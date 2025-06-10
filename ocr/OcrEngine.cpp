@@ -1,8 +1,10 @@
+#include "OcrEngine.h"
+
 #include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
-#include "OcrEngine.h"
 #include <QStandardPaths>
+
 #include <iostream>
 
 QString OcrEngine::langsFolder{""};
@@ -14,19 +16,19 @@ static std::recursive_mutex maps_guard;
 
 auto createAPI()
 {
-    return std::shared_ptr<tesseract::TessBaseAPI>(new tesseract::TessBaseAPI(), [](tesseract::TessBaseAPI * p)
-    {
-        if (p)
-            p->End();
-        delete p;
-    });
+    return std::shared_ptr<tesseract::TessBaseAPI>(new tesseract::TessBaseAPI(),
+                                                   [](tesseract::TessBaseAPI *p) {
+                                                       if (p)
+                                                           p->End();
+                                                       delete p;
+                                                   });
 }
 
-OcrEngine::OcrEngine()
-    : lang("English"),
-      whitelist(""),
-      blacklist(""),
-      configFile("")
+OcrEngine::OcrEngine() :
+    lang("English"),
+    whitelist(""),
+    blacklist(""),
+    configFile("")
 {
     {
         LOCK_GUARD_ON(maps_guard);
@@ -45,8 +47,7 @@ OcrEngine::~OcrEngine()
 
 QStringList OcrEngine::getInstalledLangs()
 {
-    const static auto check_folder = [](const QString & folder)
-    {
+    const static auto check_folder = [](const QString &folder) {
         QDir dir(folder + QDir::separator() + "tessdata");
         QStringList nameFilter("*.traineddata");
         QStringList langFiles = dir.entryList(nameFilter);
@@ -66,10 +67,9 @@ QStringList OcrEngine::getInstalledLangs()
         return nameList;
     };
 
-    //will test couple folders for trained data, once found anything - use this folder
+    // will test couple folders for trained data, once found anything - use this folder
 
-
-    for (const auto& dir : getFoldersToFindLangs())
+    for (const auto &dir : getFoldersToFindLangs())
     {
         const auto r = check_folder(dir);
         if (!r.empty())
@@ -79,34 +79,31 @@ QStringList OcrEngine::getInstalledLangs()
         }
     }
 
-    return QStringList(); //nothing found
+    return QStringList(); // nothing found
 }
 
-//those listed folders must have subfolder "tessdata" with files like "en.traineddata"
-const QStringList& OcrEngine::getFoldersToFindLangs()
+// those listed folders must have subfolder "tessdata" with files like "en.traineddata"
+const QStringList &OcrEngine::getFoldersToFindLangs()
 {
     const static auto home = QStandardPaths::standardLocations(QStandardPaths::HomeLocation).at(0);
-    const static QStringList folders =
-    {
-        home + "/" + qAppName(),
-        home + "/tesseract",
-        home + "/.local/share/",
-        QCoreApplication::applicationDirPath(),
+    const static QStringList folders = {
+      home + "/" + qAppName(), home + "/tesseract",
+      home + "/.local/share/", QCoreApplication::applicationDirPath(),
 #ifdef SRC_PATH
-        QString(SRC_PATH),
+      QString(SRC_PATH),
 #endif
     };
 
     return folders;
 }
 
-bool OcrEngine::isLangInstalled(const QString& lang)
+bool OcrEngine::isLangInstalled(const QString &lang)
 {
     QStringList installedLangs = getInstalledLangs();
     return installedLangs.contains(lang);
 }
 
-bool OcrEngine::isLangCodeInstalled(const QString& langCode)
+bool OcrEngine::isLangCodeInstalled(const QString &langCode)
 {
     QDir dir(langsFolder + QDir::separator() + "tessdata");
     QStringList nameFilter("*.traineddata");
@@ -147,19 +144,12 @@ bool OcrEngine::setLang(QString lang)
     if (!isLangInstalled(lang))
         return false;
 
-
     QString langCode = mapLang.value(lang);
 
     // As of Tesseract 4.0, horizontal and vertical dictionaries are
     // separate for languages that support vertical text.
-    if (langCode == "chi_sim"
-            || langCode == "chi_tra"
-            || langCode == "jpn"
-            || langCode == "kor"
-            || langCode == "HanS"
-            || langCode == "HanT"
-            || langCode == "Hangul"
-       )
+    if (langCode == "chi_sim" || langCode == "chi_tra" || langCode == "jpn" || langCode == "kor"
+        || langCode == "HanS" || langCode == "HanT" || langCode == "Hangul")
     {
         QString vertLangCode = langCode + "_vert";
 
@@ -169,10 +159,9 @@ bool OcrEngine::setLang(QString lang)
 
     const QByteArray langCodeByteArray = langCode.toLocal8Bit();
 
-
-    //The datapath must be the name of the parent directory of tessdata and must end in / .
-    // Any name after the last / will be stripped.
-    //So ..not sure, document says above, but in fact need to add tessdata/, so lets try both
+    // The datapath must be the name of the parent directory of tessdata and must end in / .
+    //  Any name after the last / will be stripped.
+    // So ..not sure, document says above, but in fact need to add tessdata/, so lets try both
 
     QString dir1 = langsFolder + "/";
     QString dir2 = langsFolder + "/tessdata/";
@@ -181,11 +170,10 @@ bool OcrEngine::setLang(QString lang)
     dir2.replace("/", "\\");
 #endif
 
-    const auto try_api = [&langCodeByteArray](const QString & dir)
-    {
+    const auto try_api = [&langCodeByteArray](const QString &dir) {
         auto p = createAPI();
 
-        //yeh, returns true if error
+        // yeh, returns true if error
         if (p->Init(dir.toLocal8Bit().constData(), langCodeByteArray.constData()))
             p.reset();
         return p;
@@ -201,7 +189,7 @@ bool OcrEngine::setLang(QString lang)
     return tessApi != nullptr;
 }
 
-QString OcrEngine::performOcr(const PIXPtr& pixs, bool singleTextLine)
+QString OcrEngine::performOcr(const PIXPtr &pixs, bool singleTextLine)
 {
     LOCK_GUARD_ON(mutex);
     if (!tessApi)
@@ -217,24 +205,23 @@ QString OcrEngine::performOcr(const PIXPtr& pixs, bool singleTextLine)
         tessApi->SetPageSegMode(tesseract::PageSegMode::PSM_SINGLE_BLOCK_VERT_TEXT);
 
         // For Japanese and Chinese apply configuration that will improve accuracy
-        if (lang == "Japanese"
-                || lang == "Chinese - Simplified"
-                || lang == "Chinese - Traditional")
+        if (lang == "Japanese" || lang == "Chinese - Simplified" || lang == "Chinese - Traditional")
         {
             bool status = true;
-            status =  tessApi->SetVariable("tessedit_enable_dict_correction",  "1"     );
-            status &= tessApi->SetVariable("textord_really_old_xheight",       "1"     );
-            status &= tessApi->SetVariable("tosp_threshold_bias2",             "1"     );
-            status &= tessApi->SetVariable("classify_norm_adj_midpoint",       "96"    );
-            status &= tessApi->SetVariable("tessedit_class_miss_scale",        "0.002" );
-            status &= tessApi->SetVariable("textord_initialx_ile",             "1.0"   );
+            status = tessApi->SetVariable("tessedit_enable_dict_correction", "1");
+            status &= tessApi->SetVariable("textord_really_old_xheight", "1");
+            status &= tessApi->SetVariable("tosp_threshold_bias2", "1");
+            status &= tessApi->SetVariable("classify_norm_adj_midpoint", "96");
+            status &= tessApi->SetVariable("tessedit_class_miss_scale", "0.002");
+            status &= tessApi->SetVariable("textord_initialx_ile", "1.0");
 
             if (singleTextLine)
-                status &= tessApi->SetVariable("textord_min_linesize",         "2.5"   );
+                status &= tessApi->SetVariable("textord_min_linesize", "2.5");
             else
             {
-                // For higher values of textord_min_linesize, Tesseract will get confused when lines are close together
-                status &= tessApi->SetVariable("textord_min_linesize",         "2.0"   );
+                // For higher values of textord_min_linesize, Tesseract will get confused when lines
+                // are close together
+                status &= tessApi->SetVariable("textord_min_linesize", "2.0");
             }
 
             if (!status)
@@ -260,7 +247,7 @@ QString OcrEngine::performOcr(const PIXPtr& pixs, bool singleTextLine)
 
     tessApi->Clear();
 
-    delete [] outText;
+    delete[] outText;
 
     return ocrText;
 }
@@ -269,9 +256,8 @@ QString OcrEngine::altLangToLang(QString ocrLang)
 {
     if (mapLang.contains(ocrLang))
         return ocrLang;
-    else
-        if (mapLangAlt.contains(ocrLang))
-            return mapLangAlt[ocrLang];
+    else if (mapLangAlt.contains(ocrLang))
+        return mapLangAlt[ocrLang];
 
     return "None";
 }
@@ -393,7 +379,7 @@ const QMap<QString, QString> &OcrEngine::populateLangMap()
     return map;
 }
 
-const QMap<QString, QString>& OcrEngine::populateCodeMap()
+const QMap<QString, QString> &OcrEngine::populateCodeMap()
 {
     LOCK_GUARD_ON(maps_guard);
     static QMap<QString, QString> map;
@@ -405,7 +391,7 @@ const QMap<QString, QString>& OcrEngine::populateCodeMap()
     return map;
 }
 
-const QMap<QString, QString>& OcrEngine::populateAltLangMap()
+const QMap<QString, QString> &OcrEngine::populateAltLangMap()
 {
     LOCK_GUARD_ON(maps_guard);
     static QMap<QString, QString> map;

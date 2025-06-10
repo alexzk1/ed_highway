@@ -1,14 +1,14 @@
 #ifndef CALCSTAB_H
 #define CALCSTAB_H
 
-#include <QWidget>
-#include <QPointer>
 #include "saveable_widget.h"
 #include "utils/cm_ctors.h"
 
-namespace Ui
-{
-    class CalcsTab;
+#include <QPointer>
+#include <QWidget>
+
+namespace Ui {
+class CalcsTab;
 }
 
 class DelayedSignal;
@@ -16,21 +16,22 @@ class DelayedSignal;
 class CalcsTab : public QWidget
 {
     Q_OBJECT
-public:
+  public:
     NO_COPYMOVE(CalcsTab);
     CalcsTab(QWidget *parent = nullptr);
     ~CalcsTab();
 
-protected:
+  protected:
     void changeEvent(QEvent *e);
-private:
+
+  private:
     Ui::CalcsTab *ui;
     QPointer<DelayedSignal> delayedStart;
 
     void saveSettings();
     void loadSettings();
     void updateCargoToMax();
-private slots:
+  private slots:
     void calcCarrierFuel();
     void setTritiumStepping();
     void on_distCalc_clicked();

@@ -1,15 +1,15 @@
 #include "qhotkeypicker.h"
+
 #include <QKeyEvent>
 
-QHotkeyPicker::QHotkeyPicker(QWidget *owner):
+QHotkeyPicker::QHotkeyPicker(QWidget *owner) :
     QPushButton(owner),
     timer(new QTimer(this)),
     seconds_left{0}
 {
     setCheckable(true);
 
-    connect(this, &QPushButton::toggled, this, [this](bool checked)
-    {
+    connect(this, &QPushButton::toggled, this, [this](bool checked) {
         if (checked)
         {
             setFocus(Qt::MouseFocusReason);
@@ -24,8 +24,7 @@ QHotkeyPicker::QHotkeyPicker(QWidget *owner):
         }
     });
 
-    connect(timer, &QTimer::timeout, this, [this]()
-    {
+    connect(timer, &QTimer::timeout, this, [this]() {
         if (--seconds_left < 1)
             setChecked(false);
         else
@@ -38,8 +37,7 @@ void QHotkeyPicker::showSeconds()
     setText(QString("%1").arg(seconds_left));
 }
 
-
-void QHotkeyPicker::setHot(const QString & v)
+void QHotkeyPicker::setHot(const QString &v)
 {
     hot_string = v;
     if (!isChecked())
@@ -54,48 +52,22 @@ QString QHotkeyPicker::getHot() const
 
 static bool isModifier(const int key)
 {
-    const static int keys[] =
-    {
-        Qt::Key_unknown,
-        Qt::Key_Control,
-        Qt::Key_Shift,
-        Qt::Key_Meta,
-        Qt::Key_Alt,
-        Qt::Key_AltGr,
+    const static int keys[] = {
+      Qt::Key_unknown, Qt::Key_Control, Qt::Key_Shift, Qt::Key_Meta, Qt::Key_Alt, Qt::Key_AltGr,
     };
 
-    return std::any_of(std::begin(keys), std::end(keys), [&key](auto v)
-    {
+    return std::any_of(std::begin(keys), std::end(keys), [&key](auto v) {
         return key == v;
     });
 }
 
-//fixme: this might be a bit broken if kb lang is switched ...
-static const QString& unshift(const QString& src)
+// fixme: this might be a bit broken if kb lang is switched ...
+static const QString &unshift(const QString &src)
 {
-    const static std::map<QString, QString> remap =
-    {
-        {"!", "1"},
-        {"@", "2"},
-        {"#", "3"},
-        {"$", "4"},
-        {"%", "5"},
-        {"^", "6"},
-        {"&", "7"},
-        {"*", "8"},
-        {"(", "9"},
-        {")", "0"},
-        {"_", "-"},
-        {"+", "="},
-        {"{", "["},
-        {"}", "]"},
-        {"\"", "'"},
-        {":", ";"},
-        {"|", "\\"},
-        {">", "."},
-        {"<", ","},
-        {"?", "/"},
-        {"~", "`"},
+    const static std::map<QString, QString> remap = {
+      {"!", "1"},  {"@", "2"}, {"#", "3"},  {"$", "4"}, {"%", "5"}, {"^", "6"}, {"&", "7"},
+      {"*", "8"},  {"(", "9"}, {")", "0"},  {"_", "-"}, {"+", "="}, {"{", "["}, {"}", "]"},
+      {"\"", "'"}, {":", ";"}, {"|", "\\"}, {">", "."}, {"<", ","}, {"?", "/"}, {"~", "`"},
     };
     auto it = remap.find(src);
     if (it != remap.end())
@@ -115,6 +87,6 @@ void QHotkeyPicker::keyPressEvent(QKeyEvent *event)
 
 void QHotkeyPicker::keyReleaseEvent(QKeyEvent *event)
 {
-    if (isChecked() && !isModifier(event->key() ))
+    if (isChecked() && !isModifier(event->key()))
         setChecked(false);
 }

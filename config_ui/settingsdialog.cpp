@@ -1,8 +1,10 @@
-//License: MIT, (c) Oleksiy Zakharov, 2016, alexzkhr@gmail.com
+// License: MIT, (c) Oleksiy Zakharov, 2016, alexzkhr@gmail.com
 
 #include "settingsdialog.h"
-#include "ui_settingsdialog.h"
+
 #include "globalsettings.h"
+
+#include "ui_settingsdialog.h"
 
 SettingsDialog::SettingsDialog(QWidget *parent) :
     QDialog(parent),
@@ -11,7 +13,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     ui->setupUi(this);
     readSettings(this);
 
-    const StaticSettingsMap& sett = StaticSettingsMap::getGlobalSetts();
+    const StaticSettingsMap &sett = StaticSettingsMap::getGlobalSetts();
     auto w = new QWidget();
     ui->scrollSettings->setWidget(w);
     auto layout = new QVBoxLayout();
@@ -19,7 +21,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     w->setLayout(layout);
 
     auto wl = sett.createWidgets();
-    for (const auto& wi : wl)
+    for (const auto &wi : wl)
     {
         wi->setParent(this);
         layout->addWidget(wi);

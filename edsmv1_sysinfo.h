@@ -5,10 +5,11 @@
 class EDSMV1SysInfo
 {
     RestClient::parameters p;
-public:
+
+  public:
     EDSMV1SysInfo() = delete;
 
-    EDSMV1SysInfo(const std::string& name)
+    EDSMV1SysInfo(const std::string &name)
     {
         p["systemName"] = name;
         p["showCoordinates"] = "1";
@@ -22,26 +23,26 @@ public:
         return true;
     }
 
-    const auto& params() const
+    const auto &params() const
     {
         return p;
     }
 
-    const std::string& api() const
+    const std::string &api() const
     {
         const static std::string v{"system"};
         return v;
     }
 };
 
-
 class EDSMV1SysBodies
 {
     RestClient::parameters p;
-public:
+
+  public:
     EDSMV1SysBodies() = delete;
 
-    EDSMV1SysBodies(const std::string& name)
+    EDSMV1SysBodies(const std::string &name)
     {
         p["systemName"] = name;
     }
@@ -51,12 +52,12 @@ public:
         return true;
     }
 
-    const auto& params() const
+    const auto &params() const
     {
         return p;
     }
 
-    const std::string& api() const
+    const std::string &api() const
     {
         const static std::string v{"https://www.edsm.net/api-system-v1/bodies"};
         return v;

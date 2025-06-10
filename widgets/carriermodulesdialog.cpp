@@ -1,4 +1,5 @@
 #include "carriermodulesdialog.h"
+
 #include "ui_carriermodulesdialog.h"
 
 CarrierModulesDialog::CarrierModulesDialog(bool ok_only, QWidget *parent) :

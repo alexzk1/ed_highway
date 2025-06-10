@@ -1,14 +1,14 @@
 #include "dndwidget.h"
-#include <QMouseEvent>
+
 #include <QLayout>
+#include <QMouseEvent>
 #include <QVBoxLayout>
 
 #include <algorithm>
 
-DnDWidget::DnDWidget(QWidget* parent):
-    QWidget (parent)
+DnDWidget::DnDWidget(QWidget *parent) :
+    QWidget(parent)
 {
-
 }
 
 DnDWidget::~DnDWidget()
@@ -17,7 +17,7 @@ DnDWidget::~DnDWidget()
 
 QLayout *DnDWidget::getParentLayout()
 {
-    auto ptr = qobject_cast<QWidget*>(parent());
+    auto ptr = qobject_cast<QWidget *>(parent());
     if (ptr)
     {
         return ptr->layout();
@@ -30,13 +30,13 @@ void DnDWidget::moveVerticalToNewPos(const QPoint &pos)
 {
     int dest = pos.y();
     int y = oldPos.y();
-    int sign = (dest > y)?1:-1;
+    int sign = (dest > y) ? 1 : -1;
     int h = height();
 
-    auto vl = qobject_cast<QVBoxLayout*>(getParentLayout());
+    auto vl = qobject_cast<QVBoxLayout *>(getParentLayout());
     if (vl)
     {
-        if (std::abs(dest - y ) > h)
+        if (std::abs(dest - y) > h)
         {
             int index = vl->indexOf(this);
             while (true)
@@ -45,13 +45,13 @@ void DnDWidget::moveVerticalToNewPos(const QPoint &pos)
                     break;
 
                 index += sign;
-                y     += sign * h;
+                y += sign * h;
 
                 if (index < 0 || index >= vl->count())
                     break;
 
                 vl->removeWidget(this);
-                vl->insertWidget(index , this);
+                vl->insertWidget(index, this);
             }
         }
         vl->update();
@@ -71,9 +71,9 @@ void DnDWidget::mousePressEvent(QMouseEvent *event)
 
 void DnDWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    if(event->buttons() & Qt::LeftButton)
+    if (event->buttons() & Qt::LeftButton)
     {
-        if (std::abs(clickOffset.y() - event->pos().y()) > 15 || hadDrag) //antishake
+        if (std::abs(clickOffset.y() - event->pos().y()) > 15 || hadDrag) // antishake
         {
             hadDrag = true;
             this->move(mapToParent(event->pos() - clickOffset));

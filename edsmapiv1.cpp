@@ -1,8 +1,8 @@
 #include "edsmapiv1.h"
+
 #include "utils/exec_exit.h"
 #include "utils/strutils.h"
-#include "point.h"
-#include <iostream>
+
 #include <thread>
 
 #define ERROR(MSG) throw std::runtime_error(MSG)
@@ -12,14 +12,17 @@ EdsmApiV1::~EdsmApiV1()
     threads.stop(true);
 }
 
-void EdsmApiV1::executeRequest(const std::string &api, const RestClient::parameters &params, bool is_get, EdsmApiV1::callback_t callback, int timeout_seconds)
+void EdsmApiV1::executeRequest(const std::string &api, const RestClient::parameters &params,
+                               bool is_get, EdsmApiV1::callback_t callback, int timeout_seconds)
 {
     using namespace nlohmann;
 
-    const auto url = (utility::strcontains(api, "https://")) ? api : stringfmt("https://www.edsm.net/api-v1/%s", api);
+    const auto url = (utility::strcontains(api, "https://"))
+                       ? api
+                       : stringfmt("https://www.edsm.net/api-v1/%s", api);
 
-    //TODO: uncoment to print GET link
-    //std::cout << "API: " << url << std::endl;
+    // TODO: uncoment to print GET link
+    // std::cout << "API: " << url << std::endl;
 
     const auto eparams{RestClient::encodePOSTParameters(params)};
     if (!is_get)
@@ -30,12 +33,11 @@ void EdsmApiV1::executeRequest(const std::string &api, const RestClient::paramet
 
     ++working;
 
-    const auto executor = [url, eparams, callback, is_get, this, timeout_seconds](auto id)
-    {
+    const auto executor = [url, eparams, callback, is_get, this, timeout_seconds](auto id) {
         (void)id;
-        // std::cout << "Running task on thread " << id <<  "Tasks in q: " << tasksCount() << std::endl;
-        exec_onexit ensure([this]()
-        {
+        // std::cout << "Running task on thread " << id <<  "Tasks in q: " << tasksCount() <<
+        // std::endl;
+        exec_onexit ensure([this]() {
             --this->working;
         });
         (void)ensure;
@@ -52,21 +54,20 @@ void EdsmApiV1::executeRequest(const std::string &api, const RestClient::paramet
                     else
                     {
                         const auto j2{json::parse(resp2.body)};
-                        callback("", j2.at(0)); //for some reason json parser adds extra array
+                        callback("", j2.at(0)); // for some reason json parser adds extra array
                         return;
                     }
                 }
                 ERROR("Result didn't come in time.");
             }
         }
-        catch (const std::exception& e)
+        catch (const std::exception &e)
         {
             callback(e.what(), {});
         }
     };
 
-    threads.push(executor, []()
-    {
+    threads.push(executor, []() {
         return true;
     });
 }

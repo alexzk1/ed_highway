@@ -1,37 +1,36 @@
 #ifndef SPANSHROUTEWIDGET_H
 #define SPANSHROUTEWIDGET_H
 
-#include <QWidget>
-#include <QPointer>
-#include <QStringList>
+#include "qjsontablemodel.h"
+#include "spanshapi.h"
+
 #include <QItemSelection>
 #include <QMenu>
-#include "spanshapi.h"
-#include "qjsontablemodel.h"
+#include <QPointer>
+#include <QStringList>
+#include <QWidget>
 
-namespace Ui
-{
-    class SpanshRouteWidget;
+namespace Ui {
+class SpanshRouteWidget;
 }
 
 class SpanshRouteWidget : public QWidget
 {
     Q_OBJECT
 
-public:
+  public:
     explicit SpanshRouteWidget(QWidget *parent = nullptr);
     ~SpanshRouteWidget();
 
-protected:
+  protected:
     void changeEvent(QEvent *e);
     bool switchRouteBtn();
-private slots:
+  private slots:
     void on_pushButton_2_clicked();
 
     void on_pushButton_clicked();
 
     void on_btnRoute_clicked();
-
 
     void crossThreadHasRoute(QString error, QString json);
     void slotSystemSelected(const QItemSelection &, const QItemSelection &n);
@@ -41,8 +40,7 @@ private slots:
 
     void on_btnUp_clicked();
 
-private:
-
+  private:
     Ui::SpanshRouteWidget *ui;
     SpanshApi router{3};
     QPointer<QJsonTableModel> model;
@@ -56,7 +54,7 @@ private:
     void loadValues();
 
     void updateButtonsMenu();
-signals:
+  signals:
     void crossThreadHasRouteSignal(QString error, QString json);
 };
 

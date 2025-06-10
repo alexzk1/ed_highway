@@ -1,15 +1,16 @@
-#include <QList>
-#include <QDebug>
 #include "Furigana.h"
+
 #include "PreProcessCommon.h"
 
-//const float Furigana::FURIGANA_MIN_FG_PIX_PER_LINE = 2.0f;
+#include <QDebug>
+#include <QList>
+
+// const float Furigana::FURIGANA_MIN_FG_PIX_PER_LINE = 2.0f;
 const float Furigana::FURIGANA_MIN_FG_PIX_PER_LINE = 1.0f;
 const float Furigana::FURIGANA_MIN_WIDTH = 5.0f;
 
 Furigana::Furigana()
 {
-
 }
 
 // Erase the furigana from the provided binary PIX. Works by finding spans of foreground
@@ -101,7 +102,7 @@ bool Furigana::eraseFuriganaVertical(PIX *pixs, float scaleFactor, int *numTextL
     // Get mean width of the largest 50% of spans
     QList<double> spanLengths;
 
-    for (const auto& s : spanList)
+    for (const auto &s : spanList)
         spanLengths.append(s.getLength());
 
     std::sort(spanLengths.begin(), spanLengths.end());
@@ -120,7 +121,8 @@ bool Furigana::eraseFuriganaVertical(PIX *pixs, float scaleFactor, int *numTextL
     {
         span = spanList.at(spanIdx);
 
-        // If span is at least X% of average width, erase area between the previous span and this span
+        // If span is at least X% of average width, erase area between the previous span and this
+        // span
         if (span.getLength() >= (int)(meanUpperHalf * 0.6))
         {
             bool status = eraseAreaLeftToRight(pixs, x, span.start - x);
@@ -237,7 +239,7 @@ bool Furigana::eraseFuriganaHorizontal(PIX *pixs, float scaleFactor, int *numTex
     // Get mean width of the largest 50% of spans
     QList<double> spanLengths;
 
-    for (const auto& s : spanList)
+    for (const auto &s : spanList)
         spanLengths.append(s.getLength());
 
     std::sort(spanLengths.begin(), spanLengths.end());
@@ -256,7 +258,8 @@ bool Furigana::eraseFuriganaHorizontal(PIX *pixs, float scaleFactor, int *numTex
     {
         span = spanList.at(spanIdx);
 
-        // If span is at least X% of average width, erase area between the previous span and this span
+        // If span is at least X% of average width, erase area between the previous span and this
+        // span
         if (span.getLength() >= (int)(meanUpperHalf * 0.6))
         {
             bool status = eraseAreaTopToBottom(pixs, y, span.start - y);
@@ -298,7 +301,6 @@ bool Furigana::eraseAreaLeftToRight(PIX *pixs, int x, int width)
     status = pixClearInRect(pixs, &box);
 
     return (status == LEPT_OK);
-
 }
 
 // Clear/erase a top-to-bottom section of the provided binary PIX.
@@ -314,6 +316,5 @@ bool Furigana::eraseAreaTopToBottom(PIX *pixs, int y, int height)
 
     status = pixClearInRect(pixs, &box);
 
-    return (status == LEPT_OK) ;
-
+    return (status == LEPT_OK);
 }

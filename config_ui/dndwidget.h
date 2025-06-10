@@ -2,30 +2,29 @@
 #define DNDWIDGET_H
 
 #include <QObject>
-#include <QWidget>
 #include <QPoint>
+#include <QWidget>
 
-//it is movable by mouse widget
+// it is movable by mouse widget
 
 class DnDWidget : public QWidget
 {
     Q_OBJECT
-public:
+  public:
     DnDWidget() = delete;
-    explicit DnDWidget(QWidget* parent = nullptr);
+    explicit DnDWidget(QWidget *parent = nullptr);
     virtual ~DnDWidget();
 
-
-private:
+  private:
     QPoint clickOffset;
     QPoint oldPos;
-    bool   hadDrag;
-    QLayout* getParentLayout();
+    bool hadDrag;
+    QLayout *getParentLayout();
 
-    void moveVerticalToNewPos(const QPoint& pos);
+    void moveVerticalToNewPos(const QPoint &pos);
     QPoint getCurrentPos();
-protected:
 
+  protected:
     void virtual mousePressEvent(QMouseEvent *event) override;
     void virtual mouseMoveEvent(QMouseEvent *event) override;
     void virtual mouseReleaseEvent(QMouseEvent *event) override;

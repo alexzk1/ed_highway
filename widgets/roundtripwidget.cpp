@@ -1,26 +1,29 @@
 #include "roundtripwidget.h"
-#include "ui_roundtripwidget.h"
-#include "spanshsyssuggest.h"
-#include "edsmwrapper.h"
-#include <QSettings>
-#include <QVariant>
-#include <QClipboard>
+
 #include "config_ui/globalsettings.h"
-#include <QRegularExpression>
-#include <QProgressDialog>
+#include "edsmwrapper.h"
+#include "execonmainthread.h"
+#include "point.h"
+#include "spanshsyssuggest.h"
 #include "utils/exec_exit.h"
-#include <QThread>
+#include "utils/strutils.h"
+
+#include "ui_roundtripwidget.h"
+
+#include <QClipboard>
 #include <QDesktopServices>
 #include <QMessageBox>
-#include "execonmainthread.h"
-#include "utils/strutils.h"
-#include "point.h"
+#include <QProgressDialog>
+#include <QRegularExpression>
+#include <QSettings>
+#include <QThread>
+#include <QVariant>
 
 const static QString settingsGroup{"RoundTripWidget"};
 
-void static limitRangeToEdsm(QSpinBox* ptr)
+void static limitRangeToEdsm(QSpinBox *ptr)
 {
-    constexpr static int edsm_range_limit = 100; //limited by website
+    constexpr static int edsm_range_limit = 100; // limited by website
     if (ptr)
         ptr->setMaximum(std::min(edsm_range_limit, ptr->maximum()));
 }
@@ -32,7 +35,7 @@ RoundTripWidget::RoundTripWidget(QWidget *parent) :
     ui->setupUi(this);
     ui->btnAdd->setAction(ui->actionAdd);
 
-    //limiting whatever we configured in editor to edsm limit
+    // limiting whatever we configured in editor to edsm limit
     limitRangeToEdsm(ui->spinInnerLY);
     limitRangeToEdsm(ui->spinLY);
 
@@ -45,10 +48,7 @@ RoundTripWidget::RoundTripWidget(QWidget *parent) :
     rclickMenu->addSeparator();
     rclickMenu->addAction(ui->actionRemoveSelected);
 
-
-
-    const auto switchAddAction = [this](const QString & txt)
-    {
+    const auto switchAddAction = [this](const QString &txt) {
         const bool enabled = !txt.isEmpty();
         ui->actionAdd->setEnabled(enabled);
     };
@@ -62,25 +62,21 @@ RoundTripWidget::RoundTripWidget(QWidget *parent) :
     ui->tableView->verticalHeader()->setVisible(true);
 
     loadValues();
-    connect(ui->tableView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+    connect(ui->tableView->selectionModel(),
+            SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
             SLOT(slotSystemSelected(const QItemSelection &, const QItemSelection &)));
 
-
     ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->tableView, &QTableView::customContextMenuRequested, this, [this](QPoint p)
-    {
+    connect(ui->tableView, &QTableView::customContextMenuRequested, this, [this](QPoint p) {
         rclickMenu->popup(ui->tableView->viewport()->mapToGlobal(p));
     });
 
-    connect(model, &EDSMSystemsModel::routeReady, this, [this]()
-    {
+    connect(model, &EDSMSystemsModel::routeReady, this, [this]() {
         updateSelection();
         switchUI(true);
     });
 
-
-    connect(ui->cbgN, &QCheckBox::toggled, this, [this](bool t)
-    {
+    connect(ui->cbgN, &QCheckBox::toggled, this, [this](bool t) {
         ui->giantsSpin->setEnabled(t);
     });
 
@@ -89,22 +85,10 @@ RoundTripWidget::RoundTripWidget(QWidget *parent) :
     connect(model, &EDSMSystemsModel::systemsChanged, this, &RoundTripWidget::updateSelection);
     connect(ui->btnUndo, &QPushButton::clicked, this, &RoundTripWidget::doUndo);
 
-    const static QStringList economies =
-    {
-        "Agriculture",
-        "Colony",
-        "Extraction",
-        "High Tech",
-        "Industrial",
-        "Military",
-        "Refinery",
-        "Service",
-        "Terraforming",
-        "Tourism",
-        "Prison",
-        "Repair",
-        "Rescue",
-        "Damaged",
+    const static QStringList economies = {
+      "Agriculture", "Colony",   "Extraction", "High Tech",    "Industrial",
+      "Military",    "Refinery", "Service",    "Terraforming", "Tourism",
+      "Prison",      "Repair",   "Rescue",     "Damaged",
     };
     ui->list1_or_2->addItems(economies);
 }
@@ -120,11 +104,11 @@ void RoundTripWidget::changeEvent(QEvent *e)
     QWidget::changeEvent(e);
     switch (e->type())
     {
-    case QEvent::LanguageChange:
-        ui->retranslateUi(this);
-        break;
-    default:
-        break;
+        case QEvent::LanguageChange:
+            ui->retranslateUi(this);
+            break;
+        default:
+            break;
     }
 }
 
@@ -132,8 +116,9 @@ void RoundTripWidget::on_actionAdd_triggered()
 {
     pushUndo();
     model->addSystem(ui->edSysManul->text());
-    //triggering network request to edsm if any, so later this data will be cached already
-    EDSMWrapper::requestSysInfo(ui->edSysManul->text(), [](auto, auto) {});
+    // triggering network request to edsm if any, so later this data will be cached already
+    EDSMWrapper::requestSysInfo(ui->edSysManul->text(), [](auto, auto) {
+    });
     ui->edSysManul->clear();
     ui->edSysManul->setFocus();
 }
@@ -143,7 +128,7 @@ void RoundTripWidget::slotSystemSelected(const QItemSelection &, const QItemSele
     const auto ind = n.indexes();
     if (!ind.empty())
     {
-        const auto& i = ind.at(0);
+        const auto &i = ind.at(0);
         on_tableView_clicked(i);
     }
 }
@@ -177,15 +162,15 @@ void RoundTripWidget::loadValues()
     QSettings settings;
     settings.beginGroup(settingsGroup);
     values = settings.value("system_list", {}).toStringList();
-    last   = settings.value("lastSelected").toString();
+    last = settings.value("lastSelected").toString();
     settings.endGroup();
 
-    //setSystems may trigger long EDSM query for distances, lets try to do it by timer so GUI is shown
+    // setSystems may trigger long EDSM query for distances, lets try to do it by timer so GUI is
+    // shown
     if (values.size() > 0)
     {
         switchUI(false);
-        QTimer::singleShot(500, [last, values, this]()
-        {
+        QTimer::singleShot(500, [last, values, this]() {
             blockSignals(true);
             model->setSystems(values);
             lastSelected = last;
@@ -276,7 +261,7 @@ void RoundTripWidget::on_btnBulkAdd_clicked()
     {
         const static QRegularExpression ns("\\n");
         auto ls = src.split(ns, Qt::SkipEmptyParts);
-        for (auto& s : ls)
+        for (auto &s : ls)
             s = s.trimmed();
         if (ls.size())
         {
@@ -286,7 +271,6 @@ void RoundTripWidget::on_btnBulkAdd_clicked()
         }
     }
 }
-
 
 void RoundTripWidget::on_btnBulkQuery_clicked()
 {
@@ -298,7 +282,7 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
         {
             center_point = Point::fromJson(EDSMWrapper::requestSysInfo(center));
         }
-        catch (std::exception&)
+        catch (std::exception &)
         {
             showError(QString("Failed to query EDSM for \"%1\"").arg(center));
             return;
@@ -315,10 +299,10 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
         switchUI(false);
         if (!progress)
         {
-            progress = new QProgressDialog (tr("Getting data from EDSM..."), tr("Cancel"), 0, 100, (QWidget*)this->parent());
+            progress = new QProgressDialog(tr("Getting data from EDSM..."), tr("Cancel"), 0, 100,
+                                           (QWidget *)this->parent());
             progress->setWindowModality(Qt::WindowModal);
-            connect(progress, &QProgressDialog::canceled, this, [this]()
-            {
+            connect(progress, &QProgressDialog::canceled, this, [this]() {
                 queryThread.reset();
             });
             progress->setAutoClose(true);
@@ -327,54 +311,51 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
         progress->setValue(0);
         progress->show();
 
-        const bool r_icy        = ui->cbrIcy->isChecked();
-        const bool r_rocky      = ui->cbrRocky->isChecked();
-        const bool r_metall     = ui->cbrMetal->isChecked();
+        const bool r_icy = ui->cbrIcy->isChecked();
+        const bool r_rocky = ui->cbrRocky->isChecked();
+        const bool r_metall = ui->cbrMetal->isChecked();
         const bool r_richmetall = ui->cbrRichMetall->isChecked();
 
-        const bool r_giants     = ui->cbgN->isChecked();
+        const bool r_giants = ui->cbgN->isChecked();
 
-        //this variable allows to add more body-related filters later easier
+        // this variable allows to add more body-related filters later easier
         const bool need_bodies_info = r_icy || r_rocky || r_metall || r_richmetall || r_giants;
 
-        queryThread = utility::startNewRunner([ = ](auto wasCanceled)
-        {
-            const auto info = EDSMWrapper::requestManySysInfoInRadius(center, ly, [ = ](size_t a, size_t b)->bool
-            {
-                ExecOnMainThread::get().exec([this, a, b, wasCanceled]()
-                {
-                    if (progress)
-                    {
-                        if (progress->maximum() != (int)b)
-                            progress->setMaximum(b);
-                        progress->setValue(a);
-                        if (progress->wasCanceled())
-                            *wasCanceled = true;
-                    }
-                });
-                return *wasCanceled;
-            });
+        queryThread = utility::startNewRunner([=](auto wasCanceled) {
+            const auto info =
+              EDSMWrapper::requestManySysInfoInRadius(center, ly, [=](size_t a, size_t b) -> bool {
+                  ExecOnMainThread::get().exec([this, a, b, wasCanceled]() {
+                      if (progress)
+                      {
+                          if (progress->maximum() != (int)b)
+                              progress->setMaximum(b);
+                          progress->setValue(a);
+                          if (progress->wasCanceled())
+                              *wasCanceled = true;
+                      }
+                  });
+                  return *wasCanceled;
+              });
 
-            //doing a map, where key is a system name
+            // doing a map, where key is a system name
             std::map<QString, nlohmann::json> binfo;
             if (need_bodies_info)
             {
-                auto tmp = EDSMWrapper::requestManyBodiesInfoInRadius(center, ly, [ = ](size_t a, size_t b)->bool
-                {
-                    ExecOnMainThread::get().exec([this, a, b, wasCanceled]()
-                    {
-                        if (progress)
-                        {
-                            if (progress->maximum() != (int)b)
-                                progress->setMaximum(b);
-                            progress->setValue(a);
-                            if (progress->wasCanceled())
-                                *wasCanceled = true;
-                        }
-                    });
-                    return *wasCanceled;
-                });
-                for (auto& v : tmp)
+                auto tmp = EDSMWrapper::requestManyBodiesInfoInRadius(
+                  center, ly, [=](size_t a, size_t b) -> bool {
+                      ExecOnMainThread::get().exec([this, a, b, wasCanceled]() {
+                          if (progress)
+                          {
+                              if (progress->maximum() != (int)b)
+                                  progress->setMaximum(b);
+                              progress->setValue(a);
+                              if (progress->wasCanceled())
+                                  *wasCanceled = true;
+                          }
+                      });
+                      return *wasCanceled;
+                  });
+                for (auto &v : tmp)
                 {
                     try
                     {
@@ -387,29 +368,27 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
                 }
             }
 
-
-            ExecOnMainThread::get().exec([ = ]()
-            {
+            ExecOnMainThread::get().exec([=]() {
                 QStringList lst;
                 QString eco12 = ui->list1_or_2->currentText();
                 const bool eco_filter12 = ui->cb1_or2->isChecked() && !eco12.isEmpty();
                 const bool star_class_filter = ui->starClass->areLimitsInEffect();
 
-
-                for (const auto& json : info)
+                for (const auto &json : info)
                 {
                     const auto current_point = Point::fromJson(json);
                     if (center_point.distance(current_point) < inner_ly)
                         continue;
 
-                    //lamda to extract value from json
-                    const auto value_or_none = [&json](const std::string & root, const std::string & name) ->QString
-                    {
-                        const static QString none ;
+                    // lamda to extract value from json
+                    const auto value_or_none = [&json](const std::string &root,
+                                                       const std::string &name) -> QString {
+                        const static QString none;
                         try
                         {
                             if (root.empty())
-                                return QString::fromStdString(EDSMWrapper::valueFromJson<std::string>(json, name));
+                                return QString::fromStdString(
+                                  EDSMWrapper::valueFromJson<std::string>(json, name));
 
                             auto r = EDSMWrapper::valueFromJson<nlohmann::json>(json, root);
                             if (name != "population")
@@ -429,9 +408,8 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
                         return none;
                     };
 
-                    //filtering sys-info
+                    // filtering sys-info
                     const auto sys_name = value_or_none("", "name");
-
 
                     if (!sys_name.isEmpty())
                     {
@@ -442,7 +420,8 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
                         {
                             const auto e1 = value_or_none("information", "economy");
                             const auto e2 = value_or_none("information", "secondEconomy");
-                            can_push_1 = eco12.compare(e1, Qt::CaseInsensitive) == 0 || eco12.compare(e2, Qt::CaseInsensitive) == 0;
+                            can_push_1 = eco12.compare(e1, Qt::CaseInsensitive) == 0
+                                         || eco12.compare(e2, Qt::CaseInsensitive) == 0;
                         }
 
                         if (star_class_filter)
@@ -453,7 +432,7 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
 
                         if (can_push_1)
                         {
-                            //filtering by bodies
+                            // filtering by bodies
                             if (need_bodies_info)
                             {
                                 can_push_2 = false;
@@ -461,31 +440,37 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
                                 if (it != binfo.end())
                                     try
                                     {
-                                        const auto& bjs = it->second; //bodies full json
-                                        const auto bodies = EDSMWrapper::valueFromJson<nlohmann::json>(bjs, "bodies");
+                                        const auto &bjs = it->second; // bodies full json
+                                        const auto bodies =
+                                          EDSMWrapper::valueFromJson<nlohmann::json>(bjs, "bodies");
 
                                         const auto Ng = ui->giantsSpin->value();
                                         int current_giants_count = 0;
 
-                                        for (const auto& b : bodies)
+                                        for (const auto &b : bodies)
                                         {
                                             if (can_push_2)
                                                 break;
 
-                                            //testing rings, ignore warning about always true, need_bodies_info may contain more conditions later
+                                            // testing rings, ignore warning about always true,
+                                            // need_bodies_info may contain more conditions later
                                             if (r_icy || r_rocky || r_metall || r_richmetall)
                                             {
                                                 try
                                                 {
-                                                    const auto rings = EDSMWrapper::valueFromJson<nlohmann::json>(b, "rings");
-                                                    for (const auto& r : rings)
+                                                    const auto rings =
+                                                      EDSMWrapper::valueFromJson<nlohmann::json>(
+                                                        b, "rings");
+                                                    for (const auto &r : rings)
                                                     {
-                                                        const auto rtype = EDSMWrapper::valueFromJson<std::string>(r, "type");
-                                                        can_push_2 = can_push_2
-                                                                     || (r_icy   && rtype == "Icy")
-                                                                     || (r_rocky && rtype == "Rocky")
-                                                                     || (r_richmetall && rtype == "Metal Rich")
-                                                                     || (r_metall && rtype == "Metallic");
+                                                        const auto rtype =
+                                                          EDSMWrapper::valueFromJson<std::string>(
+                                                            r, "type");
+                                                        can_push_2 =
+                                                          can_push_2 || (r_icy && rtype == "Icy")
+                                                          || (r_rocky && rtype == "Rocky")
+                                                          || (r_richmetall && rtype == "Metal Rich")
+                                                          || (r_metall && rtype == "Metallic");
                                                         if (can_push_2)
                                                             break;
                                                     }
@@ -500,13 +485,17 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
                                                 //"subType": "Gas giant with ammonia-based life",
                                                 try
                                                 {
-                                                    const auto rtype = EDSMWrapper::valueFromJson<std::string>(b, "subType");
-                                                    current_giants_count += (utility::strcontains(rtype, "giant")) ? 1 : 0;
-                                                    can_push_2 = can_push_2 || (current_giants_count >= Ng);
+                                                    const auto rtype =
+                                                      EDSMWrapper::valueFromJson<std::string>(
+                                                        b, "subType");
+                                                    current_giants_count +=
+                                                      (utility::strcontains(rtype, "giant")) ? 1
+                                                                                             : 0;
+                                                    can_push_2 =
+                                                      can_push_2 || (current_giants_count >= Ng);
                                                 }
                                                 catch (...)
                                                 {
-
                                                 }
                                             }
                                         }
@@ -522,7 +511,7 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
                     }
                 }
 
-                //making sure "center" is 1st in list if it is present there
+                // making sure "center" is 1st in list if it is present there
                 const auto it = std::find(lst.begin(), lst.end(), center);
                 if (it != lst.end() && it != lst.begin())
                     std::iter_swap(it, lst.begin());
@@ -558,5 +547,5 @@ void RoundTripWidget::on_actionOpen_in_Browser_triggered()
 
 void RoundTripWidget::showError(const QString &msg) const
 {
-    QMessageBox::critical((QWidget*)this->parent(), qAppName(), msg);
+    QMessageBox::critical((QWidget *)this->parent(), qAppName(), msg);
 }

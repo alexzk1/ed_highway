@@ -1,10 +1,12 @@
 #include "execonmainthread.h"
 
-//object must be constructed inside main thread, best to do in main
-ExecOnMainThread::ExecOnMainThread(QObject *parent) : QObject(parent)
+// object must be constructed inside main thread, best to do in main
+ExecOnMainThread::ExecOnMainThread(QObject *parent) :
+    QObject(parent)
 {
     qRegisterMetaType<SimpleVoidFunction>("SimpleVoidFunction");
-    connect(this, &ExecOnMainThread::needExec, this, &ExecOnMainThread::doExex, Qt::QueuedConnection);
+    connect(this, &ExecOnMainThread::needExec, this, &ExecOnMainThread::doExex,
+            Qt::QueuedConnection);
 }
 
 void ExecOnMainThread::exec(SimpleVoidFunction func) const

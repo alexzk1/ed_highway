@@ -1,13 +1,18 @@
 #include "spanshsyssuggest.h"
-#include "spansh_sysname.h"
-#include <QHeaderView>
-#include <QEvent>
-#include <QKeyEvent>
-#include <string>
+
 #include "config_ui/globalsettings.h"
 #include "execonmainthread.h"
+#include "spansh_sysname.h"
 
-SpanshSysSuggest::SpanshSysSuggest(QLineEdit *parent) : QObject(parent), editor(parent)
+#include <QEvent>
+#include <QHeaderView>
+#include <QKeyEvent>
+
+#include <string>
+
+SpanshSysSuggest::SpanshSysSuggest(QLineEdit *parent) :
+    QObject(parent),
+    editor(parent)
 {
     popup = new QTreeWidget;
     popup->setWindowFlags(Qt::Popup);
@@ -26,12 +31,11 @@ SpanshSysSuggest::SpanshSysSuggest(QLineEdit *parent) : QObject(parent), editor(
 
     popup->installEventFilter(this);
 
-    connect(popup, SIGNAL(itemClicked(QTreeWidgetItem*, int)), SLOT(doneCompletion()));
+    connect(popup, SIGNAL(itemClicked(QTreeWidgetItem *, int)), SLOT(doneCompletion()));
     timer.setSingleShot(true);
     timer.setInterval(StaticSettingsMap::getGlobalSetts().readInt("01_SYS_NAME_DROP_DELAY"));
     connect(&timer, SIGNAL(timeout()), SLOT(autoSuggest()));
     connect(editor, SIGNAL(textEdited(QString)), &timer, SLOT(start()));
-
 }
 
 SpanshSysSuggest::~SpanshSysSuggest()
@@ -39,7 +43,7 @@ SpanshSysSuggest::~SpanshSysSuggest()
     delete popup;
 }
 
-bool SpanshSysSuggest::eventFilter(QObject * obj, QEvent * ev)
+bool SpanshSysSuggest::eventFilter(QObject *obj, QEvent *ev)
 {
     if (obj != popup)
         return false;
@@ -54,7 +58,7 @@ bool SpanshSysSuggest::eventFilter(QObject * obj, QEvent * ev)
     if (ev->type() == QEvent::KeyPress)
     {
         bool consumed = false;
-        int key = static_cast<QKeyEvent*>(ev)->key();
+        int key = static_cast<QKeyEvent *>(ev)->key();
         switch (key)
         {
             case Qt::Key_Enter:
@@ -103,7 +107,7 @@ void SpanshSysSuggest::showCompletion(const QVector<QString> &choices)
 
     for (const auto &choice : choices)
     {
-        auto item  = new QTreeWidgetItem(popup);
+        auto item = new QTreeWidgetItem(popup);
         item->setText(0, choice);
         item->setForeground(0, color);
     }
@@ -139,8 +143,7 @@ void SpanshSysSuggest::autoSuggest()
 {
     const SpanshSysName sn{editor->text().toStdString()};
 
-    const auto result = [this](auto err, nlohmann::json js)
-    {
+    const auto result = [this](auto err, nlohmann::json js) {
         QVector<QString> choices;
         if (err.empty())
         {
@@ -149,8 +152,7 @@ void SpanshSysSuggest::autoSuggest()
             for (auto it = js.begin(); it != js.end(); ++it)
                 choices.push_back(QString::fromStdString(it->get<std::string>()));
         }
-        ExecOnMainThread::get().exec([this, choices]()
-        {
+        ExecOnMainThread::get().exec([this, choices]() {
             showCompletion(choices);
         });
     };

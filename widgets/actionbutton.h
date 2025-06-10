@@ -14,11 +14,11 @@
 class ActionButton : public QPushButton
 {
     Q_OBJECT
-private:
+  private:
     // The action associated to this button.
     QAction *actionOwner = nullptr;
 
-public:
+  public:
     // Default constructor. Parent the widget parent of this button
     explicit ActionButton(QWidget *parent = nullptr);
 
@@ -34,7 +34,7 @@ public:
      */
     void setAction(QAction *action);
 
-public slots:
+  public slots:
     /*!
      * Update the button status depending on a change
      * on the action status. This slot is invoked each time the action

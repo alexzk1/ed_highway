@@ -1,28 +1,27 @@
 #pragma once
 
-#include <QWidget>
-#include <QStringList>
 #include <QSet>
+#include <QStringList>
+#include <QWidget>
 
-namespace Ui
-{
-    class EDSMStarClassSelector;
+namespace Ui {
+class EDSMStarClassSelector;
 }
 
 class EDSMStarClassSelector : public QWidget
 {
     Q_OBJECT
-public:
+  public:
     explicit EDSMStarClassSelector(QWidget *parent = nullptr);
     ~EDSMStarClassSelector();
-    static const QStringList& edsmStarClasses();
-    bool isSelected(const QString& star_class) const;
+    static const QStringList &edsmStarClasses();
+    bool isSelected(const QString &star_class) const;
     bool areLimitsInEffect() const;
 
-protected:
+  protected:
     void changeEvent(QEvent *e);
 
-private:
+  private:
     Ui::EDSMStarClassSelector *ui;
     void buildGui(bool multi_select = true);
     QSet<QString> selected;

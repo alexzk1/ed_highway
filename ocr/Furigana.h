@@ -5,12 +5,11 @@
 
 class Furigana
 {
-public:
-
+  public:
     static bool eraseFuriganaVertical(PIX *pixs, float scaleFactor, int *numTextLines);
     static bool eraseFuriganaHorizontal(PIX *pixs, float scaleFactor, int *numTextLines);
 
-private:
+  private:
     // Span of lines that contain foreground text. Used during furigana removal.
     struct FuriganaSpan
     {
@@ -43,8 +42,6 @@ private:
     static bool eraseAreaTopToBottom(PIX *pixs, int y, int height);
 
     static bool averageLargestSpans(PIX *pixs, float scaleFactor);
-
-
 };
 
 #endif // FURIGANA_H

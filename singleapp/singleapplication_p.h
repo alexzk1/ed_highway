@@ -32,11 +32,12 @@
 #ifndef SINGLEAPPLICATION_P_H
 #define SINGLEAPPLICATION_P_H
 
+#include "singleapplication.h"
+
 #include <QtCore/QMutex>
 #include <QtCore/QSharedMemory>
 #include <QtNetwork/QLocalServer>
 #include <QtNetwork/QLocalSocket>
-#include "singleapplication.h"
 
 struct InstancesInfo
 {
@@ -47,22 +48,22 @@ struct InstancesInfo
 class SingleApplicationPrivate : public QObject
 {
     Q_OBJECT
-public:
+  public:
     Q_DECLARE_PUBLIC(SingleApplication)
 
-    SingleApplicationPrivate( SingleApplication *q_ptr );
+    SingleApplicationPrivate(SingleApplication *q_ptr);
     ~SingleApplicationPrivate() override;
 
-    void genBlockServerName( int msecs );
-    void startPrimary( bool resetMemory );
+    void genBlockServerName(int msecs);
+    void startPrimary(bool resetMemory);
     void startSecondary();
-    void connectToPrimary( int msecs, char connectionType );
+    void connectToPrimary(int msecs, char connectionType);
     void cleanUp();
 
 #ifdef Q_OS_UNIX
     void crashHandler();
-    static void terminate( int signum );
-    static QList<SingleApplicationPrivate*> sharedMem;
+    static void terminate(int signum);
+    static QList<SingleApplicationPrivate *> sharedMem;
     static QMutex sharedMemMutex;
 #endif
 
@@ -74,10 +75,10 @@ public:
     QString blockServerName;
     SingleApplication::Options options;
 
-public Q_SLOTS:
+  public Q_SLOTS:
     void slotConnectionEstablished();
-    void slotDataAvailable( QLocalSocket*, quint32 );
-    void slotClientConnectionClosed( QLocalSocket*, quint32 );
+    void slotDataAvailable(QLocalSocket *, quint32);
+    void slotClientConnectionClosed(QLocalSocket *, quint32);
 };
 
 #endif // SINGLEAPPLICATION_P_H

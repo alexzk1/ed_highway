@@ -1,11 +1,15 @@
 #include "stringsfilecache.h"
-#include "writable_path.h"
+
 #include "utils/guard_on.h"
-#include <QDir>
-#include <QFile>
+#include "writable_path.h"
+
 #include <QDataStream>
 #include <QDateTime>
+#include <QDir>
+#include <QFile>
+
 #include <unistd.h>
+
 #include <iostream>
 
 constexpr static quint32 list_file_version = 0x01;
@@ -13,7 +17,7 @@ constexpr static auto v1_stream_version = QDataStream::Qt_5_0;
 constexpr static auto current_write_stream_version = v1_stream_version;
 
 template <class T>
-void writeToFile(QFile& where, const T& src)
+void writeToFile(QFile &where, const T &src)
 {
     QDataStream out(&where);
     // Write a header with a "magic number" and a version
@@ -26,7 +30,7 @@ void writeToFile(QFile& where, const T& src)
 }
 
 template <class T>
-bool loadFromFile(QFile& file, T& dst)
+bool loadFromFile(QFile &file, T &dst)
 {
     QDataStream in(&file);
     // Read and check the header
@@ -48,7 +52,6 @@ bool loadFromFile(QFile& file, T& dst)
     return false;
 }
 
-
 static QString getCacheDir()
 {
     const static QString path = getWritableLocationApp() + "/cache";
@@ -62,8 +65,8 @@ static QString getListFileName()
     return path;
 }
 
-StringsFileCache::StringsFileCache()
-    : ram_cache(500)
+StringsFileCache::StringsFileCache() :
+    ram_cache(500)
 {
     bool need_delete_cache = true;
     {
@@ -89,7 +92,7 @@ void StringsFileCache::dropKey(const QString &key)
 {
     ram_cache.remove(key);
 
-    const auto& fn = getFileNameOrEmpty(key);
+    const auto &fn = getFileNameOrEmpty(key);
     if (!fn.isEmpty())
     {
         QFile::remove(getCacheDir() + "/" + fn);
@@ -108,11 +111,10 @@ StringsFileCache::~StringsFileCache()
     dumpListFile();
 }
 
-
 static QString buildNumericFnPart()
 {
-    //we may have many copies running with no gui, for example user presses hot keys fast
-    //so they must have different file names to save, lets do it time + pid
+    // we may have many copies running with no gui, for example user presses hot keys fast
+    // so they must have different file names to save, lets do it time + pid
     const auto now = QDateTime::currentDateTime().toMSecsSinceEpoch();
     const auto pid = getpid();
     return QStringLiteral("%1_%2").arg(now).arg(pid);
@@ -132,14 +134,17 @@ bool StringsFileCache::addData(const QString &key, const QString &value, uint32_
     }
     else
     {
-        const uint64_t valid_till = QDateTime::currentDateTime().toMSecsSinceEpoch() + (uint64_t)valid_for_seconds * 1000u;
+        const uint64_t valid_till =
+          QDateTime::currentDateTime().toMSecsSinceEpoch() + (uint64_t)valid_for_seconds * 1000u;
         const auto compressed = written_value_type{valid_till, compress(value)};
 
         const QString filename = QStringLiteral("value_%1").arg(buildNumericFnPart());
         QString finalName = filename;
 
-        //most unlikelly this will happen ... but user might change system clock or so and we dont want to overwrite file
-        for (int counter = 0; QFile::exists(getCacheDir() + "/" + finalName) && counter < 5000; ++counter)
+        // most unlikelly this will happen ... but user might change system clock or so and we dont
+        // want to overwrite file
+        for (int counter = 0; QFile::exists(getCacheDir() + "/" + finalName) && counter < 5000;
+             ++counter)
             finalName = QStringLiteral("%1_%2").arg(filename).arg(counter);
 
         addToRam(key, value);
@@ -175,7 +180,7 @@ QString StringsFileCache::getData(const QString &key)
         if (rp)
             return *rp;
 
-        const auto& fn = getFileNameOrEmpty(key);
+        const auto &fn = getFileNameOrEmpty(key);
         if (!fn.isEmpty())
         {
             QFile file(getCacheDir() + "/" + fn);
@@ -184,15 +189,18 @@ QString StringsFileCache::getData(const QString &key)
                 written_value_type v;
                 if (loadFromFile(file, v))
                 {
-                    if (static_cast<uint64_t>(QDateTime::currentDateTime().toMSecsSinceEpoch()) < v.first)
+                    if (static_cast<uint64_t>(QDateTime::currentDateTime().toMSecsSinceEpoch())
+                        < v.first)
                     {
                         std::unique_ptr<uint8_t[]> decompressed(new uint8_t[v.second.first]);
                         std::size_t decompressed_size;
-                        const auto error = lzokay::decompress(v.second.second.data(), v.second.second.length(),
-                                                              decompressed.get(), v.second.first, decompressed_size);
+                        const auto error =
+                          lzokay::decompress(v.second.second.data(), v.second.second.length(),
+                                             decompressed.get(), v.second.first, decompressed_size);
                         if (error >= lzokay::EResult::Success)
                         {
-                            const auto t = QString::fromUtf8((char*)decompressed.get(), decompressed_size);
+                            const auto t =
+                              QString::fromUtf8((char *)decompressed.get(), decompressed_size);
                             addToRam(key, t);
                             return t;
                         }
@@ -224,9 +232,8 @@ StringsFileCache::binary_blob StringsFileCache::compress(const QString &value)
     StringsFileCache::binary_blob compressed(src.length(), QVector<uint8_t>(estimated_size));
     std::size_t compressed_size;
 
-
-    error = lzokay::compress((const uint8_t*)src.data(), compressed.first, compressed.second.data(), estimated_size,
-                             compressed_size, dict);
+    error = lzokay::compress((const uint8_t *)src.data(), compressed.first,
+                             compressed.second.data(), estimated_size, compressed_size, dict);
     if (error < lzokay::EResult::Success)
     {
         compressed.second.clear();

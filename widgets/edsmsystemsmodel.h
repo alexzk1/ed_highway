@@ -1,21 +1,23 @@
 #ifndef EDSMSYSTEMSMODEL_H
 #define EDSMSYSTEMSMODEL_H
 
-#include <mutex>
-#include <vector>
+#include "utils/runners.h"
 
 #include <QAbstractTableModel>
-#include "utils/runners.h"
+
+#include <mutex>
+#include <vector>
 
 class EDSMSystemsModel : public QAbstractTableModel
 {
     Q_OBJECT
 
-public:
+  public:
     explicit EDSMSystemsModel(QObject *parent = nullptr);
 
     // Header:
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
+    QVariant headerData(int section, Qt::Orientation orientation,
+                        int role = Qt::DisplayRole) const override;
 
     // Basic functionality:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -27,17 +29,17 @@ public:
 
     QString getSystemNameAt(const QModelIndex &index) const;
 
-public slots:
+  public slots:
 
-    //add 1 sys
-    void addSystem(const QString& sys);
+    // add 1 sys
+    void addSystem(const QString &sys);
 
-    void removeSystem(const QString& sys);
+    void removeSystem(const QString &sys);
 
-    //add many sys
-    void addSystems(const QStringList& many_sys);
+    // add many sys
+    void addSystems(const QStringList &many_sys);
 
-    //replace anything it have by "bulk" list
+    // replace anything it have by "bulk" list
     void setSystems(QStringList bulk);
 
     void clearSystems();
@@ -45,11 +47,12 @@ public slots:
     void startRouteBuild(QString initialSystem);
 
     void copyCurrentList() const;
-private slots:
-signals:
+  private slots:
+  signals:
     void routeReady();
     void systemsChanged();
-private:
+
+  private:
     float routeLen{0.f};
     QStringList systemNames;
     std::vector<float> distances;

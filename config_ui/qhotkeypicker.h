@@ -6,21 +6,23 @@
 class QHotkeyPicker : public QPushButton
 {
     Q_OBJECT
-private:
+  private:
     QString hot_string;
-    QTimer* timer{nullptr};
+    QTimer *timer{nullptr};
     int seconds_left;
 
     void showSeconds();
-public:
-    QHotkeyPicker(QWidget* owner = nullptr);
-    void setHot(const QString& v);
+
+  public:
+    QHotkeyPicker(QWidget *owner = nullptr);
+    void setHot(const QString &v);
     QString getHot() const;
-protected:
+
+  protected:
     void keyPressEvent(QKeyEvent *event) override;
     void keyReleaseEvent(QKeyEvent *event) override;
-signals:
-    void hotStringChanged(const QString&);
+  signals:
+    void hotStringChanged(const QString &);
 };
 
 #endif // QHOTKEYPICKER_H

@@ -1,11 +1,12 @@
 #pragma once
 
-#include "point.h"
 #include "utils/cm_ctors.h"
 #include "utils/ctpl_stl.h"
 #include "utils/json.hpp"
 #include "utils/restclient.h"
 
+#include <atomic>
+#include <cstddef>
 #include <functional>
 #include <string>
 
@@ -24,19 +25,19 @@ class EdsmApiV1
     using callback_t = std::function<void(std::string, nlohmann::json)>;
 
     void executeRequest(const std::string &api, const RestClient::parameters &params, bool is_get,
-                        callback_t callback, int timeout_seconds = 20);
+                        const callback_t &callback, int timeout_seconds = 20);
 
     template <class AnyType>
-    void executeRequest(const AnyType &src, callback_t callback, int timeout_seconds = 20)
+    void executeRequest(const AnyType &src, const callback_t &callback, int timeout_seconds = 20)
     {
-        executeRequest(src.api(), src.params(), src.isGet(), std::move(callback), timeout_seconds);
+        executeRequest(src.api(), src.params(), src.isGet(), callback, timeout_seconds);
     }
     bool isWorking() const
     {
         return working > 0;
     }
 
-    size_t tasksCount() const
+    std::size_t tasksCount() const
     {
         return threads.tasksCount();
     }

@@ -1,10 +1,16 @@
 #include "edsmapiv1.h"
 
 #include "utils/exec_exit.h"
+#include "utils/json.hpp"
+#include "utils/strfmt.h"
 #include "utils/strutils.h"
 
+#include <chrono>
+#include <exception>
+#include <string>
 #include <thread>
 
+// NOLINTNEXTLINE
 #define ERROR(MSG) throw std::runtime_error(MSG)
 
 EdsmApiV1::~EdsmApiV1()
@@ -13,7 +19,8 @@ EdsmApiV1::~EdsmApiV1()
 }
 
 void EdsmApiV1::executeRequest(const std::string &api, const RestClient::parameters &params,
-                               bool is_get, EdsmApiV1::callback_t callback, int timeout_seconds)
+                               bool is_get, const EdsmApiV1::callback_t &callback,
+                               int timeout_seconds)
 {
     using namespace nlohmann;
 
@@ -37,7 +44,7 @@ void EdsmApiV1::executeRequest(const std::string &api, const RestClient::paramet
         (void)id;
         // std::cout << "Running task on thread " << id <<  "Tasks in q: " << tasksCount() <<
         // std::endl;
-        exec_onexit ensure([this]() {
+        const exec_onexit ensure([this]() {
             --this->working;
         });
         (void)ensure;
@@ -50,7 +57,9 @@ void EdsmApiV1::executeRequest(const std::string &api, const RestClient::paramet
                 {
                     const auto resp2{RestClient::get(res_url, timeout_seconds)};
                     if (resp2.body.empty())
+                    {
                         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+                    }
                     else
                     {
                         const auto j2{json::parse(resp2.body)};

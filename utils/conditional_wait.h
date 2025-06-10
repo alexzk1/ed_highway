@@ -3,10 +3,11 @@
 #include "cm_ctors.h"
 
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 #include <functional>
+#include <memory>
 #include <mutex>
-#include <thread>
 
 // this one ensures that "confirm" will not be missed IF confirm() happened before waitConfirm()
 //(that is nothing about password, pass = "passing")
@@ -24,15 +25,18 @@ class confirmed_pass
         cv(new std::condition_variable())
     {
     }
+    ~confirmed_pass() = default;
     MOVEONLY_ALLOWED(confirmed_pass);
 
     void waitConfirm()
     {
         std::unique_lock<std::mutex> lck(*waitMtx);
         if (!conf)
+        {
             cv->wait(lck, [this]() -> bool {
                 return conf;
             });
+        }
     }
 
     // returns false if timeouted (and unblocks thread!), should be used in while() GUI to process
@@ -41,9 +45,11 @@ class confirmed_pass
     {
         std::unique_lock<std::mutex> lck(*waitMtx);
         if (!conf)
+        {
             cv->wait_for(lck, std::chrono::milliseconds(millis), [this]() -> bool {
                 return conf;
             });
+        }
         return conf;
     }
 
@@ -51,18 +57,20 @@ class confirmed_pass
     void waitConfirm(const std::atomic<bool> &isStopped, int periodms = 500)
     {
         while (!tryWaitConfirm(periodms) && !isStopped)
-            ;
+        {
+        }
     }
 
     void waitConfirm(const wait_lambda &isStopped, int periodms = 500)
     {
         while (!tryWaitConfirm(periodms) && !isStopped())
-            ;
+        {
+        }
     }
 
     void confirm()
     {
-        std::unique_lock<std::mutex> lck(*waitMtx);
+        const std::unique_lock<std::mutex> lck(*waitMtx);
         conf = true;
         cv->notify_all();
     }

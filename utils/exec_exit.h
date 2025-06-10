@@ -1,16 +1,11 @@
 #pragma once
-#include <exception>
-#include <functional>
-// simple trickster class - allows to exec function when block ends (i.e. exit from function)
 
-class exec_onexit
+#include <utility>
+
+/// @brief Execs callable when goes out of scope.
+template <typename taCallable>
+class exec_onexit final
 {
-  public:
-    using func_t = std::function<void()>;
-
-  private:
-    func_t func;
-
   public:
     exec_onexit() = delete;
     exec_onexit(const exec_onexit &) = delete;
@@ -18,8 +13,8 @@ class exec_onexit
     exec_onexit &operator=(const exec_onexit &) = delete;
     exec_onexit &operator=(exec_onexit &&) = default;
 
-    exec_onexit(const func_t &func) noexcept :
-        func(func)
+    explicit exec_onexit(taCallable &&func) noexcept :
+        func(std::forward<taCallable>(func))
     {
     }
 
@@ -27,4 +22,7 @@ class exec_onexit
     {
         func();
     }
+
+  private:
+    taCallable func;
 };

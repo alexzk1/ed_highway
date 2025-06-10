@@ -1,12 +1,19 @@
 #pragma once
-#include "edsmapiv1.h"
-#include "utils/conditional_wait.h"
+
+#include "edsmapiv1.h"              // IWYU pragma: keep
+#include "utils/conditional_wait.h" // IWYU pragma: keep
+#include "utils/json.hpp"
+#include "utils/strfmt.h"
 
 #include <QString>
 #include <QStringList>
 
-#include <atomic>
-#include <memory>
+#include <algorithm>
+#include <functional>
+#include <stdexcept>
+#include <string>
+#include <thread>
+#include <vector>
 
 // this class solves some exact tasks, using caching, so do not stress edsm too much
 
@@ -21,7 +28,8 @@ class EDSMWrapper
 
     // does not block caller thread, callback executed in other thread scope (not the caller) if
     // network request made or immediatly in caller thread if cache used
-    static void selectSystemsInRadius(const QString &center_name, int radius, callback_t callback);
+    static void selectSystemsInRadius(const QString &center_name, int radius,
+                                      const callback_t &callback);
 
     // blocks caller thread until have return value, may return empty list
     static QStringList selectSystemsInRadiusNamesOnly(const QString &center_name, int radius);
@@ -38,7 +46,7 @@ class EDSMWrapper
 
     // does not block caller thread, callback executed in other thread scope (not the caller) if
     // network request made or immediatly in caller thread if cache used
-    static void requestSysInfo(const QString &sys_name, callback_t callback);
+    static void requestSysInfo(const QString &sys_name, const callback_t &callback);
 
     // blocks caller thread
     static nlohmann::json requestSysInfo(const QString &sys_name);
@@ -48,7 +56,7 @@ class EDSMWrapper
 
     // does not block caller thread, callback executed in other thread scope (not the caller) if
     // network request made or immediatly in caller thread if cache used
-    static void requestBodiesInfo(const QString &sys_name, callback_t callback);
+    static void requestBodiesInfo(const QString &sys_name, const callback_t &callback);
 
     // blocks caller thread
     static nlohmann::json requestBodiesInfo(const QString &sys_name);
@@ -68,13 +76,16 @@ class EDSMWrapper
     {
         const auto it = object.find(fieldName);
         if (it == object.end())
+        {
             throw std::runtime_error(stringfmt("JSON object does not have field '%s'", fieldName));
+        }
         return it->get<Res>();
     }
 
     static EdsmApiV1 &api()
     {
-        static EdsmApiV1 edsm((int)std::max(1u, std::thread::hardware_concurrency() / 2u));
+        static EdsmApiV1 edsm(
+          static_cast<int>(std::max(1u, std::thread::hardware_concurrency() / 2u)));
         return edsm;
     }
 

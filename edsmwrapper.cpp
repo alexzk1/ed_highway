@@ -1,67 +1,82 @@
-#include "edsmwrapper.h"
+#include "edsmwrapper.h" // IWYU pragma: keep
 
-#include "dump_help.h"
 #include "edsmv1_nearest.h"
-#include "edsmv1_sysinfo.h"
+#include "edsmv1_sysinfo.h" // IWYU pragma: keep
 #include "stringsfilecache.h"
+#include "utils/conditional_wait.h" // IWYU pragma: keep
+#include "utils/json.hpp"
 
 #include <QUrl>
 
-#include <iostream>
+#include <atomic>
+#include <cstddef>
+#include <cstdint>
+#include <iterator>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
+namespace {
 template <class RequestCallable>
-static std::vector<nlohmann::json> requestMany(const QStringList &names,
-                                               const RequestCallable &request,
-                                               const EDSMWrapper::progress_update &progress)
+std::vector<nlohmann::json> requestMany(const QStringList &names, const RequestCallable &request,
+                                        const EDSMWrapper::progress_update &progress)
 {
-    std::shared_ptr<std::vector<nlohmann::json>> res(new std::vector<nlohmann::json>());
-    std::shared_ptr<std::vector<confirmed_pass>> passes(new std::vector<confirmed_pass>());
-    const size_t sz = names.size();
+    const std::shared_ptr<std::vector<nlohmann::json>> res(new std::vector<nlohmann::json>());
+    const std::shared_ptr<std::vector<confirmed_pass>> passes(new std::vector<confirmed_pass>());
+    const std::size_t sz = names.size();
     if (sz)
     {
         res->resize(sz);
         passes->resize(sz);
 
         progress(0, sz);
-        std::shared_ptr<std::atomic<bool>> canceled(new std::atomic<bool>(false));
+        const std::shared_ptr<std::atomic<bool>> canceled(new std::atomic<bool>(false));
 
-        for (size_t i = 0; i < sz; ++i)
+        for (std::size_t i = 0; i < sz; ++i)
         {
-            const auto task = [i, sz, res, passes, &progress, canceled](auto err, auto js) {
+            const auto task = [i, sz, res, passes, &progress, canceled](const auto &err,
+                                                                        const auto &js) {
                 if (!(*canceled))
                 {
                     try
                     {
                         if (err.empty())
+                        {
                             (*res)[i] = std::move(js);
+                        }
                         if (progress(i, sz))
                         {
                             *canceled = true;
                             EDSMWrapper::api().clearAllPendings();
                             for (auto &v : *passes)
+                            {
                                 v.confirm();
+                            }
                         }
                     }
-                    catch (...)
+                    catch (...) // NOLINT
                     {
                     }
                     (*passes)[i].confirm();
                 }
             };
-            request(names.at(i), task);
+            request(names.at(static_cast<int>(i)), task);
         }
 
         for (auto &p : *passes)
+        {
             p.waitConfirm();
+        }
 
         progress(sz, sz);
     }
     return std::move(*res);
 }
 
-static bool tryParseFromCache(const QString &key, const EDSMWrapper::callback_t &callback)
+bool tryParseFromCache(const QString &key, const EDSMWrapper::callback_t &callback)
 {
-    QString js = StringsFileCache::get().getData(key);
+    const QString js = StringsFileCache::get().getData(key);
     if (!js.isEmpty())
     {
         nlohmann::json jo;
@@ -78,16 +93,18 @@ static bool tryParseFromCache(const QString &key, const EDSMWrapper::callback_t 
     }
     return false;
 }
+} // namespace
 
 template <class Req>
-void execRequest(const QString &key, const Req &src, int timeout, EDSMWrapper::callback_t callback,
-                 int days2keep = 1)
+void execRequest(const QString &key, const Req &src, int timeout,
+                 const EDSMWrapper::callback_t &callback, int days2keep = 1)
 {
-    const auto testr = [key, callback, days2keep](auto err, auto js) {
+    const auto testr = [key, callback, days2keep](const auto &err, const auto &js) {
         if (err.empty())
+        {
             StringsFileCache::get().addData(key, QString::fromStdString(js.dump()),
                                             ONE_DAY_SECONDS * days2keep);
-
+        }
         callback(err, js);
     };
     try
@@ -96,7 +113,7 @@ void execRequest(const QString &key, const Req &src, int timeout, EDSMWrapper::c
     }
     catch (...)
     {
-        nlohmann::json jo;
+        const nlohmann::json jo;
         callback("EXCEPTION IN API!", jo);
     }
 }
@@ -106,13 +123,14 @@ QString EDSMWrapper::getNameFromJson(const nlohmann::json &js)
     return QString::fromStdString(valueFromJson<std::string>(js, "name"));
 }
 
-void EDSMWrapper::selectSystemsInRadius(const QString &center_name, int radius, callback_t callback)
+void EDSMWrapper::selectSystemsInRadius(const QString &center_name, int radius,
+                                        const callback_t &callback)
 {
-    const auto key = QStringLiteral("RADIUS_%1_%2").arg(center_name).arg(radius);
+    const auto key = QStringLiteral("RADIUS_%1_%2").arg(center_name).arg(radius); // NOLINT
     if (!tryParseFromCache(key, callback))
     {
-        EDSMV1NearerstSystem r(center_name.toStdString(), radius, false);
-        execRequest(key, r, 20 + radius, std::move(callback));
+        const EDSMV1NearerstSystem r(center_name.toStdString(), static_cast<float>(radius), false);
+        execRequest(key, r, 20 + radius, callback);
     }
 }
 
@@ -122,7 +140,7 @@ QStringList EDSMWrapper::selectSystemsInRadiusNamesOnly(const QString &center_na
 
     confirmed_pass pass;
 
-    selectSystemsInRadius(center_name, radius, [&names, &pass](auto err, auto js) {
+    selectSystemsInRadius(center_name, radius, [&names, &pass](const auto &err, const auto &js) {
         if (err.empty())
         {
             try
@@ -132,7 +150,7 @@ QStringList EDSMWrapper::selectSystemsInRadiusNamesOnly(const QString &center_na
                                    return getNameFromJson(item);
                                });
             }
-            catch (...)
+            catch (...) // NOLINT
             {
             }
         }
@@ -146,12 +164,12 @@ std::vector<nlohmann::json>
 EDSMWrapper::requestManySysInfo(const QStringList &names,
                                 const EDSMWrapper::progress_update &progress)
 {
-    return std::move(requestMany(
+    return requestMany(
       names,
-      [](const auto &a, auto b) {
+      [](const auto &a, const auto &b) {
           requestSysInfo(a, b);
       },
-      progress));
+      progress);
 }
 
 std::vector<nlohmann::json> EDSMWrapper::requestManySysInfoInRadius(const QString &center_name,
@@ -162,13 +180,13 @@ std::vector<nlohmann::json> EDSMWrapper::requestManySysInfoInRadius(const QStrin
     return requestManySysInfo(names, progress);
 }
 
-void EDSMWrapper::requestSysInfo(const QString &sys_name, EDSMWrapper::callback_t callback)
+void EDSMWrapper::requestSysInfo(const QString &sys_name, const EDSMWrapper::callback_t &callback)
 {
-    const auto key = QStringLiteral("SYSINFO_%1").arg(sys_name);
+    const auto key = QStringLiteral("SYSINFO_%1").arg(sys_name); // NOLINT
     if (!tryParseFromCache(key, callback))
     {
-        EDSMV1SysInfo r(sys_name.toStdString());
-        execRequest(key, r, 20, std::move(callback), 3);
+        const EDSMV1SysInfo r(sys_name.toStdString());
+        execRequest(key, r, 20, callback, 3);
     }
 }
 
@@ -176,9 +194,11 @@ nlohmann::json EDSMWrapper::requestSysInfo(const QString &sys_name)
 {
     nlohmann::json res;
     confirmed_pass pass;
-    requestSysInfo(sys_name, [&res, &pass](auto err, auto js) {
+    requestSysInfo(sys_name, [&res, &pass](const auto &err, auto js) {
         if (err.empty())
+        {
             res = std::move(js);
+        }
         pass.confirm();
     });
     pass.waitConfirm();
@@ -235,15 +255,16 @@ QString EDSMWrapper::tooltipWithSysInfo(const QString &sys_name)
             else
             {
                 auto s = valueFromJson<uint64_t>(r, name);
-                return QStringLiteral("%1").arg(s);
+                return QStringLiteral("%1").arg(s); // NOLINT
             }
         }
-        catch (...)
+        catch (...) // NOLINT
         {
         }
         return none;
     };
 
+    // NOLINTNEXTLINE
     return QStringLiteral("<p>Name: %10<br>Star Class: %9</p><hr><<p>Economy: %7<br>Second "
                           "Economy: %8<hr><br>Allegiance: %1<br>Government: %2<br>Faction: "
                           "%3<br>State: %4<br>Population: %5<br>Security: %6<br></p>")
@@ -259,13 +280,14 @@ QString EDSMWrapper::tooltipWithSysInfo(const QString &sys_name)
       .arg(sys_name);
 }
 
-void EDSMWrapper::requestBodiesInfo(const QString &sys_name, EDSMWrapper::callback_t callback)
+void EDSMWrapper::requestBodiesInfo(const QString &sys_name,
+                                    const EDSMWrapper::callback_t &callback)
 {
-    const auto key = QStringLiteral("BODYINFO_%1").arg(sys_name);
+    const auto key = QStringLiteral("BODYINFO_%1").arg(sys_name); // NOLINT
     if (!tryParseFromCache(key, callback))
     {
-        EDSMV1SysBodies r(sys_name.toStdString());
-        execRequest(key, r, 20, std::move(callback), 3);
+        const EDSMV1SysBodies r(sys_name.toStdString());
+        execRequest(key, r, 20, callback, 3);
     }
 }
 
@@ -273,9 +295,11 @@ nlohmann::json EDSMWrapper::requestBodiesInfo(const QString &sys_name)
 {
     nlohmann::json res;
     confirmed_pass pass;
-    requestBodiesInfo(sys_name, [&res, &pass](auto err, auto js) {
+    requestBodiesInfo(sys_name, [&res, &pass](const auto &err, const auto &js) {
         if (err.empty())
-            res = std::move(js);
+        {
+            res = js;
+        }
         pass.confirm();
     });
     pass.waitConfirm();
@@ -286,12 +310,12 @@ std::vector<nlohmann::json>
 EDSMWrapper::requestManyBodiesInfo(const QStringList &names,
                                    const EDSMWrapper::progress_update &progress)
 {
-    return std::move(requestMany(
+    return requestMany(
       names,
-      [](const auto &a, auto b) {
+      [](const auto &a, const auto &b) {
           requestBodiesInfo(a, b);
       },
-      progress));
+      progress);
 }
 
 std::vector<nlohmann::json>
@@ -307,7 +331,7 @@ QString EDSMWrapper::getSystemUrl(const QString &systemName)
     const auto js = requestBodiesInfo(systemName);
     // std::cout << dump_helper::toStdStr(js) << std::endl;
     const auto id = valueFromJson<uint32_t>(js, "id");
-    return QStringLiteral("https://www.edsm.net/en/system/id/%1/name/%2")
+    return QStringLiteral("https://www.edsm.net/en/system/id/%1/name/%2") // NOLINT
       .arg(id)
       .arg(QString(QUrl::toPercentEncoding(systemName)));
 }

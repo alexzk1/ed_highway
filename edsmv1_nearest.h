@@ -1,7 +1,11 @@
 #ifndef EDSMV1_NEAREST_H
 #define EDSMV1_NEAREST_H
+
 #include "point.h"
 #include "utils/restclient.h"
+#include "utils/strfmt.h"
+
+#include <string>
 
 class EDSMV1NearerstSystem
 {
@@ -26,16 +30,19 @@ class EDSMV1NearerstSystem
         addSize(size_or_radius);
     }
 
+    [[nodiscard]]
     constexpr bool isGet() const
     {
         return true;
     }
 
+    [[nodiscard]]
     const auto &params() const
     {
         return p;
     }
 
+    [[nodiscard]]
     const std::string &api() const
     {
         const static std::string cube{"cube-systems"};
@@ -48,7 +55,9 @@ class EDSMV1NearerstSystem
     {
         const auto v = stringfmt("%0.4f", size_or_radius);
         if (iscube)
+        {
             p["size"] = v;
+        }
         else
         {
             p["radius"] = v;

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <QDir>
 #include <QStandardPaths>
 #include <QString>
@@ -10,7 +11,9 @@ QString inline getWritableLocation()
     {
         s = QDir::homePath(); // fallback
         if (s.isEmpty())
+        {
             throw std::runtime_error("Can not detect writable location to store data.");
+        }
     }
     return s;
 }

@@ -15,6 +15,7 @@
 #include <limits>
 #include <map>
 #include <utility>
+#include <vector>
 
 #ifdef SRC_PATH
 // #define DUMP_DURING_WORKING
@@ -86,7 +87,9 @@ LittleAlgorithm::LittleAlgorithm(QStringList source_names)
         const Point &pi = source.at(i).p;
 
         for (std::size_t j = 0; j < sz; ++j)
+        {
             distances.at(i).push_back((i == j) ? INFW : toWeightT(pi.no_sqrt_dist(source.at(j).p)));
+        }
     }
 
     result = matrixProcedure(distances);
@@ -328,7 +331,8 @@ template <class Cont>
 void ensure_infinity(Cont &matrix)
 {
     // need to make sure each row/column has INF
-    constexpr static auto almost_inf = static_cast<LittleAlgorithm::weight_type>(0.75 * INFW);
+    constexpr static auto almost_inf =
+      static_cast<LittleAlgorithm::weight_type>(0.75 * static_cast<double>(INFW));
     size_t wr = LittleAlgorithm::bisector::INVALID_IJ;
     for (const auto &kv_row : matrix)
     {
@@ -389,7 +393,8 @@ LittleAlgorithm::matrixProcedure(const std::vector<std::vector<weight_type>> &sr
             if (0 == value)
             {
                 value = INFW;
-                bisector tmp(i, j, getMin(matrix, i, check::Row) + getMin(matrix, j, check::Col));
+                const bisector tmp(i, j,
+                                   getMin(matrix, i, check::Row) + getMin(matrix, j, check::Col));
                 value = 0;
                 if (max_dij.d == tmp.d)
                 {
@@ -431,7 +436,7 @@ LittleAlgorithm::matrixProcedure(const std::vector<std::vector<weight_type>> &sr
         else
         {
             matrix = std::move(reducedMatrix);
-            result.push_back(std::move(max_dij));
+            result.push_back(max_dij);
         }
 #ifdef DUMP_DURING_WORKING
         std::cout << std::endl;

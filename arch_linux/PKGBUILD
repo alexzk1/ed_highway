@@ -10,6 +10,7 @@ license=('MIT')
 depends=(
 qt5-base
 curl
+cereal
 )
 
 makedepends=(

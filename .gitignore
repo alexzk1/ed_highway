@@ -30,3 +30,6 @@
 *.exe
 *.out
 *.app
+
+#QtCreator
+ed_highway.pro.user*

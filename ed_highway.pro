@@ -95,6 +95,8 @@ QMAKE_CXXFLAGS +=  -Werror=delete-non-virtual-dtor -fno-strict-aliasing
 
 LIBS += -lcurl
 LIBS += -lz -dead_strip
+
+
 DEFINES += QAPPLICATION_CLASS=QApplication
 
 

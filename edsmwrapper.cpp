@@ -103,8 +103,7 @@ void execRequest(const QString &key, const Req &src, int timeout,
     const auto testr = [key, callback, days2keep](const auto &err, const auto &js) {
         if (err.empty())
         {
-            StringsFileCache::get().addData(key, QString::fromStdString(js.dump()),
-                                            ONE_DAY_SECONDS * days2keep);
+            StringsFileCache::get().addData(key, QString::fromStdString(js.dump()), days2keep);
         }
         callback(err, js);
     };

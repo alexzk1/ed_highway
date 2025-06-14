@@ -1,7 +1,7 @@
 # Maintainer: Alex <alexzkhr public at gmail dot com>
 
 pkgname=ed_highway
-pkgver=r89.68bcf80
+pkgver=r93.f9098d8
 pkgrel=1
 pkgdesc='Desktop client of Neutron star routes plotter for Elite Dangerous. Based on https://www.spansh.co.uk/plotter'
 arch=('i686' 'x86_64')

@@ -339,5 +339,5 @@ QString EDSMWrapper::getSystemUrl(const QString &systemName)
     const auto id = valueFromJson<uint32_t>(js, "id");
     return QStringLiteral("https://www.edsm.net/en/system/id/%1/name/%2") // NOLINT
       .arg(id)
-      .arg(QString(QUrl::toPercentEncoding(systemName)));
+      .arg(QString::fromUtf8(QUrl::toPercentEncoding(systemName)));
 }

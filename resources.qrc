@@ -19,5 +19,6 @@
         <file>style_sheets/MaterialDark.qss</file>
         <file>style_sheets/NeonButtons.qss</file>
         <file>style_sheets/Ubuntu.qss</file>
+        <file>images/edsm_image.png</file>
     </qresource>
 </RCC>

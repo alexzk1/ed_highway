@@ -506,7 +506,9 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
                             }
 
                             if (can_push_2)
+                            {
                                 lst.push_back(sys_name);
+                            }
                         }
                     }
                 }
@@ -514,18 +516,24 @@ void RoundTripWidget::on_btnBulkQuery_clicked()
                 // making sure "center" is 1st in list if it is present there
                 const auto it = std::find(lst.begin(), lst.end(), center);
                 if (it != lst.end() && it != lst.begin())
+                {
                     std::iter_swap(it, lst.begin());
+                }
 
                 model->addSystems(lst);
 
                 switchUI(true);
                 if (progress)
+                {
                     progress->deleteLater();
+                }
             });
         });
     }
     else
+    {
         showError(tr("Center is not given."));
+    }
 }
 
 void RoundTripWidget::on_btnCopy_clicked()
@@ -536,6 +544,7 @@ void RoundTripWidget::on_btnCopy_clicked()
 void RoundTripWidget::on_actionOpen_in_Browser_triggered()
 {
     if (!lastSelected.isEmpty())
+    {
         try
         {
             QDesktopServices::openUrl(EDSMWrapper::getSystemUrl(lastSelected));
@@ -543,6 +552,7 @@ void RoundTripWidget::on_actionOpen_in_Browser_triggered()
         catch (...)
         {
         }
+    }
 }
 
 void RoundTripWidget::showError(const QString &msg) const

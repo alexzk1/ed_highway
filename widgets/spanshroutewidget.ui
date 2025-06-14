@@ -91,7 +91,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../resources.qrc">
+        <iconset resource="../../../../../../home/alex/Work/ed_highway/resources.qrc">
          <normaloff>:/images/swap.png</normaloff>:/images/swap.png</iconset>
        </property>
       </widget>
@@ -235,7 +235,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../resources.qrc">
+        <iconset resource="../../../../../../home/alex/Work/ed_highway/resources.qrc">
          <normaloff>:/images/up-arrow.png</normaloff>:/images/up-arrow.png</iconset>
        </property>
       </widget>
@@ -268,6 +268,21 @@
     </widget>
    </item>
   </layout>
+  <action name="actionOpen_In_Browser">
+   <property name="icon">
+    <iconset resource="../../../../../../home/alex/Work/ed_highway/resources.qrc">
+     <normaloff>:/images/edsm_image.png</normaloff>:/images/edsm_image.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open In Browser</string>
+   </property>
+   <property name="toolTip">
+    <string>Opens selected system on EDSM.</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
  </widget>
  <tabstops>
   <tabstop>fromE</tabstop>
@@ -281,7 +296,7 @@
   <tabstop>pushButton</tabstop>
  </tabstops>
  <resources>
-  <include location="../resources.qrc"/>
+  <include location="../../../../../../home/alex/Work/ed_highway/resources.qrc"/>
  </resources>
  <connections/>
 </ui>

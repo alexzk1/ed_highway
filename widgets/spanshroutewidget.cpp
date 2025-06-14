@@ -1,6 +1,7 @@
 #include "spanshroutewidget.h"
 
 #include "config_ui/globalsettings.h"
+#include "edsmwrapper.h"
 #include "spansh_route.h"
 #include "spanshsyssuggest.h"
 #include "utils/json.hpp"
@@ -9,6 +10,7 @@
 #include "ui_spanshroutewidget.h"
 
 #include <QClipboard>
+#include <QDesktopServices>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLineEdit>
@@ -58,6 +60,14 @@ SpanshRouteWidget::SpanshRouteWidget(QWidget *parent) :
     connect(ui->tableView->selectionModel(),
             SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
             SLOT(slotSystemSelected(const QItemSelection &, const QItemSelection &)));
+
+    rclickOnTableMenu = new QMenu(this);
+    rclickOnTableMenu->addAction(ui->actionOpen_In_Browser);
+
+    ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->tableView, &QTableView::customContextMenuRequested, this, [this](QPoint p) {
+        rclickOnTableMenu->popup(ui->tableView->viewport()->mapToGlobal(p));
+    });
 }
 
 SpanshRouteWidget::~SpanshRouteWidget()
@@ -204,7 +214,7 @@ void SpanshRouteWidget::on_btnRoute_clicked()
     updateButtonsMenu(); // add to last used menus only when user requested route
     saveValues();
     const SpanshRoutePostData r(ui->spinBoxPrecise->value(), ui->spinBoxRange->value(),
-                        ui->fromE->text().toStdString(), ui->toE->text().toStdString());
+                                ui->fromE->text().toStdString(), ui->toE->text().toStdString());
     router.executeRequest(r, [this](const auto &err, const auto &js) {
         // okey, okey ...not optimal at all, but who cares ... that is not 2000000 routes per second
         // api returned full response, need table only
@@ -317,5 +327,19 @@ void SpanshRouteWidget::on_btnUp_clicked()
     {
         ui->fromE->setText(ui->toE->text());
         ui->toE->setText("");
+    }
+}
+
+void SpanshRouteWidget::on_actionOpen_In_Browser_triggered()
+{
+    if (!lastSelectedSystem.isEmpty())
+    {
+        try
+        {
+            QDesktopServices::openUrl(EDSMWrapper::getSystemUrl(lastSelectedSystem));
+        }
+        catch (...)
+        {
+        }
     }
 }

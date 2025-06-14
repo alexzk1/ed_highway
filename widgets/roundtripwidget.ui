@@ -37,7 +37,7 @@
           <string>Undo</string>
          </property>
          <property name="icon">
-          <iconset resource="../resources.qrc">
+          <iconset resource="../../../../../../home/alex/Work/ed_highway/resources.qrc">
            <normaloff>:/images/Undo.png</normaloff>:/images/Undo.png</iconset>
          </property>
          <property name="iconSize">
@@ -66,7 +66,7 @@
           <string>Optimize Route</string>
          </property>
          <property name="icon">
-          <iconset resource="../resources.qrc">
+          <iconset resource="../../../../../../home/alex/Work/ed_highway/resources.qrc">
            <normaloff>:/images/Start here.png</normaloff>:/images/Start here.png</iconset>
          </property>
          <property name="iconSize">
@@ -179,8 +179,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>640</width>
-             <height>687</height>
+             <width>570</width>
+             <height>752</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -255,7 +255,6 @@
                  <property name="font">
                   <font>
                    <pointsize>14</pointsize>
-                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -272,7 +271,6 @@
                  <property name="font">
                   <font>
                    <pointsize>14</pointsize>
-                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -299,7 +297,6 @@
                  <property name="font">
                   <font>
                    <pointsize>14</pointsize>
-                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -468,7 +465,7 @@
   </action>
   <action name="actionRemoveSelected">
    <property name="icon">
-    <iconset resource="../resources.qrc">
+    <iconset resource="../../../../../../home/alex/Work/ed_highway/resources.qrc">
      <normaloff>:/images/Circle remove.png</normaloff>:/images/Circle remove.png</iconset>
    </property>
    <property name="text">
@@ -476,6 +473,10 @@
    </property>
   </action>
   <action name="actionOpen_in_Browser">
+   <property name="icon">
+    <iconset resource="../../../../../../home/alex/Work/ed_highway/resources.qrc">
+     <normaloff>:/images/edsm_image.png</normaloff>:/images/edsm_image.png</iconset>
+   </property>
    <property name="text">
     <string>Open in Browser</string>
    </property>
@@ -522,7 +523,7 @@
   <tabstop>tableView</tabstop>
  </tabstops>
  <resources>
-  <include location="../resources.qrc"/>
+  <include location="../../../../../../home/alex/Work/ed_highway/resources.qrc"/>
  </resources>
  <connections/>
 </ui>

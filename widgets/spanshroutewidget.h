@@ -40,6 +40,8 @@ class SpanshRouteWidget : public QWidget
 
     void on_btnUp_clicked();
 
+    void on_actionOpen_In_Browser_triggered();
+
   private:
     Ui::SpanshRouteWidget *ui;
     SpanshApi router{3};
@@ -49,6 +51,7 @@ class SpanshRouteWidget : public QWidget
     QStringList revertTo;
     QPointer<QMenu> fromMenu;
     QPointer<QMenu> toMenu;
+    QPointer<QMenu> rclickOnTableMenu;
 
     void saveValues() const;
     void loadValues();

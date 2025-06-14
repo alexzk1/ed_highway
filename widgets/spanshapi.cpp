@@ -15,7 +15,7 @@
 #include <thread>
 #include <utility>
 
-// based on: https://github.com/chriszero/ED-Router/blob/master/libspanch/SpanchApi.cs
+/// Based on: https://github.com/chriszero/ED-Router/blob/master/libspanch/SpanchApi.cs
 
 constexpr static std::size_t timeout_1st_request = 10; // seconds
 constexpr static std::size_t timeout_2nd_request = 5;  // seconds

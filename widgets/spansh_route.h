@@ -1,29 +1,30 @@
 #pragma once
+#include "utils/floats_to_string_locale.h"
 #include "utils/restclient.h"
 #include "utils/strfmt.h"
 
 #include <cstdint>
-#include <locale>
 
+/// @brief Passed to executor will make proper web-api request based on supplied C++ values.
 class SpanshRoutePostData
 {
   private:
     RestClient::parameters p;
 
   public:
-    SpanshRoutePostData(std::uint32_t eff, float range, const std::string &from,
+    SpanshRoutePostData(const std::uint32_t eff, const float range, const std::string &from,
                         const std::string &to)
     {
-        const auto old = std::locale::global(std::locale::classic());
+        // It must be "." (point) as int.float separator used. Web-site fails if comma used.
+        const FloatsShouldUsePointAsString properRangeAsString;
 
         p["efficiency"] = stringfmt("%u", eff);
         p["range"] = stringfmt("%02f", range);
         p["from"] = from;
         p["to"] = to;
-
-        std::locale::global(old);
     }
 
+    /// @returns API endpoint for spansh web-site.
     [[nodiscard]]
     const std::string &api() const
     {
@@ -31,12 +32,14 @@ class SpanshRoutePostData
         return r;
     }
 
+    /// @returns POST data for API endpoint on spansh web-site.
     [[nodiscard]]
     const auto &params() const
     {
         return p;
     }
 
+    /// @returns true if it should be followed by GET.
     [[nodiscard]]
     constexpr bool hasJob() const
     {

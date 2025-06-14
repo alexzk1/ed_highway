@@ -6,6 +6,8 @@
 #include "utils/json.hpp"
 #include "utils/restclient.h"
 
+#include <atomic>
+#include <cstdint>
 #include <functional>
 #include <string>
 #include <utility>
@@ -40,7 +42,7 @@ class SpanshApi
   private:
     friend void dotest();
     ctpl::thread_pool threads;
-    std::atomic<int32_t> working{0};
+    std::atomic<std::int32_t> working{0};
 };
 
 #endif // SPANCHAPI_H

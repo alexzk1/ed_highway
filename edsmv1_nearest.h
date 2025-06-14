@@ -1,8 +1,8 @@
-#ifndef EDSMV1_NEAREST_H
-#define EDSMV1_NEAREST_H
+#pragma once
 
 #include "point.h"
-#include "utils/restclient.h"
+#include "utils/floats_to_string_locale.h"
+#include "utils/restclient.h" // IWYU pragma: keep
 #include "utils/strfmt.h"
 
 #include <string>
@@ -54,6 +54,7 @@ class EDSMV1NearerstSystem
   private:
     void addSize(float size_or_radius)
     {
+        const FloatsShouldUsePointAsString properRadiusAsString;
         const auto v = stringfmt("%0.4f", size_or_radius);
         if (iscube)
         {
@@ -66,5 +67,3 @@ class EDSMV1NearerstSystem
         }
     }
 };
-
-#endif // EDSMV1_NEAREST_H

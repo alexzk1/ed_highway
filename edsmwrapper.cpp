@@ -3,13 +3,14 @@
 #include "edsmv1_nearest.h" // IWYU pragma: keep
 #include "edsmv1_sysinfo.h" // IWYU pragma: keep
 #include "qurl.h"
-#include "stringsfilecache.h"
+#include "stringsfilecache.h"       // IWYU pragma: keep
 #include "utils/conditional_wait.h" // IWYU pragma: keep
 #include "utils/json.hpp"
 
 #include <QUrl>
 
 #include <atomic>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
@@ -19,6 +20,11 @@
 #include <vector>
 
 namespace {
+using namespace std::chrono_literals;
+
+constexpr auto kTimeToKeepSysInfo = 24h;
+constexpr auto kTimeToKeepBodiesInfo = 72h;
+
 template <class RequestCallable>
 std::vector<nlohmann::json> requestMany(const QStringList &names, const RequestCallable &request,
                                         const EDSMWrapper::progress_update &progress)
@@ -94,16 +100,15 @@ bool tryParseFromCache(const QString &key, const EDSMWrapper::callback_t &callba
     }
     return false;
 }
-} // namespace
 
 template <class Req>
 void execRequest(const QString &key, const Req &src, int timeout,
-                 const EDSMWrapper::callback_t &callback, int days2keep = 1)
+                 const EDSMWrapper::callback_t &callback, std::chrono::hours timeToKeep = 24h)
 {
-    const auto testr = [key, callback, days2keep](const auto &err, const auto &js) {
+    const auto testr = [key, callback, timeToKeep](const auto &err, const auto &js) {
         if (err.empty())
         {
-            StringsFileCache::get().addData(key, QString::fromStdString(js.dump()), days2keep);
+            StringsFileCache::get().addData(key, QString::fromStdString(js.dump()), timeToKeep);
         }
         callback(err, js);
     };
@@ -117,6 +122,7 @@ void execRequest(const QString &key, const Req &src, int timeout,
         callback("EXCEPTION IN API!", jo);
     }
 }
+} // namespace
 
 QString EDSMWrapper::getNameFromJson(const nlohmann::json &js)
 {
@@ -186,7 +192,7 @@ void EDSMWrapper::requestSysInfo(const QString &sys_name, const EDSMWrapper::cal
     if (!tryParseFromCache(key, callback))
     {
         const EDSMV1SysInfo r(sys_name.toStdString());
-        execRequest(key, r, 20, callback, 3);
+        execRequest(key, r, 20, callback, kTimeToKeepSysInfo);
     }
 }
 
@@ -287,7 +293,7 @@ void EDSMWrapper::requestBodiesInfo(const QString &sys_name,
     if (!tryParseFromCache(key, callback))
     {
         const EDSMV1SysBodies r(sys_name.toStdString());
-        execRequest(key, r, 20, callback, 3);
+        execRequest(key, r, 20, callback, kTimeToKeepBodiesInfo);
     }
 }
 

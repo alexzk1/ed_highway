@@ -33,7 +33,7 @@ namespace {
 template <class T>
 void writeToStream(std::ostream &out, T &src)
 {
-    cereal::BinaryOutputArchive oa(out);
+    cereal::BinaryOutputArchive oa(out); // NOLINT
     oa(src);
     out.flush();
 }
@@ -43,7 +43,7 @@ bool loadFromStream(std::istream &inp, T &dst)
 {
     try
     {
-        cereal::BinaryInputArchive ia(inp);
+        cereal::BinaryInputArchive ia(inp); // NOLINT
         ia(dst);
         return true;
     }
@@ -124,7 +124,8 @@ static QString buildNumericFnPart()
     return QStringLiteral("%1_%2").arg(now).arg(pid); // NOLINT
 }
 
-bool StringsFileCache::addData(const QString &key, const QString &value, int daysToKeep)
+bool StringsFileCache::addData(const QString &key, const QString &value,
+                               std::chrono::hours timeToKeep)
 {
     if (key.isEmpty())
     {
@@ -158,7 +159,7 @@ bool StringsFileCache::addData(const QString &key, const QString &value, int day
         dropKey(key);
         key2filename.key2filename[key.toStdString()] = finalName.toStdString();
 
-        cache_compressed_blob blob(value, daysToKeep);
+        cache_compressed_blob blob(value, timeToKeep);
         writeToStream(file, blob);
         result = true;
     }
@@ -220,8 +221,9 @@ void StringsFileCache::cleanAll()
     d.mkpath(getCacheDir());
 }
 
-cache_compressed_blob::cache_compressed_blob(const QString &source, const int daysToKeep) :
-    valid_till{clock_t::now() + std::chrono::hours{24 * daysToKeep}}
+cache_compressed_blob::cache_compressed_blob(const QString &source,
+                                             const std::chrono::hours timeToKeep) :
+    valid_till{clock_t::now() + timeToKeep}
 {
     const auto src = source.toUtf8();
     const std::size_t estimated_size = lzokay::compress_worst_size(src.length());
@@ -231,8 +233,8 @@ cache_compressed_blob::cache_compressed_blob(const QString &source, const int da
     std::size_t compressed_size = 0u;
 
     lzokay::Dict<> dict;
-    const auto error = lzokay::compress((const uint8_t *)src.data(), unpacked_size, data.data(),
-                                        estimated_size, compressed_size, dict);
+    const auto error = lzokay::compress(bit_cast<const uint8_t *>(src.data()), unpacked_size,
+                                        data.data(), estimated_size, compressed_size, dict);
     if (error < lzokay::EResult::Success)
     {
         data.clear();
@@ -260,7 +262,8 @@ std::optional<QString> cache_compressed_blob::unpackData() const
     if (error >= lzokay::EResult::Success)
     {
         assert(decompressed_size == unpacked_size);
-        return QString::fromUtf8(reinterpret_cast<char *>(decompressed.data()), decompressed_size);
+        return QString::fromUtf8(bit_cast<const char *>(decompressed.data()),
+                                 static_cast<int>(decompressed_size));
     }
     return std::nullopt;
 }

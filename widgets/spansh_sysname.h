@@ -1,6 +1,5 @@
 #pragma once
 #include "utils/restclient.h"
-#include "utils/strfmt.h"
 
 #include <string>
 
@@ -10,22 +9,25 @@ class SpanshSysName
     RestClient::parameters p;
 
   public:
-    SpanshSysName(const std::string &templ)
+    explicit SpanshSysName(const std::string &templ)
     {
         p["q"] = templ;
     }
 
+    [[nodiscard]]
     const std::string &api() const
     {
         const static std::string r{"systems"};
         return r;
     }
 
+    [[nodiscard]]
     const auto &params() const
     {
         return p;
     }
 
+    [[nodiscard]]
     constexpr bool hasJob() const
     {
         return false;

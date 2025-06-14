@@ -8,6 +8,7 @@
 
 #include <functional>
 #include <string>
+#include <utility>
 
 class SpanshApi
 {
@@ -15,7 +16,7 @@ class SpanshApi
     // 1st parameter is error if any
     using callback_t = std::function<void(std::string, nlohmann::json)>;
 
-    SpanshApi(int threads_count) :
+    explicit SpanshApi(int threads_count) :
         threads(threads_count)
     {
     }

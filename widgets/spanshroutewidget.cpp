@@ -139,7 +139,9 @@ void SpanshRouteWidget::updateButtonsMenu()
     const static auto update_list = [&limit](const auto &src, auto &list) {
         // user could lower limit between runs
         while (list.size() > limit)
+        {
             list.erase(list.begin());
+        }
 
         const auto trimmed = src.trimmed();
         if (!trimmed.isEmpty())
@@ -149,7 +151,9 @@ void SpanshRouteWidget::updateButtonsMenu()
         }
 
         while (list.size() > limit)
+        {
             list.erase(list.begin());
+        }
     };
     update_list(ui->fromE->text(), revertFrom);
     update_list(ui->toE->text(), revertTo);
@@ -163,7 +167,9 @@ void SpanshRouteWidget::updateButtonsMenu()
             const QString copy{*it};
             menu->addAction(copy, [copy, edit]() {
                 if (edit)
+                {
                     edit->setText(copy);
+                }
             });
         }
     };
@@ -180,9 +186,13 @@ void SpanshRouteWidget::updateButtonsMenu()
     };
 
     if (fromMenu)
+    {
         fromMenu->deleteLater();
+    }
     if (toMenu)
+    {
         toMenu->deleteLater();
+    }
 
     fromMenu = addMenu(ui->btnRevertFrom, ui->fromE);
     toMenu = addMenu(ui->btnRevertTo, ui->toE);
@@ -193,17 +203,21 @@ void SpanshRouteWidget::on_btnRoute_clicked()
     ui->btnRoute->setEnabled(false);
     updateButtonsMenu(); // add to last used menus only when user requested route
     saveValues();
-    SpanshRoute r(ui->spinBoxPrecise->value(), ui->spinBoxRange->value(),
-                  ui->fromE->text().toStdString(), ui->toE->text().toStdString());
-    router.executeRequest(r, [this](auto err, auto js) {
+    const SpanshRoutePostData r(ui->spinBoxPrecise->value(), ui->spinBoxRange->value(),
+                        ui->fromE->text().toStdString(), ui->toE->text().toStdString());
+    router.executeRequest(r, [this](const auto &err, const auto &js) {
         // okey, okey ...not optimal at all, but who cares ... that is not 2000000 routes per second
         // api returned full response, need table only
         const auto it = js.find("system_jumps");
         if (it != js.end())
+        {
             emit crossThreadHasRouteSignal(QString::fromStdString(err),
                                            QString::fromStdString(it->dump()));
+        }
         else
+        {
             emit crossThreadHasRouteSignal(QString::fromStdString(err), QString("[]"));
+        }
     });
 }
 
@@ -224,7 +238,9 @@ void SpanshRouteWidget::crossThreadHasRoute(QString error, QString json)
         switchRouteBtn();
     });
     if (!error.isEmpty())
+    {
         QMessageBox::critical(this, qAppName(), error);
+    }
     else
     {
         QJsonDocument jsonDocument = QJsonDocument::fromJson(json.toUtf8());
@@ -258,7 +274,9 @@ void SpanshRouteWidget::crossThreadHasRoute(QString error, QString json)
                 }
             }
             if (!found)
+            {
                 lastSelectedSystem = "";
+            }
         }
     }
 }

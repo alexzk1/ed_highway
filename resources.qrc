@@ -14,11 +14,15 @@
         <file>style_sheets/Aqua.qss</file>
         <file>style_sheets/ConsoleStyle.qss</file>
         <file>style_sheets/ElegantDark.qss</file>
-        <file>style_sheets/MacOS.qss</file>
         <file>style_sheets/ManjaroMix.qss</file>
         <file>style_sheets/MaterialDark.qss</file>
         <file>style_sheets/NeonButtons.qss</file>
         <file>style_sheets/Ubuntu.qss</file>
         <file>images/edsm_image.png</file>
+        <file>style_sheets/Medize.qss</file>
+        <file>style_sheets/Gravira.qss</file>
+        <file>style_sheets/Incrypt.qss</file>
+        <file>style_sheets/medize/down_arrow.png</file>
+        <file>style_sheets/medize/up_arrow.png</file>
     </qresource>
 </RCC>

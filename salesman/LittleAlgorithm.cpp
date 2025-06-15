@@ -1,10 +1,10 @@
 #include "LittleAlgorithm.h" // IWYU pragma: keep
 
-#include "dump_help.h"
 #include "edsmwrapper.h"
 #include "namedstarsystem.h"
 #include "point.h"
 #include "utils/containers_helpers.h"
+#include "utils/dump_help.h"
 #include "utils/strutils.h"
 
 #include <algorithm>

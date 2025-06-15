@@ -269,7 +269,7 @@ RestClient::response RestClient::put(const std::string &url, const std::string &
  */
 RestClient::response RestClient::del(const std::string &url, const size_t timeout)
 {
-    headermap emptyMap;
+    const headermap emptyMap;
     return RestClient::del(url, emptyMap, timeout);
 }
 
@@ -350,10 +350,9 @@ size_t RestClient::write_callback(void *data, size_t size, size_t nmemb, void *u
  */
 size_t RestClient::header_callback(void *data, size_t size, size_t nmemb, void *userdata)
 {
-    RestClient::response *r;
-    r = reinterpret_cast<RestClient::response *>(userdata);
+    RestClient::response *r = reinterpret_cast<RestClient::response *>(userdata);
     std::string header(reinterpret_cast<char *>(data), size * nmemb);
-    size_t seperator = header.find_first_of(":");
+    const size_t seperator = header.find_first_of(':');
     if (std::string::npos == seperator)
     {
         // roll with non seperated headers...
@@ -371,9 +370,13 @@ size_t RestClient::header_callback(void *data, size_t size, size_t nmemb, void *
         std::string value = header.substr(seperator + 1);
         trim(value);
         if (utility::toLower(key) == "set-cookie" && r->headers.count(key))
+        {
             r->headers[key] += "; " + value;
+        }
         else
+        {
             r->headers[key] = value;
+        }
     }
 
     return (size * nmemb);

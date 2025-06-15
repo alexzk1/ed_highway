@@ -1,4 +1,3 @@
-#include "dump_help.h"
 #include "edsmapiv1.h"
 #include "edsmv1_nearest.h"
 #include "edsmv1_sysinfo.h"
@@ -11,6 +10,7 @@
 #include "spansh_sysname.h"
 #include "spanshapi.h"
 #include "stringsfilecache.h"
+#include "utils/dump_help.h"
 
 #include <QApplication>
 #include <QDebug>

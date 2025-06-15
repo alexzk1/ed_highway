@@ -1,7 +1,7 @@
 #include "stringsfilecache.h"
 
-#include "lzokay.hpp"
 #include "utils/guard_on.h"
+#include "utils/lzokay.hpp"
 #include "writable_path.h"
 
 #include <cereal/archives/binary.hpp>

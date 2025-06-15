@@ -29,7 +29,7 @@ SOURCES += \
         edsmapiv1.cpp \
         edsmwrapper.cpp \
         execonmainthread.cpp \
-        lzokay.cpp \
+        utils/lzokay.cpp \
         main.cpp \
         mainwindow.cpp \
         qjsontablemodel.cpp \
@@ -38,13 +38,13 @@ SOURCES += \
         stylesheetsloader.cpp \
         utils/restclient.cpp
 HEADERS += \
-        dump_help.h \
+        utils/dump_help.h \
         edsmapiv1.h \
         edsmv1_nearest.h \
         edsmv1_sysinfo.h \
         edsmwrapper.h \
         execonmainthread.h \
-        lzokay.hpp \
+        utils/lzokay.hpp \
         namedstarsystem.h \
         point.h \
         qjsontablemodel.h \

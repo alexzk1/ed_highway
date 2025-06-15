@@ -35,7 +35,6 @@ SOURCES += \
         qjsontablemodel.cpp \
         salesman/LittleAlgorithm.cpp \
         stringsfilecache.cpp \
-        stylesheetsloader.cpp \
         utils/restclient.cpp
 HEADERS += \
         utils/dump_help.h \
@@ -50,7 +49,6 @@ HEADERS += \
         qjsontablemodel.h \
         salesman/LittleAlgorithm.h \
         stringsfilecache.h \
-        stylesheetsloader.h \
         utils/cm_ctors.h \
         utils/conditional_wait.h \
         utils/containers_helpers.h \

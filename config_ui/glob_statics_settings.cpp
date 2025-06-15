@@ -1,6 +1,9 @@
 // Oleksiy Zakharov, 2016, alexzkhr@gmail.com
 
+#include "config_ui/stylesheetsloader.h"
 #include "globalsettings.h"
+
+#include <QDir>
 
 #define DECL_SETT(CLASS, KEY, DEF, args...) {KEY, widgetted_pt(new CLASS(KEY, DEF, args))}
 //-----------------------------------------------------------------------------------------------------------------------
@@ -57,6 +60,10 @@ const StaticSettingsMap &StaticSettingsMap::getGlobalSetts()
       DECL_SETT(GlobalStorableBool, "71_TrackEnable", false, tr("Enable logs' tracking."),
                 tr("If enabled starts tracking of the log files for other abilities except "
                    "routes.\nRestart is required.")),
+      DECL_SETT(GlobalComboBoxStorable, "1000_VisualStyleSheet", 0, tr("App Style"),
+                tr("You can select on of pre-defined visual styles here."), StyleSheetsLoader{}),
+      DECL_SETT(GlobalStorableBool, "1010_BiggerFont", false, tr("Bigger Font (restart)"),
+                tr("Use bigger font. Restart is required to apply changes.")),
     });
     return list;
 }

@@ -26,10 +26,10 @@
 #include <QWidget>
 
 #include <atomic>
+#include <functional>
 #include <map>
 #include <memory>
 #include <type_traits>
-#include <vector>
 
 namespace nmsp_gs {
 class SaveableToStorage
@@ -104,16 +104,17 @@ class GlobSaveableTempl : public nmsp_gs::SaveableToStorage
         reload();
     }
 
-    virtual ~GlobSaveableTempl() override
+    ~GlobSaveableTempl() override
     {
         flush();
     }
 
-    virtual QVariant valueAsVariant() const override
+    QVariant valueAsVariant() const override
     {
         return QVariant::fromValue(getCachedValue());
     }
 
+    [[nodiscard]]
     const T getCachedValue() const
     {
         return static_cast<T>(value);
@@ -135,7 +136,7 @@ class GlobSaveableTempl : public nmsp_gs::SaveableToStorage
         return *this;
     }
 
-    virtual void setDefaultValue() override
+    void setDefaultValue() override
     {
         setVariantValue(getDefault());
     }
@@ -259,9 +260,9 @@ class UserHintHolderForSettings
     UserHintHolderForSettings() = delete;
     UserHintHolderForSettings(const QString &userText, const QString &userHint = QString()) :
         userText(userText),
-        userHint(userHint)
+        userHint(userHint),
+        movable(true)
     {
-        movable = true;
     }
     virtual ~UserHintHolderForSettings();
 
@@ -335,7 +336,9 @@ class StaticSettingsMap : public QObject
         {
             auto p = sets.at(name).get();
             if (p)
+            {
                 value = *dynamic_cast<SaveableWidgetTempl<T, isatomic> *>(p);
+            }
         }
     }
 
@@ -347,7 +350,9 @@ class StaticSettingsMap : public QObject
             auto p = sets.at(name).get();
             auto p2 = dynamic_cast<SaveableWidgetTempl<T, isatomic> *>(p);
             if (p2)
+            {
                 p2->set(value);
+            }
             emit settingHaveBeenChanged(name);
         }
     }
@@ -358,7 +363,9 @@ class StaticSettingsMap : public QObject
         {
             auto p = sets.at(name).get();
             if (p)
+            {
                 p->exec();
+            }
         }
     }
 
@@ -392,7 +399,7 @@ class StaticSettingsMap : public QObject
 };
 
 //----------Classes which keep persistent values in settings and automatically supply widgets for
-//GUI ---------------------------- say "NO!" to copy-paste ....
+// GUI ---------------------------- say "NO!" to copy-paste ....
 #define STORABLE_ATOMIC_CLASS(NAME, TYPE)                                                          \
     class NAME : public SaveableWidgetTempl<TYPE, true>, virtual public UserHintHolderForSettings
 #define STORABLE_CLASS(NAME, TYPE)                                                                 \
@@ -635,19 +642,22 @@ STORABLE_ATOMIC_CLASS(GlobalComboBoxStorable, int)
     const items_supplier_t itemsf;
     QPointer<QComboBox> cb{nullptr};
 
+    [[nodiscard]]
     int getStoredSelection() const
     {
         auto val = getValue();
         if (cb)
         {
             if (val >= cb->count())
+            {
                 val = -1;
+            }
         }
         return val;
     }
 
   protected:
-    virtual QWidget *createWidget2() override
+    QWidget *createWidget2() override
     {
         cb = new QComboBox();
 
@@ -655,7 +665,9 @@ STORABLE_ATOMIC_CLASS(GlobalComboBoxStorable, int)
         QVariantList vl;
         itemsf(sl, vl);
         for (int i = 0, sz = sl.size(); i < sz; ++i)
+        {
             cb->addItem(sl.at(i), (vl.size() > i) ? vl.at(i) : QVariant());
+        }
 
         cb->setCurrentIndex(getStoredSelection());
 
@@ -682,21 +694,24 @@ STORABLE_ATOMIC_CLASS(GlobalComboBoxStorable, int)
   public:
     GlobalComboBoxStorable() = delete;
     GlobalComboBoxStorable(const QString &key, const ValueType &def, const QString &text,
-                           const QString &hint, const items_supplier_t &itemsf) :
+                           const QString &hint, items_supplier_t itemsf) :
         UserHintHolderForSettings(text, hint),
         SaveableWidgetTempl(key, def),
-        itemsf(itemsf)
+        itemsf(std::move(itemsf))
     {
     }
 
+    [[nodiscard]]
     QVariant getUserData() const
     {
         QVariant r;
         if (cb)
         {
-            int index = getStoredSelection();
+            const int index = getStoredSelection();
             if (index > -1)
+            {
                 r = cb->itemData(index, Qt::UserRole);
+            }
         }
         return r;
     }

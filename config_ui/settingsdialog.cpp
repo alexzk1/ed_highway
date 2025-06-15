@@ -2,15 +2,24 @@
 
 #include "settingsdialog.h"
 
+#include "config_ui/stylesheetsloader.h"
 #include "globalsettings.h"
 
 #include "ui_settingsdialog.h"
+
+#include <utility>
+
+namespace {
+constexpr auto kStyleSheetSetting = "1000_VisualStyleSheet";
+constexpr auto kBiggerFont = "1010_BiggerFont";
+} // namespace
 
 SettingsDialog::SettingsDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SettingsDialog)
 {
     ui->setupUi(this);
+
     readSettings(this);
 
     const StaticSettingsMap &sett = StaticSettingsMap::getGlobalSetts();
@@ -21,10 +30,27 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     w->setLayout(layout);
 
     auto wl = sett.createWidgets();
-    for (const auto &wi : wl)
+    for (const auto &wi : std::as_const(wl))
     {
         wi->setParent(this);
         layout->addWidget(wi);
+        if (kStyleSheetSetting == wi->property("SettKey"))
+        {
+            for (const auto &subs : wi->children())
+            {
+                if (QComboBox *comboBox = dynamic_cast<QComboBox *>(subs))
+                {
+                    const auto index = sett.readInt(kStyleSheetSetting);
+                    StyleSheetsLoader::LoadStyleSheet(comboBox->itemData(index).toString());
+                    StyleSheetsLoader::AttachHandlerToComboBox(comboBox);
+                    if (sett.readBool(kBiggerFont))
+                    {
+                        StyleSheetsLoader::UseBiggerFont();
+                    }
+                    break;
+                }
+            }
+        }
     }
 }
 

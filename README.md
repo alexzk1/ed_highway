@@ -10,9 +10,13 @@ Project uses submodules, so once clonned do
 ### What's new:
 
 ~~added OCR. Should be "reading" star system name from current mouseover tooltip on galaxy map~~
+
 Removed OCR as game has "copy name" button for long.
+
 Mining plans carrier's fuel mining; it is tested during 2 years trip for 62000ly, it predicts correct refuel plan.
+
 Search using EDSM for things like "system in 30ly radius with metalic rings".
+
 Minimal length traveled ordering of the stars' list to visit each once (salesman problem).
 
     

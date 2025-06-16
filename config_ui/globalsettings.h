@@ -1,10 +1,8 @@
 // License: MIT, (c) Oleksiy Zakharov, 2016, alexzkhr@gmail.com
 
-#ifndef GLOBALSETTINGS_H
-#define GLOBALSETTINGS_H
+#pragma once
 
 #include "dndwidget.h"
-#include "qhotkeypicker.h"
 #include "utils/variant_convert.h"
 
 #include <QCheckBox>
@@ -529,45 +527,6 @@ STORABLE_ATOMIC_CLASS(GlobalStorableInt, int)
     DEF_BTN_IMPL
 };
 
-STORABLE_CLASS(GlobalHotkeyStorable, QString)
-{
-  private:
-    QPointer<QHotkeyPicker> btn{nullptr};
-
-  protected:
-    QWidget *createWidget2() override
-    {
-        btn = new QHotkeyPicker();
-        btn->setHot(getValue());
-        return createLabeledField(btn, 20, 75, 5);
-    }
-
-  public:
-    void exec() override
-    {
-        if (btn)
-            btn->click();
-    }
-
-    void needUpdateWidget() override
-    {
-        if (btn)
-            btn->setHot(getValue());
-    }
-
-    GlobalHotkeyStorable() = delete;
-
-    GlobalHotkeyStorable(const QString &key, const ValueType &def, const QString &text,
-                         const QString &hint) :
-        UserHintHolderForSettings(text, hint),
-        SaveableWidgetTempl(key, def)
-    {
-    }
-
-    DECL_DESTRUCTOR(GlobalHotkeyStorable);
-    DEF_BTN_IMPL
-};
-
 STORABLE_CLASS(GlobalFileStorable, QString)
 {
   private:
@@ -725,5 +684,3 @@ STORABLE_ATOMIC_CLASS(GlobalComboBoxStorable, int)
 #undef STORABLE_CONSTRUCTOR2
 #undef DECL_DESTRUCTOR
 #undef DEF_BTN_IMPL
-
-#endif // GLOBALSETTINGS_H

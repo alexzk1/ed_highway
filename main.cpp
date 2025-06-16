@@ -17,50 +17,6 @@
 
 #include <iostream>
 
-#ifdef OCR_ADDED
-    #include "eliteocr.h"
-#endif
-
-void test_ocr()
-{
-#ifdef SRC_PATH
-    const static QString tests[] = {
-      // PHROI PRI NX-A D1-785
-      "EliteDangerousCLIENT_1581844531372_47099.png",
-
-      // HYPOE FLYI QB-N C23-3651 1 (planet)
-      "EliteDangerousCLIENT_1581953981012_111958.png",
-
-      // HYPOE FLYI QB-N C23-3651 2 A (planet)
-      "EliteDangerousCLIENT_1581953984790_111968.png",
-
-      // HYPOE FLYI QB-N C23-3651 4 E (planet)
-      "EliteDangerousCLIENT_1581953988331_111976.png",
-
-      // those 2 below has many stars on BG
-
-      // HYPOE FLYI LA-P C22-1092
-      "EliteDangerousCLIENT_1581954014555_111994.png",
-
-      // HYPOE FLYI FN-H D11-1555
-      "EliteDangerousCLIENT_1581954025449_112006.png",
-    };
-    #ifdef OCR_ADDED
-    EliteOCR ocr;
-    const static auto p = QStringLiteral("%1/test_ocr_screens/").arg(SRC_PATH);
-    for (const auto &s : tests)
-    {
-        QImage img;
-        if (img.load(p + s))
-            std::cout << "OCR: "
-                      << EliteOCR::tryDetectStarFromMapPopup(ocr.recognize(img)).toStdString()
-                      << std::endl;
-    }
-    exit(0);
-    #endif
-#endif
-}
-
 void dotest()
 {
 #ifdef SRC_PATH

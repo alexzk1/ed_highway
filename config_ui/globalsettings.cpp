@@ -14,7 +14,7 @@ void SaveableToStorage::setGroup(const QString &value)
 void SaveableToStorage::openGroup(QSettings &s) const
 {
     s.beginGroup(group);
-    s.beginGroup(QString("sub_%1").arg(currSubgroup));
+    s.beginGroup(QString("sub_%1").arg(currSubgroup.load()));
 }
 
 void SaveableToStorage::closeGroup(QSettings &s) const

@@ -8,7 +8,6 @@ arch=('i686' 'x86_64')
 url='https://github.com/alexzk1/ed_highway'
 license=('MIT')
 depends=(
-qt5-base
 curl
 cereal
 )
@@ -21,20 +20,41 @@ source=(
 )
 sha256sums=('SKIP')
 _gitname='ed_highway'
+
+qt_version="qt5"
+
+check() {
+  if [[ "$qt_version" == "qt6" ]]; then
+    depends+=('qt6-base')
+  else
+    depends+=('qt5-base')
+  fi
+}
+
 prepare() {
-   cd $_gitname
+  if [[ -n "$QT_VERSION" ]]; then
+    qt_version="$QT_VERSION"
+  fi
+  cd $_gitname
+  git submodule init
+  git submodule update
 }
 
 pkgver() {
   cd $_gitname
   printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
 }
+
 build() {
-  cd $_gitname
-  git submodule init
-  git submodule update
-  qmake
-  make
+    local qt_base
+    if [[ "$qt_version" == "qt6" ]]; then
+        qt_base="Qt6"
+    else
+        qt_base="Qt5"
+    fi
+
+    cmake -B build -S "$_gitname" -DBUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DQT_VERSION_MAJOR="$qt_base"
+    cmake --build build
 }
 package() {
   cd $_gitname

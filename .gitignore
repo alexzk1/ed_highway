@@ -33,3 +33,5 @@
 
 #QtCreator
 ed_highway.pro.user
+CMakeLists.txt.user
+build/

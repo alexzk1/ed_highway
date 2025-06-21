@@ -1,26 +1,32 @@
 #pragma once
 
 #include "config_ui/settingsdialog.h"
+#include "utils/cm_ctors.h"
+
+#include <qtmetamacros.h>
 
 #include <QMainWindow>
+#include <QObject>
 #include <QPointer>
+#include <QSettings>
 
 namespace Ui {
 class MainWindow;
 }
 
-class MainWindow : public QMainWindow, protected utility::SaveableWidget<MainWindow>
+class MainWindow final : public QMainWindow, protected utility::SaveableWidget<MainWindow>
 {
     Q_OBJECT
 
   public:
     explicit MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    NO_COPYMOVE(MainWindow);
+    ~MainWindow() final;
 
   protected:
-    void changeEvent(QEvent *e) override;
-    void recurseWrite(QSettings &settings, QObject *object) override;
-    void recurseRead(QSettings &settings, QObject *object) override;
+    void changeEvent(QEvent *e) final;
+    void recurseWrite(QSettings &settings, QObject *object) final;
+    void recurseRead(QSettings &settings, QObject *object) final;
 
   private:
     Ui::MainWindow *ui;

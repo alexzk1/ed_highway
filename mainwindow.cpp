@@ -1,14 +1,21 @@
 #include "mainwindow.h"
 
 #include "carriermodulesdialog.h"
-#include "config_ui/globalsettings.h"
-#include "edsmwrapper.h"
+#include "config_ui/settingsdialog.h"
 #include "stringsfilecache.h"
+#include "ui_mainwindow.h" // IWYU pragma: keep
 
-#include "ui_mainwindow.h"
+#include <qstringliteral.h>
+#include <qtpreprocessorsupport.h>
 
+#include <QAction>
 #include <QClipboard>
+#include <QEvent>
+#include <QMainWindow>
 #include <QMessageBox>
+#include <QSettings>
+#include <QWidget>
+#include <algorithm>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -57,9 +64,13 @@ void MainWindow::recurseRead(QSettings &settings, QObject *object)
     Q_UNUSED(object);
     restoreState(settings.value(QStringLiteral("mainwinstate")).toByteArray());
     if (settings.value(QStringLiteral("maximized"), false).toBool())
+    {
         showMaximized();
+    }
     else
+    {
         showNormal();
+    }
 
     const auto tabi = std::min(ui->tabWidget->count() - 1,
                                std::max(0, settings.value(QStringLiteral("tab_index"), 0).toInt()));

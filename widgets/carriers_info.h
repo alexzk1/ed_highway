@@ -2,19 +2,18 @@
 #include <QObject>
 #include <QString>
 
-#include <stdint.h>
-
+#include <cstdint>
 #include <vector>
 
 struct CarrierModuleInfo
 {
     QString name;
-    uint64_t purchase;
-    uint64_t full_upkeep;
-    uint64_t paused_upkeep;
-    uint64_t cargo_use;
+    std::uint64_t purchase;
+    std::uint64_t full_upkeep;
+    std::uint64_t paused_upkeep;
+    std::uint64_t cargo_use;
 
-    operator const QString &() const
+    operator const QString &() const // NOLINT
     {
         return name;
     }
@@ -41,19 +40,19 @@ struct CarrierModuleInfo
 inline const std::vector<CarrierModuleInfo> &getCarrierModulesInfoList()
 {
     const static std::vector<CarrierModuleInfo> arr = {
-      {QObject::tr("Refuel"), 40000000, 1500000, 750000, 500},
-      {QObject::tr("Repair"), 50000000, 1500000, 750000, 180},
-      {QObject::tr("Armoury"), 95000000, 1500000, 750000, 250},
-      {QObject::tr("Redemption office"), 150000000, 1850000, 850000, 100},
-      {QObject::tr("Shipyard"), 250000000, 6500000, 1800000, 3000},
-      {QObject::tr("Outfitting"), 250000000, 5000000, 1500000, 1750},
-      {QObject::tr("Secure warehouse(black market)"), 165000000, 2000000, 1250000, 250},
-      {QObject::tr("Universal Cartographics"), 150000000, 1850000, 700000, 120},
+      {QObject::tr("Refuel"), 40'000'000, 1'500'000, 750'000, 500},
+      {QObject::tr("Repair"), 50'000'000, 1'500'000, 750'000, 180},
+      {QObject::tr("Armoury"), 95'000'000, 1'500'000, 750'000, 250},
+      {QObject::tr("Redemption Office"), 150'000'000, 1'850'000, 850'000, 100},
+      {QObject::tr("Shipyard"), 250'000'000, 6'500'000, 1'800'000, 3'000},
+      {QObject::tr("Outfitting"), 250'000'000, 5'000'000, 1'500'000, 1'750},
+      {QObject::tr("Secure Warehouse(Black Market)"), 165'000'000, 2'000'000, 1'250'000, 250},
+      {QObject::tr("Universal Cartographics"), 150'000'000, 1'850'000, 700'000, 120},
 
       // Odyssey addition
-      {QObject::tr("Concourse Bar"), 200000000, 1750000, 1250000, 250},
-      {QObject::tr("Vista Genomics"), 150000000, 1500000, 700000, 120},
-      {QObject::tr("Pioneer Supplies"), 250000000, 5000000, 1500000, 200},
+      {QObject::tr("Concourse Bar"), 200'000'000, 1'750'000, 1'250'000, 250},
+      {QObject::tr("Vista Genomics"), 150'000'000, 1'500'000, 700'000, 120},
+      {QObject::tr("Pioneer Supplies"), 250'000'000, 5'000'000, 1'500'000, 200},
     };
 
     return arr;
@@ -61,12 +60,12 @@ inline const std::vector<CarrierModuleInfo> &getCarrierModulesInfoList()
 
 constexpr inline int max_carrier_cargo()
 {
-    return 25000;
+    return 25'000;
 }
 
 constexpr inline int carrier_tank_size()
 {
-    return 1000;
+    return 1'000;
 }
 
 constexpr inline float carrier_max_jump()

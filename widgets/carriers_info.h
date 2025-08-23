@@ -93,7 +93,7 @@ class CarrierJumpCalculator
             return std::nullopt;
         }
         return std::round(
-          minimum_jump_cost
+          minimum_jump_cost()
           + jumpDistanceLy * jd_mul
               * (1.f + static_cast<float>(currentTotalMass) / carrier_cargo_normilizer));
     }
@@ -122,7 +122,14 @@ class CarrierJumpCalculator
   private:
     ECarrierType carrierType;
 
-    constexpr static float minimum_jump_cost = 5.f;
+    [[nodiscard]]
+    constexpr float minimum_jump_cost() const
+    {
+        // Value 7.0 is not confirmed, but gives missing 2t (218 / 220) to compare what was posted
+        // on forums.
+        return carrierType == ECarrierType::PersonalCarrier ? 5.0f : 7.0f;
+    }
+
     constexpr static float jd_mul = 1.f / 8.f;
     constexpr static int carrier_cargo_normilizer = 25'000;
 };

@@ -84,12 +84,15 @@ void CarrierModules::buildGui()
 
 void CarrierModules::showTotal()
 {
-    ui->label->setText(QString("Purchase: %1; Upkeep: %2; Paused Upkeep: %3;\nCargo Use by Mods: "
-                               "%4; Cargo Free: %5\nSavings on pausing per week: %6")
-                         .arg(spaced_1000s(total.purchase))
-                         .arg(spaced_1000s(total.full_upkeep))
-                         .arg(spaced_1000s(total.paused_upkeep))
-                         .arg(spaced_1000s(total.cargo_use))
-                         .arg(spaced_1000s(max_carrier_cargo() - total.cargo_use))
-                         .arg(spaced_1000s(total.full_upkeep - total.paused_upkeep)));
+    ui->label->setText(
+      QString("Personal Carrier: Purchase: %1; Upkeep: %2; Paused Upkeep: %3;\nCargo Use by Mods: "
+              "%4; Cargo Free: %5\nSavings on pausing per week: %6")
+        .arg(spaced_1000s(total.purchase))
+        .arg(spaced_1000s(total.full_upkeep))
+        .arg(spaced_1000s(total.paused_upkeep))
+        .arg(spaced_1000s(total.cargo_use))
+        .arg(
+          spaced_1000s(CarrierJumpCalculator(ECarrierType::PersonalCarrier).get_carrier_mass_limit()
+                       - total.cargo_use))
+        .arg(spaced_1000s(total.full_upkeep - total.paused_upkeep)));
 }

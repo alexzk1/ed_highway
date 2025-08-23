@@ -4,21 +4,21 @@
 
 /// @brief Execs callable when goes out of scope.
 template <typename taCallable>
-class exec_onexit final
+class exec_on_exit final
 {
   public:
-    exec_onexit() = delete;
-    exec_onexit(const exec_onexit &) = delete;
-    exec_onexit(exec_onexit &&) = default;
-    exec_onexit &operator=(const exec_onexit &) = delete;
-    exec_onexit &operator=(exec_onexit &&) = default;
+    exec_on_exit() = delete;
+    exec_on_exit(const exec_on_exit &) = delete;
+    exec_on_exit(exec_on_exit &&) = default;
+    exec_on_exit &operator=(const exec_on_exit &) = delete;
+    exec_on_exit &operator=(exec_on_exit &&) = default;
 
-    explicit exec_onexit(taCallable &&func) noexcept :
+    explicit exec_on_exit(taCallable &&func) noexcept :
         func(std::forward<taCallable>(func))
     {
     }
 
-    ~exec_onexit()
+    ~exec_on_exit()
     {
         func();
     }

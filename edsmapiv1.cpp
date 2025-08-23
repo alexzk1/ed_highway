@@ -44,7 +44,7 @@ void EdsmApiV1::executeRequest(const std::string &api, const RestClient::paramet
         (void)id;
         // std::cout << "Running task on thread " << id <<  "Tasks in q: " << tasksCount() <<
         // std::endl;
-        const exec_onexit ensure([this]() {
+        const exec_on_exit ensure([this]() {
             --this->working;
         });
         (void)ensure;

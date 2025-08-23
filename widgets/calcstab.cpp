@@ -12,12 +12,17 @@
 
 #include "ui_calcstab.h"
 
+#include <QButtonGroup>
+#include <QOverload>
+#include <QPointer>
+#include <QRadioButton>
 #include <QSpinBox>
 
-#include <math.h>
-
+#include <cmath>
+#include <cstdint>
 #include <iostream>
 #include <random>
+#include <vector>
 
 constexpr static int delay_ms = 2000;
 const static QString settingsGroup = "CalcsTabSettings";
@@ -26,10 +31,9 @@ template <class T = float>
 inline T uniformRandom(T low = static_cast<T>(0.), T hi = static_cast<T>(1.))
 {
     static_assert(std::is_floating_point<T>::value, "T must be floating point one.");
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<T> dis(low, hi);
-    return dis(gen);
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    return std::uniform_real_distribution<T>(low, hi)(gen);
 }
 
 CalcsTab::CalcsTab(QWidget *parent) :
@@ -40,10 +44,10 @@ CalcsTab::CalcsTab(QWidget *parent) :
     ui->setupUi(this);
     connect(delayedStart, &DelayedSignal::delayedSignal, this, &CalcsTab::calcCarrierFuel);
 
-    // attaching change event to spin boxes
+    // Attaching change event to spin boxes.
     {
         const auto setup_spin = [this](QSpinBox *ptr) {
-            ptr->setMaximum(max_carrier_cargo());
+            ptr->setMaximum(carrierSelected.get_carrier_mass_limit());
             connect(ptr, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](int) {
                 updateCargoToMax();
                 delayedStart->sourceSignal(delay_ms);
@@ -55,14 +59,19 @@ CalcsTab::CalcsTab(QWidget *parent) :
         };
 
         for (const auto &s : spins)
+        {
             setup_spin(s);
+        }
     }
 
-    // attaching change event to radios
+    // Attaching change event to radios.
     {
         const auto setup_radio = [this](QRadioButton *rb) {
-            connect(rb, &QRadioButton::toggled, this, [this](bool) {
-                delayedStart->sourceSignal(delay_ms / 4);
+            connect(rb, &QRadioButton::toggled, this, [this](bool enabled) {
+                if (enabled)
+                {
+                    delayedStart->sourceSignal(delay_ms / 4);
+                }
             });
         };
 
@@ -73,7 +82,45 @@ CalcsTab::CalcsTab(QWidget *parent) :
         };
 
         for (const auto &r : radios)
+        {
             setup_radio(r);
+        }
+    }
+
+    // Attaching carrier selection.
+    {
+        auto group = new QButtonGroup(this);
+        group->addButton(ui->rbPersonal);
+        group->addButton(ui->rbSquadron);
+
+        const auto setup_radio = [this](const QPointer<QRadioButton> &rb) {
+            connect(rb, &QRadioButton::toggled, this, [this, rb](bool enabled) {
+                if (enabled && rb)
+                {
+                    if (rb == ui->rbPersonal)
+                    {
+                        carrierSelected = CarrierJumpCalculator(ECarrierType::PersonalCarrier);
+                    }
+                    else
+                    {
+                        carrierSelected = CarrierJumpCalculator(ECarrierType::SquadronCarrier);
+                    }
+
+                    const auto maxConsume = carrierSelected.compute_fuel_use(
+                      carrierSelected.get_carrier_mass_limit(), carrierSelected.carrier_max_jump());
+
+                    ui->lblMaxFuel->setText(
+                      QString(tr("Max fuel per jump: %1")).arg(maxConsume.value_or(0)));
+
+                    delayedStart->sourceSignal(delay_ms / 4);
+                }
+            });
+        };
+
+        setup_radio(ui->rbPersonal);
+        setup_radio(ui->rbSquadron);
+
+        ui->rbPersonal->setChecked(true);
     }
 
     new SpanshSysSuggest(ui->leSys1);
@@ -81,6 +128,13 @@ CalcsTab::CalcsTab(QWidget *parent) :
 
     loadSettings();
     on_leSys1_textChanged("");
+
+    // Update maximal cargo.
+    const auto maxInput =
+      std::max(CarrierJumpCalculator(ECarrierType::PersonalCarrier).get_carrier_mass_limit(),
+               CarrierJumpCalculator(ECarrierType::SquadronCarrier).get_carrier_mass_limit());
+    ui->sbCargo->setMaximum(maxInput);
+    ui->sbFuel->setMaximum(maxInput);
 }
 
 CalcsTab::~CalcsTab()
@@ -145,17 +199,19 @@ void CalcsTab::updateCargoToMax()
 {
     if (ui->cbKeepCargo->isChecked())
     {
-        const auto used = ui->sbModules->value() + ui->sbFuel->value();
-        ui->sbCargo->setValue(max_carrier_cargo() - used);
+        const auto used = static_cast<std::uint32_t>(ui->sbModules->value() + ui->sbFuel->value());
+        ui->sbCargo->setValue(carrierSelected.get_carrier_mass_limit() - used);
     }
 }
 
 void CalcsTab::calcCarrierFuel()
 {
-    const auto mods = ui->sbModules->value();
-    const auto carg = ui->sbCargo->value();
-    const auto fuel = ui->sbFuel->value();
-    const auto refuel_each_nth = ui->sbEachNth->value();
+    constexpr static int kConsider_infinite_travel_with_jumps = 20000;
+
+    const std::uint32_t mods = ui->sbModules->value();
+    const std::uint32_t carg = ui->sbCargo->value();
+    const std::uint32_t fuel = ui->sbFuel->value();
+    const std::uint32_t refuel_each_nth = ui->sbEachNth->value();
     const auto refuel_random_mine = ui->sbTonnes->value();
 
     const bool random_mine = ui->rbRandom->isChecked();
@@ -168,35 +224,37 @@ void CalcsTab::calcCarrierFuel()
       tr("Non-fuel mass of carrier: %1(t). This should be same as (total mass - tritium mass).")
         .arg(mods + carg));
 
-    if (mods + carg + fuel > max_carrier_cargo())
+    const auto mass_limit = carrierSelected.get_carrier_mass_limit();
+    if (mods + carg + fuel > mass_limit)
+    {
         ui->lblResult->setText(
-          tr("Total mass is bigger then maximum cargo %1(t).").arg(max_carrier_cargo()));
+          tr("Total mass is bigger then maximum cargo %1(t).").arg(mass_limit));
+    }
     else
     {
-        constexpr static int consider_infinite_travel_with_jumps = 20000;
-
-        constexpr static float max_cargo = static_cast<float>(max_carrier_cargo());
-        constexpr static float minimum_jump_cost = 5.f;
-        const static float jd_mul = 1.f / 8.f;
-
         int jumps_till_recharge = 0;
         bool infinite = false;
+        bool error_in_fuel_compute = false;
 
         // rbD500 default value
-        float jump_distance = carrier_max_jump();
+        const auto maxJump = carrierSelected.carrier_max_jump();
+        float jump_distance = maxJump;
 
-        const auto update_distance_for_range = [&jump_distance](float range) {
+        const auto update_distance_for_range = [&jump_distance, maxJump](const float range) {
             jump_distance =
-              std::fmax(carrier_max_jump(),
-                        myrnd::uniformRandom<float>(0.f, carrier_max_jump() - range) + range);
+              std::fmin(maxJump, myrnd::uniformRandom<float>(0.f, maxJump - range) + range);
         };
 
         const auto update_distance = [this, &update_distance_for_range]() {
             if (ui->rbD470->isChecked())
+            {
                 update_distance_for_range(470.f);
+            }
 
             if (ui->rbD495->isChecked())
+            {
                 update_distance_for_range(495.f);
+            }
         };
 
         float distance = 0;
@@ -208,46 +266,61 @@ void CalcsTab::calcCarrierFuel()
         bool jumps_till_recharge_once = true;
 
         update_distance();
-        for (int current_fuel = fuel, current_used = 0, tank = carrier_tank_size(), njump = 1;
+        for (std::uint32_t current_fuel = fuel, current_used = 0u,
+                           tank = carrierSelected.carrier_tank_size(), njump = 1u;
              current_fuel + tank > current_used; ++njump)
         {
-            if (njump > consider_infinite_travel_with_jumps)
+            if (error_in_fuel_compute)
+            {
+                break;
+            }
+            if (njump > kConsider_infinite_travel_with_jumps)
             {
                 infinite = true;
                 break;
             }
 
-            for (int r = 0; r < 2; ++r)
+            for (std::uint32_t r = 0; r < 2; ++r)
             {
-                const int total = current_fuel + tank;
-                if (total < carrier_tank_size())
+                const std::uint32_t total = current_fuel + tank;
+                if (total < carrierSelected.carrier_tank_size())
                 {
                     current_fuel = 0;
                     tank = total;
                 }
-                current_used =
-                  round(minimum_jump_cost
-                        + jump_distance * jd_mul
-                            * (1.f + static_cast<float>(current_fuel + carg + mods) / max_cargo));
+                const auto computed_use =
+                  carrierSelected.compute_fuel_use(current_fuel + carg + mods, jump_distance);
+                if (!computed_use.has_value())
+                {
+                    error_in_fuel_compute = true;
+                    break;
+                }
+                current_used = *computed_use;
 
                 if (random_mine && (njump % refuel_each_nth == 0))
                 {
                     if (current_used >= refuel_random_mine)
+                    {
                         current_used -= refuel_random_mine;
+                    }
                     else
                     {
                         const auto extra = refuel_random_mine - current_used;
                         current_used = 0;
                         const auto target = mods + carg + current_fuel + extra;
-                        if (target > max_carrier_cargo())
-                            current_fuel = max_carrier_cargo() - mods - carg;
+
+                        if (target > mass_limit)
+                        {
+                            current_fuel = mass_limit - mods - carg;
+                        }
                         else
+                        {
                             current_fuel += extra;
+                        }
                     }
                 }
                 if (keep_full)
                 {
-
                     if (current_fuel > current_used)
                     {
                         current_fuel -= current_used;
@@ -267,11 +340,14 @@ void CalcsTab::calcCarrierFuel()
                 if (refuel_empty)
                 {
                     if (current_used > total)
+                    {
                         break;
+                    }
 
                     if (tank < current_used)
                     {
-                        const int delta = std::min((int)carrier_tank_size() - tank, current_fuel);
+                        const auto delta =
+                          std::min(carrierSelected.carrier_tank_size() - tank, current_fuel);
                         tank += delta;
                         current_fuel -= delta;
                         jumps_till_recharge_once = false;
@@ -289,7 +365,13 @@ void CalcsTab::calcCarrierFuel()
         }
 
         if (infinite)
+        {
             ui->lblResult->setText(tr("Infinite travel."));
+        }
+        else if (error_in_fuel_compute)
+        {
+            ui->lblResult->setText(tr("Error happened computing jump distances."));
+        }
         else
         {
             // todo: make setting for this
@@ -298,15 +380,19 @@ void CalcsTab::calcCarrierFuel()
             constexpr static bool force_always_spaces = true;
 
             if (refuel_empty)
+            {
                 ui->lblResult->setText(
                   tr("Max distance: %1 (ly). With return same way: %2 (ly). Jumps till refuel: %3")
                     .arg(spaced_1000s(distance, force_always_spaces))
                     .arg(spaced_1000s(distance / 2.f, force_always_spaces))
                     .arg(spaced_1000s(jumps_till_recharge, force_always_spaces)));
+            }
             else
+            {
                 ui->lblResult->setText(tr("Max distance: %1 (ly). With return same way: %2 (ly).")
                                          .arg(spaced_1000s(distance, force_always_spaces))
                                          .arg(spaced_1000s(distance / 2.f, force_always_spaces)));
+            }
         }
     }
 }
@@ -320,10 +406,12 @@ void CalcsTab::setTritiumStepping()
 void CalcsTab::on_distCalc_clicked()
 {
     if (ui->leSys1->text().isEmpty() || ui->leSys2->text().isEmpty())
+    {
         ui->lblDistRes->setText(tr("Both systems must be non-empty."));
+    }
     else
     {
-        exec_onexit ex([this]() {
+        exec_on_exit ex([this]() {
             ui->distCalc->setEnabled(true);
         });
         (void)ex;
@@ -367,5 +455,7 @@ void CalcsTab::on_btnCarMods_clicked()
 {
     CarrierModulesDialog dlg(false, this);
     if (QDialog::DialogCode::Accepted == dlg.exec())
+    {
         ui->sbModules->setValue(dlg.getTotal().cargo_use);
+    }
 }

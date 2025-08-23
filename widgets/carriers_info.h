@@ -1,8 +1,11 @@
 #pragma once
+
 #include <QObject>
 #include <QString>
 
+#include <cmath>
 #include <cstdint>
+#include <optional>
 #include <vector>
 
 struct CarrierModuleInfo
@@ -58,17 +61,68 @@ inline const std::vector<CarrierModuleInfo> &getCarrierModulesInfoList()
     return arr;
 }
 
-constexpr inline int max_carrier_cargo()
-{
-    return 25'000;
-}
+///@brief Represents the type of carrier.
+enum class ECarrierType : std::uint8_t {
+    PersonalCarrier,
+    SquadronCarrier,
+};
 
-constexpr inline int carrier_tank_size()
+///@brief
+class CarrierJumpCalculator
 {
-    return 1'000;
-}
+  public:
+    ///@param carrierType The type of carrier (Personal or Squadron).
+    CarrierJumpCalculator() = delete;
+    explicit CarrierJumpCalculator(ECarrierType carrierType) :
+        carrierType(carrierType)
+    {
+    }
 
-constexpr inline float carrier_max_jump()
-{
-    return 500.f;
-}
+    ///@brief Computes the fuel use for a jump
+    ///@param currentTotalMass The total mass of the ship and cargo on the carrier, excluding fuel
+    /// in the tank.
+    ///@param jumpDistanceLy The distance of the jump in light years.
+    ///@return std::optional<int> The fuel use for the jump, if it is possible. If not possible,
+    /// returns std::nullopt.
+    [[nodiscard]]
+    std::optional<std::uint32_t> compute_fuel_use(const std::uint32_t currentTotalMass,
+                                                  const float jumpDistanceLy) const
+    {
+        if (currentTotalMass > get_carrier_mass_limit() || jumpDistanceLy > carrier_max_jump())
+        {
+            return std::nullopt;
+        }
+        return std::round(
+          minimum_jump_cost
+          + jumpDistanceLy * jd_mul
+              * (1.f + static_cast<float>(currentTotalMass) / carrier_cargo_normilizer));
+    }
+
+    ///@returns The cargo limit for the given carrier type.
+    [[nodiscard]]
+    constexpr std::uint32_t get_carrier_mass_limit() const
+    {
+        return carrierType == ECarrierType::PersonalCarrier ? 25'000 : 60'000;
+    }
+
+    ///@returns The size of the fuel tank on a carrier.
+    [[nodiscard]]
+    constexpr std::uint32_t carrier_tank_size() const
+    {
+        return 1'000;
+    }
+
+    ///@returns The maximum jump distance a carrier can make.
+    [[nodiscard]]
+    constexpr float carrier_max_jump() const
+    {
+        return 500.f;
+    }
+
+  private:
+    ECarrierType carrierType;
+
+    constexpr static float minimum_jump_cost = 5.f;
+    constexpr static float jd_mul = 1.f / 8.f;
+    constexpr static int carrier_cargo_normilizer = 25'000;
+};

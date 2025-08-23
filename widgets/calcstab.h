@@ -1,11 +1,14 @@
-#ifndef CALCSTAB_H
-#define CALCSTAB_H
+#pragma once
 
+#include "carriers_info.h"
 #include "saveable_widget.h"
 #include "utils/cm_ctors.h"
 
+#include <QObject>
 #include <QPointer>
 #include <QWidget>
+
+#include <cstdint>
 
 namespace Ui {
 class CalcsTab;
@@ -18,15 +21,16 @@ class CalcsTab : public QWidget
     Q_OBJECT
   public:
     NO_COPYMOVE(CalcsTab);
-    CalcsTab(QWidget *parent = nullptr);
-    ~CalcsTab();
+    explicit CalcsTab(QWidget *parent = nullptr);
+    ~CalcsTab() override;
 
   protected:
-    void changeEvent(QEvent *e);
+    void changeEvent(QEvent *e) override;
 
   private:
     Ui::CalcsTab *ui;
     QPointer<DelayedSignal> delayedStart;
+    CarrierJumpCalculator carrierSelected{ECarrierType::PersonalCarrier};
 
     void saveSettings();
     void loadSettings();
@@ -40,5 +44,3 @@ class CalcsTab : public QWidget
     void on_cbKeepCargo_stateChanged(int arg1);
     void on_btnCarMods_clicked();
 };
-
-#endif // CALCSTAB_H

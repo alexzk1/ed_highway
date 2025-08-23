@@ -39,7 +39,7 @@ void SpanshApi::executeRequest(const std::string &api, const RestClient::paramet
     ++working;
 
     const auto executor = [url, eparams, callback = std::move(callback), has_job, this](auto) {
-        const exec_onexit ensure([this]() {
+        const exec_on_exit ensure([this]() {
             --this->working;
         });
         (void)ensure;

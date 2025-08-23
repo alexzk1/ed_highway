@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>813</width>
-    <height>499</height>
+    <width>971</width>
+    <height>580</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,7 +26,7 @@
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This includes any cargo on carrier, except tritium to use during flight.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="maximum">
-         <number>25000</number>
+         <number>60000</number>
         </property>
        </widget>
       </item>
@@ -203,7 +203,7 @@
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is fuel in cargo to use during flight.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="maximum">
-         <number>25000</number>
+         <number>60000</number>
         </property>
        </widget>
       </item>
@@ -273,16 +273,6 @@
         </layout>
        </widget>
       </item>
-      <item row="3" column="3">
-       <widget class="QCheckBox" name="cbKeepCargo">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked cargo is set to maximum possible value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string>Keep all free space cargo</string>
-        </property>
-       </widget>
-      </item>
       <item row="8" column="0" colspan="2">
        <widget class="QLabel" name="lblResult">
         <property name="text">
@@ -290,7 +280,14 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="3">
+      <item row="2" column="3">
+       <widget class="QRadioButton" name="rbSquadron">
+        <property name="text">
+         <string>Squadron Carrier</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
        <widget class="QToolButton" name="btnCarMods">
         <property name="toolTip">
          <string>Opens window to select installed modules on carrier.</string>
@@ -310,6 +307,30 @@
         </property>
         <property name="toolButtonStyle">
          <enum>Qt::ToolButtonFollowStyle</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="2">
+       <widget class="QCheckBox" name="cbKeepCargo">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked cargo is set to maximum possible value.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Keep all free space cargo</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QRadioButton" name="rbPersonal">
+        <property name="text">
+         <string>Personal Carrier</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="3">
+       <widget class="QLabel" name="lblMaxFuel">
+        <property name="text">
+         <string/>
         </property>
        </widget>
       </item>
@@ -384,7 +405,6 @@
   <tabstop>sbModules</tabstop>
   <tabstop>sbFuel</tabstop>
   <tabstop>sbCargo</tabstop>
-  <tabstop>cbKeepCargo</tabstop>
   <tabstop>rbTankFull</tabstop>
   <tabstop>rbRandom</tabstop>
   <tabstop>sbEachNth</tabstop>

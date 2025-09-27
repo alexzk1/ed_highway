@@ -48,6 +48,7 @@ struct cache_dict
         key2filename.clear();
     }
 
+    [[nodiscard]]
     QString getFileNameOrEmpty(const QString &key) const
     {
         const auto it = key2filename.find(key.toStdString());

@@ -26,20 +26,33 @@ class EdsmApiV1
     /// @brief 1st parameter is error if any
     using callback_t = std::function<void(std::string, nlohmann::json)>;
 
+    /// @brief Executes a web-api call using the specified parameters and callback.
+    /// @param api The API endpoint to call.
+    /// @param params The parameters for the API request.
+    /// @param is_get Indicates if the request should be a GET request.
+    /// @param callback The function to call with the result or error.
+    /// @param timeout_seconds The maximum time to wait for a response in seconds.
     void executeRequest(const std::string &api, const RestClient::parameters &params, bool is_get,
                         const callback_t &callback, int timeout_seconds = 20);
 
+    /// @brief Executes a web-api call using the specified parameters and callback.
+    /// @param api The API endpoint to call.
+    /// @param params The parameters for the API request.
+    /// @param callback The function to call with the result or error.
+    /// @param timeout_seconds The maximum time to wait for a response in seconds.
     template <class AnyType>
     void executeRequest(const AnyType &src, const callback_t &callback, int timeout_seconds = 20)
     {
         executeRequest(src.api(), src.params(), src.isGet(), callback, timeout_seconds);
     }
 
+    [[nodiscard]]
     bool isWorking() const
     {
         return working > 0;
     }
 
+    [[nodiscard]]
     std::size_t tasksCount() const
     {
         return threads.tasksCount();

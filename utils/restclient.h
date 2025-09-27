@@ -16,7 +16,7 @@
 #include <map>
 #include <string>
 
-#define CURL_CUST_TIMEOUT_MESSAGE "CURL: Operation Timeouted"
+constexpr auto CURL_CUST_TIMEOUT_MESSAGE = "CURL: Operation Timeouted";
 
 class RestClient
 {
@@ -31,8 +31,8 @@ class RestClient
     /** response struct for queries */
     struct response
     {
-        int code;
-        int curlCode;
+        int code{0};
+        int curlCode{0};
         std::string httpmethod;
         std::string body;
         std::string curlError;
@@ -44,11 +44,22 @@ class RestClient
         }
     };
     /** struct used for uploading data */
-    typedef struct
+    struct upload_object
     {
-        const char *data;
-        size_t length;
-    } upload_object;
+        upload_object() = default;
+        upload_object(const char *data, std::size_t length) :
+            data(data),
+            length(length)
+        {
+        }
+        upload_object(const std::string &str) :
+            upload_object(str.c_str(), str.length())
+        {
+        }
+
+        const char *data{nullptr};
+        size_t length{0};
+    };
 
     /** public methods */
     static std::string urlencode(const std::string &s);
@@ -121,9 +132,6 @@ class RestClient
     static size_t header_callback(void *ptr, size_t size, size_t nmemb, void *userdata);
     // read callback function
     static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *userdata);
-    static const char *user_agent;
-    static std::string user_pass;
-    static std::string curl_interface;
 
     // trim from start
     static inline std::string &ltrim(std::string &s)
@@ -151,4 +159,10 @@ class RestClient
     {
         return ltrim(rtrim(s));
     }
+
+    /** initialize user agent string */
+    inline static const char *const user_agent = "ed_highway";
+    /** initialize authentication variable */
+    inline static std::string user_pass;
+    inline static std::string curl_interface;
 };

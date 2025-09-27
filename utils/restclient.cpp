@@ -13,23 +13,25 @@
 
 #include "strutils.h"
 
+#include <curl/curl.h>
+#include <curl/easy.h>
+
+#include <algorithm>
 #include <cstring>
 #include <map>
 #include <string>
+#include <utility>
+#include <vector>
 
-/** initialize user agent string */
-const char *RestClient::user_agent = "ed_highway";
-/** initialize authentication variable */
-std::string RestClient::user_pass = std::string();
-std::string RestClient::curl_interface = std::string();
-
-static void hexchar(unsigned char c, unsigned char &hex1, unsigned char &hex2)
+namespace {
+void hexchar(unsigned char c, unsigned char &hex1, unsigned char &hex2)
 {
     hex1 = c / 16;
     hex2 = c % 16;
     hex1 += hex1 <= 9 ? '0' : 'a' - 10;
     hex2 += hex2 <= 9 ? '0' : 'a' - 10;
 }
+} // namespace
 
 std::string RestClient::urlencode(const std::string &s)
 {
@@ -40,20 +42,24 @@ std::string RestClient::urlencode(const std::string &s)
         if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '-'
             || c == '_' || c == '.' || c == '!' || c == '~' || c == '*' || c == '\'' || c == '('
             || c == ')')
+        {
             v.push_back(c);
+        }
         else if (c == ' ')
+        {
             v.push_back('+');
+        }
         else
         {
             v.push_back('%');
-            unsigned char d1, d2;
+            unsigned char d1 = 0, d2 = 0;
             hexchar(c, d1, d2);
             v.push_back(d1);
             v.push_back(d2);
         }
     }
 
-    return std::string(v.cbegin(), v.cend());
+    return {v.cbegin(), v.cend()};
 }
 
 std::string RestClient::encodePOSTParameters(const RestClient::parameters &params)
@@ -62,9 +68,10 @@ std::string RestClient::encodePOSTParameters(const RestClient::parameters &param
     tmp.reserve(params.size());
     for (const auto &kv : params)
     {
-        const std::string k{urlencode(kv.first)};
-        const std::string v{urlencode(kv.second)};
-        tmp.push_back(k + "=" + v);
+        std::string str{urlencode(kv.first)};
+        str.append("=");
+        str.append(urlencode(kv.second));
+        tmp.emplace_back(std::move(str));
     }
     return utility::join(tmp, "&");
 }
@@ -89,7 +96,7 @@ void RestClient::setAuth(const std::string &user, const std::string &password)
  */
 RestClient::response RestClient::get(const std::string &url, const size_t timeout)
 {
-    headermap emptyMap;
+    const headermap emptyMap;
     return RestClient::get(url, emptyMap, timeout);
 }
 
@@ -219,7 +226,7 @@ RestClient::response RestClient::del_put(const std::string &url, const std::stri
 RestClient::response RestClient::put(const std::string &url, const std::string &data,
                                      const size_t timeout)
 {
-    headermap emptyMap;
+    const headermap emptyMap;
     return RestClient::put(url, data, emptyMap, timeout);
 }
 
@@ -238,15 +245,11 @@ RestClient::response RestClient::put(const std::string &url, const std::string &
                                      const builder &func)
 {
     /** initialize upload object */
-    RestClient::upload_object up_obj;
-    up_obj.data = data.c_str();
-    up_obj.length = data.size();
-
+    const RestClient::upload_object up_obj{data};
     return dosomething(
              url,
              [&up_obj, &func](CURL *curl) -> void {
                  /** Now specify we want to PUT data */
-                 curl_easy_setopt(curl, CURLOPT_PUT, 1L);
                  curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
                  /** set read callback function */
                  curl_easy_setopt(curl, CURLOPT_READFUNCTION, RestClient::read_callback);
@@ -314,7 +317,9 @@ RestClient::response RestClient::custom_method_get_family(const std::string &met
                      curl_easy_setopt(curl, CURLOPT_TCP_KEEPINTVL, 60L);
                  }
                  else
+                 {
                      curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 0L);
+                 }
              },
              headers, timeout)
       .setMethod(method);
@@ -332,9 +337,8 @@ RestClient::response RestClient::custom_method_get_family(const std::string &met
  */
 size_t RestClient::write_callback(void *data, size_t size, size_t nmemb, void *userdata)
 {
-    RestClient::response *r;
-    r = reinterpret_cast<RestClient::response *>(userdata);
-    r->body.append(reinterpret_cast<char *>(data), size * nmemb);
+    auto *r = static_cast<RestClient::response *>(userdata);
+    r->body.append(static_cast<char *>(data), size * nmemb);
 
     return (size * nmemb);
 }
@@ -350,8 +354,8 @@ size_t RestClient::write_callback(void *data, size_t size, size_t nmemb, void *u
  */
 size_t RestClient::header_callback(void *data, size_t size, size_t nmemb, void *userdata)
 {
-    RestClient::response *r = reinterpret_cast<RestClient::response *>(userdata);
-    std::string header(reinterpret_cast<char *>(data), size * nmemb);
+    auto *r = static_cast<RestClient::response *>(userdata);
+    std::string header(static_cast<char *>(data), size * nmemb);
     const size_t seperator = header.find_first_of(':');
     if (std::string::npos == seperator)
     {
@@ -395,11 +399,10 @@ size_t RestClient::header_callback(void *data, size_t size, size_t nmemb, void *
 size_t RestClient::read_callback(void *data, size_t size, size_t nmemb, void *userdata)
 {
     /** get upload struct */
-    RestClient::upload_object *u;
-    u = reinterpret_cast<RestClient::upload_object *>(userdata);
+    auto *u = static_cast<RestClient::upload_object *>(userdata);
     /** set correct sizes */
-    size_t curl_size = size * nmemb;
-    size_t copy_size = (u->length < curl_size) ? u->length : curl_size;
+    const size_t curl_size = size * nmemb;
+    const size_t copy_size = (u->length < curl_size) ? u->length : curl_size;
     /** copy data to buffer */
     memcpy(data, u->data, copy_size);
     /** decrement length and increment data pointer */
@@ -455,11 +458,11 @@ RestClient::response RestClient::dosomething(const std::string &url,
         /** set content-type header */
         curl_slist *hlist = nullptr;
         // hlist = curl_slist_append(hlist, ctype_header.c_str());
-        for (headermap::const_iterator it = headers.begin(); it != headers.end(); ++it)
+        for (const auto &it : headers)
         {
-            header = it->first;
+            header = it.first;
             header += ": ";
-            header += it->second;
+            header += it.second;
             hlist = curl_slist_append(hlist, header.c_str());
         }
 
@@ -469,18 +472,22 @@ RestClient::response RestClient::dosomething(const std::string &url,
 
         // set timeout
         if (timeout)
+        {
             curl_easy_setopt(curl, CURLOPT_TIMEOUT, timeout);
+        }
         curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1); // dont want to get a sig alarm on timeout
 
         /** perform the actual query */
         res = curl_easy_perform(curl);
-        long http_code = 0;
+        long http_code = 0; // NOLINT
         curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
         // std::string custom_redirect;
         ret.curlCode = res;
-        bool success = (res == CURLE_OK);
+        const bool success = (res == CURLE_OK);
         if (success)
+        {
             ret.code = static_cast<int>(http_code);
+        }
         else
         {
             ret.code = res;
@@ -491,11 +498,12 @@ RestClient::response RestClient::dosomething(const std::string &url,
 
         // error buffer must be freed ONLY after curl_easy_cleanup
         if (success)
+        {
             ret.curlError.clear();
+        }
         else
         {
-            std::string tmp(ret.curlError.c_str());
-            ret.curlError = tmp;
+            ret.curlError = std::string{ret.curlError.c_str()};
         }
     }
     return ret;
@@ -509,9 +517,13 @@ void RestClient::setCURLInterface(const std::string &val)
 void RestClient::applyCommonOptions(CURL *curl)
 {
     if (!curl_interface.empty())
+    {
         curl_easy_setopt(curl, CURLOPT_INTERFACE, curl_interface.c_str());
+    }
     else
+    {
         curl_easy_setopt(curl, CURLOPT_INTERFACE, nullptr);
+    }
 
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);

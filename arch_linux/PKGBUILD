@@ -21,7 +21,7 @@ source=(
 sha256sums=('SKIP')
 _gitname='ed_highway'
 
-qt_version="qt5"
+qt_version="qt6"
 
 check() {
   if [[ "$qt_version" == "qt6" ]]; then

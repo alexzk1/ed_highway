@@ -19,7 +19,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -62,7 +62,7 @@
      <item row="3" column="6" colspan="2">
       <widget class="QPushButton" name="pushButton_2">
        <property name="focusPolicy">
-        <enum>Qt::ClickFocus</enum>
+        <enum>Qt::FocusPolicy::ClickFocus</enum>
        </property>
        <property name="text">
         <string>Def</string>
@@ -82,7 +82,7 @@
      <item row="1" column="2">
       <widget class="QToolButton" name="btnSwap">
        <property name="focusPolicy">
-        <enum>Qt::ClickFocus</enum>
+        <enum>Qt::FocusPolicy::ClickFocus</enum>
        </property>
        <property name="toolTip">
         <string>Swap From/To fields.</string>
@@ -91,7 +91,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../../../../../../home/alex/Work/ed_highway/resources.qrc">
+        <iconset resource="../resources.qrc">
          <normaloff>:/images/swap.png</normaloff>:/images/swap.png</iconset>
        </property>
       </widget>
@@ -109,7 +109,7 @@
      <item row="2" column="6" colspan="2">
       <widget class="QPushButton" name="btnRevertTo">
        <property name="focusPolicy">
-        <enum>Qt::ClickFocus</enum>
+        <enum>Qt::FocusPolicy::ClickFocus</enum>
        </property>
        <property name="toolTip">
         <string>Revert TO field from selected value.</string>
@@ -122,7 +122,7 @@
      <item row="0" column="6" colspan="2">
       <widget class="QPushButton" name="btnRevertFrom">
        <property name="focusPolicy">
-        <enum>Qt::ClickFocus</enum>
+        <enum>Qt::FocusPolicy::ClickFocus</enum>
        </property>
        <property name="toolTip">
         <string>Revert FROM field to selected value.</string>
@@ -157,7 +157,7 @@
         <double>200.000000000000000</double>
        </property>
        <property name="stepType">
-        <enum>QAbstractSpinBox::AdaptiveDecimalStepType</enum>
+        <enum>QAbstractSpinBox::StepType::AdaptiveDecimalStepType</enum>
        </property>
        <property name="value">
         <double>50.000000000000000</double>
@@ -206,7 +206,7 @@
      <item row="5" column="6" colspan="2">
       <widget class="QPushButton" name="pushButton">
        <property name="focusPolicy">
-        <enum>Qt::ClickFocus</enum>
+        <enum>Qt::FocusPolicy::ClickFocus</enum>
        </property>
        <property name="text">
         <string>Def</string>
@@ -226,7 +226,7 @@
      <item row="1" column="3">
       <widget class="QToolButton" name="btnUp">
        <property name="focusPolicy">
-        <enum>Qt::ClickFocus</enum>
+        <enum>Qt::FocusPolicy::ClickFocus</enum>
        </property>
        <property name="toolTip">
         <string>Set &quot;From&quot; = &quot;To&quot; and clear &quot;To&quot;.</string>
@@ -235,8 +235,18 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../../../../../../home/alex/Work/ed_highway/resources.qrc">
+        <iconset resource="../resources.qrc">
          <normaloff>:/images/up-arrow.png</normaloff>:/images/up-arrow.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="4">
+      <widget class="QCheckBox" name="cbSuperCharge">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Check if your ship uses special FSD with longer NS jump like Caspian Explorer may use x6 supercharge instead regular x4.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>MK II FSD (Caspian Explorer)</string>
        </property>
       </widget>
      </item>
@@ -254,23 +264,23 @@
       <string>Selected row is copied to clipboard immediatly.</string>
      </property>
      <property name="sizeAdjustPolicy">
-      <enum>QAbstractScrollArea::AdjustToContents</enum>
+      <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents</enum>
      </property>
      <property name="alternatingRowColors">
       <bool>true</bool>
      </property>
      <property name="selectionMode">
-      <enum>QAbstractItemView::SingleSelection</enum>
+      <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
      </property>
      <property name="selectionBehavior">
-      <enum>QAbstractItemView::SelectRows</enum>
+      <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
      </property>
     </widget>
    </item>
   </layout>
   <action name="actionOpen_In_Browser">
    <property name="icon">
-    <iconset resource="../../../../../../home/alex/Work/ed_highway/resources.qrc">
+    <iconset resource="../resources.qrc">
      <normaloff>:/images/edsm_image.png</normaloff>:/images/edsm_image.png</iconset>
    </property>
    <property name="text">
@@ -280,7 +290,7 @@
     <string>Opens selected system on EDSM.</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::NoRole</enum>
+    <enum>QAction::MenuRole::NoRole</enum>
    </property>
   </action>
  </widget>
@@ -296,7 +306,7 @@
   <tabstop>pushButton</tabstop>
  </tabstops>
  <resources>
-  <include location="../../../../../../home/alex/Work/ed_highway/resources.qrc"/>
+  <include location="../resources.qrc"/>
  </resources>
  <connections/>
 </ui>

@@ -11,14 +11,22 @@
 
 #include <QClipboard>
 #include <QDesktopServices>
+#include <QEvent>
+#include <QItemSelection>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QModelIndex>
+#include <QPointer>
 #include <QSettings>
 #include <QSpinBox>
+#include <QString>
+#include <QStringList>
+#include <QWidget>
 
-#include <iostream>
+#include <algorithm>
+#include <cstdint>
 
 const static QString settingsGroup{"SpanshRouteWidget"};
 
@@ -44,9 +52,13 @@ SpanshRouteWidget::SpanshRouteWidget(QWidget *parent) :
 
     // if we have all valid data stored, request route again and try make selection
     if (switchRouteBtn() && !lastSelectedSystem.isEmpty())
+    {
         on_btnRoute_clicked();
+    }
     else
+    {
         updateButtonsMenu();
+    }
 
     const static QJsonTableModel::Header header = {
       QJsonTableModel::Heading({{"title", tr("System")}, {"index", "system"}}),
@@ -110,6 +122,7 @@ void SpanshRouteWidget::saveValues() const
     settings.setValue("lastSelected", lastSelectedSystem);
     settings.setValue("revertFrom", revertFrom);
     settings.setValue("revertTo", revertTo);
+    settings.setValue("is_mkII_fsd", ui->cbSuperCharge->isChecked());
     settings.endGroup();
     settings.sync();
 }
@@ -125,6 +138,7 @@ void SpanshRouteWidget::loadValues()
     };
     QSettings settings;
     settings.beginGroup(settingsGroup);
+    ui->cbSuperCharge->setChecked(settings.value("is_mkII_fsd").toBool());
     ui->fromE->setText(settings.value("from", "").toString());
     ui->toE->setText(settings.value("to", "").toString());
     ui->spinBoxRange->setValue(
@@ -145,8 +159,7 @@ void SpanshRouteWidget::loadValues()
 void SpanshRouteWidget::updateButtonsMenu()
 {
     // 1st we need to update stored names by entered names
-    const auto limit = StaticSettingsMap::getGlobalSetts().readInt("01_1Int_Revertlen");
-    const static auto update_list = [&limit](const auto &src, auto &list) {
+    static const auto update_list = [](const auto &src, auto &list, auto limit) {
         // user could lower limit between runs
         while (list.size() > limit)
         {
@@ -165,8 +178,9 @@ void SpanshRouteWidget::updateButtonsMenu()
             list.erase(list.begin());
         }
     };
-    update_list(ui->fromE->text(), revertFrom);
-    update_list(ui->toE->text(), revertTo);
+    const auto limit = StaticSettingsMap::getGlobalSetts().readInt("01_1Int_Revertlen");
+    update_list(ui->fromE->text(), revertFrom, limit);
+    update_list(ui->toE->text(), revertTo, limit);
 
     // 2nd do menus
 
@@ -185,10 +199,10 @@ void SpanshRouteWidget::updateButtonsMenu()
     };
 
     const auto addMenu = [this](auto *button, QLineEdit *edit) {
-        QMenu *main = new QMenu(this);
+        auto *main = new QMenu(this);
 
-        QMenu *from = main->addMenu(tr("From"));
-        QMenu *to = main->addMenu(tr("To"));
+        auto *from = main->addMenu(tr("From"));
+        auto *to = main->addMenu(tr("To"));
         add_list(edit, from, revertFrom);
         add_list(edit, to, revertTo);
         button->setMenu(main);
@@ -213,8 +227,14 @@ void SpanshRouteWidget::on_btnRoute_clicked()
     ui->btnRoute->setEnabled(false);
     updateButtonsMenu(); // add to last used menus only when user requested route
     saveValues();
-    const SpanshRoutePostData r(ui->spinBoxPrecise->value(), ui->spinBoxRange->value(),
-                                ui->fromE->text().toStdString(), ui->toE->text().toStdString());
+    SpanshRouteInputParams params{static_cast<std::uint32_t>(ui->spinBoxPrecise->value()),
+                                  static_cast<float>(ui->spinBoxRange->value()),
+                                  ui->fromE->text().toStdString(), ui->toE->text().toStdString()};
+    if (ui->cbSuperCharge->isChecked())
+    {
+        params.useCaspian();
+    }
+    const SpanshRoutePostData r(params);
     router.executeRequest(r, [this](const auto &err, const auto &js) {
         // okey, okey ...not optimal at all, but who cares ... that is not 2000000 routes per second
         // api returned full response, need table only
@@ -269,7 +289,7 @@ void SpanshRouteWidget::crossThreadHasRoute(QString error, QString json)
         {
             const QVariant find(lastSelectedSystem);
 
-            int row = model->rowCount();
+            const int row = model->rowCount();
             bool found = false;
             for (int i = 0; i < row; ++i)
             {
@@ -316,7 +336,7 @@ void SpanshRouteWidget::on_tableView_clicked(const QModelIndex &index)
 
 void SpanshRouteWidget::on_btnSwap_clicked()
 {
-    QString tmp = ui->fromE->text();
+    const auto tmp = ui->fromE->text();
     ui->fromE->setText(ui->toE->text());
     ui->toE->setText(tmp);
 }

@@ -4,6 +4,23 @@
 #include "utils/strfmt.h"
 
 #include <cstdint>
+#include <string>
+
+/// @brief Input parameters for neutron plotter.
+struct SpanshRouteInputParams
+{
+    std::uint32_t efficiency;
+    float ship_jump_range;
+    std::string system_from;
+    std::string system_to;
+    std::uint32_t supercharg_multiplier{4};
+
+    SpanshRouteInputParams &useCaspian()
+    {
+        supercharg_multiplier = 6;
+        return *this;
+    }
+};
 
 /// @brief Passed to executor will make proper web-api request based on supplied C++ values.
 class SpanshRoutePostData
@@ -12,16 +29,16 @@ class SpanshRoutePostData
     RestClient::parameters p;
 
   public:
-    SpanshRoutePostData(const std::uint32_t eff, const float range, const std::string &from,
-                        const std::string &to)
+    explicit SpanshRoutePostData(const SpanshRouteInputParams &params)
     {
         // It must be "." (point) as int.float separator used. Web-site fails if comma used.
         const FloatsShouldUsePointAsString properRangeAsString;
 
-        p["efficiency"] = stringfmt("%u", eff);
-        p["range"] = stringfmt("%02f", range);
-        p["from"] = from;
-        p["to"] = to;
+        p["efficiency"] = stringfmt("%u", params.efficiency);
+        p["range"] = stringfmt("%02f", params.ship_jump_range);
+        p["from"] = params.system_from;
+        p["to"] = params.system_to;
+        p["supercharge_multiplier"] = stringfmt("%u", params.supercharg_multiplier);
     }
 
     /// @returns API endpoint for spansh web-site.
